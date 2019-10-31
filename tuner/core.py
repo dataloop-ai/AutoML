@@ -8,14 +8,19 @@ class Tuner:
         self.oracle = Oracle(space=search_space, config=configurations)
         self.max_instances_at_once = configurations['max_instances_at_once']
 
-    def search_hp(self, metrics=None):
-        if metrics is not None:
-            self.oracle.are_metrics = True
-            self.oracle.update(metrics)
+    def update_metrics(self, metrics):
+        self.oracle.update(metrics)
 
+    def search_hp(self):
+        ongoing_trials = {}
         for _ in range(self.max_instances_at_once):
-            trials, status = self.oracle.create_trial()
+            trial_id, hp_values, status = self.oracle.create_trial()
             if status == 'STOPPED':
                 break
+            else:
+                ongoing_trials[trial_id] = hp_values
 
-        return trials, status
+        return ongoing_trials, status
+
+    def get_trials(self):
+        return self.oracle.trials

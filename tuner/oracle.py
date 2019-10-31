@@ -8,7 +8,6 @@ class Oracle:
     def __init__(self, space, config):
         self.space = space
         self.trials = {}
-        self.ongoing_trials = {}
         self._tried_so_far = set()
         self.max_trials = config['max_trials']
         self.are_metrics = False
@@ -20,8 +19,10 @@ class Oracle:
             temp_df = df.loc['metrics'].dropna().apply(lambda x: x['val_accuracy'])
         if len(self.trials) >= self.max_trials:
             status = 'STOPPED'
+            values = None
         elif self.are_metrics and temp_df.max() > 0.998:
             status = 'STOPPED'
+            values = None
         else:
             response = self._populate_space(trial_id)
             status = response['status']
@@ -29,7 +30,7 @@ class Oracle:
 
             self.trials[trial_id] = values
 
-        return self.trials, status
+        return trial_id, values, status
 
     def update(self, metrics):
         for trial_id, metric in metrics.items():

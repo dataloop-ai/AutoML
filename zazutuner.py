@@ -1,15 +1,9 @@
 from tensorflow import keras
 from model_selector import Spinner
-from launch_pad.D import Launcher
-from tuner import Tuner
+from launch_pad.launcher import Launcher
+from tuner import Tuner, Oracle
 import pandas as pd
 
-
-def retdic(dic):
-    if dic is not 0:
-        return dic['val_accuracy']
-    else:
-        0
 
 
 def main(task, data, priority):
@@ -19,13 +13,18 @@ def main(task, data, priority):
     tuner = Tuner(search_space, configs)
     gun = Launcher(configs, model, data)
 
-    trials, status = tuner.search_hp()
-    metrics = gun.launch_c(trials)
+    ongoing_trials, status = tuner.search_hp()
+    metrics = gun.launch_c(ongoing_trials)
+    tuner.update_metrics(metrics)
     while True:
-        trials, status = tuner.search_hp(metrics)
+        ongoing_trials, status = tuner.search_hp()
+        metrics = gun.launch_c(ongoing_trials)
+        tuner.update_metrics(metrics)
         if status == 'STOPPED':
             break
-        metrics = gun.launch_c(trials)
+
+
+    trials = tuner.get_trials()
     df = pd.DataFrame(trials)
     temp_df = df.loc['metrics'].dropna()
     best_trial_id = temp_df.idxmax()
