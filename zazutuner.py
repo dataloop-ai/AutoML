@@ -1,7 +1,7 @@
 from tensorflow import keras
-from A import Spinner
-from B import Tuner
-from D import Launcher
+from model_selector import Spinner
+from launch_pad.D import Launcher
+from tuner import Tuner
 import pandas as pd
 
 
@@ -15,19 +15,19 @@ def retdic(dic):
 def main(task, data, priority):
     spinner = Spinner(task, priority)
     search_space, model, configs = spinner.find_closest_model_and_hp()
-    #initialize tuner and gun i.e. B and D
+    #initialize tuner and gun i.e.
     tuner = Tuner(search_space, configs)
     gun = Launcher(configs, model, data)
 
     trials, status = tuner.search_hp()
     metrics = gun.launch_c(trials)
     while True:
+        trials, status = tuner.search_hp(metrics)
         if status == 'STOPPED':
             break
-        trials, status = tuner.search_hp(metrics)
         metrics = gun.launch_c(trials)
     df = pd.DataFrame(trials)
-    temp_df = df.loc['metrics'].fillna(0).apply(retdic)
+    temp_df = df.loc['metrics'].dropna()
     best_trial_id = temp_df.idxmax()
 
     print('best trial', trials[best_trial_id])
