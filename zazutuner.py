@@ -1,14 +1,14 @@
 from tensorflow import keras
-from model_selector import Spinner
+from model_selector import ModelSelector
 from launch_pad.launcher import Launcher
 from tuner import Tuner, Oracle
 import pandas as pd
 
 
 
-def main(task, data, priority):
-    spinner = Spinner(task, priority)
-    search_space, model, configs = spinner.find_closest_model_and_hp()
+def main(recipe, data, priority):
+    selector = ModelSelector(modelSelectionSpec)
+    search_space, model, configs = selector.find_closest_model_and_hp()
     #initialize tuner and gun i.e.
     tuner = Tuner(search_space, configs)
     gun = Launcher(configs, model, data)
@@ -41,4 +41,4 @@ if __name__ == '__main__':
     y = y[:10000]
 
     data = {'images': x, 'labels': y}
-    main(task='detection', data=data, priority='high_accuracy_high_latency')
+    main(recipe='detection', data=data, priority='high_accuracy_high_latency')

@@ -2,7 +2,7 @@ import os.path
 import json
 
 
-class SpecBase:
+class Spec:
     def __init__(self):
         self._specData = {}
 

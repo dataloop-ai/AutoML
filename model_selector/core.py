@@ -1,5 +1,5 @@
 
-class Spinner:
+class ModelSelector:
     def __init__(self, task, priority):
         self.task = task
         self.priority = priority
