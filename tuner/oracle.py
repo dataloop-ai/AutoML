@@ -3,6 +3,7 @@ import random
 import hashlib
 import pandas as pd
 
+
 class Oracle:
 
     def __init__(self, space, config):
@@ -27,15 +28,14 @@ class Oracle:
             response = self._populate_space(trial_id)
             status = response['status']
             values = response['values'] if 'values' in response else None
-
-            self.trials[trial_id] = values
+            self.trials[trial_id] = {}
+            self.trials[trial_id]['hp_values'] = values
 
         return trial_id, values, status
 
     def update(self, metrics):
         for trial_id, metric in metrics.items():
             self.trials[trial_id]['metrics'] = metric
-
 
     def _populate_space(self, _):
         while 1:

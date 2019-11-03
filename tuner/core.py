@@ -18,7 +18,8 @@ class Tuner:
             if status == 'STOPPED':
                 break
             else:
-                ongoing_trials[trial_id] = hp_values
+                ongoing_trials[trial_id] = {}
+                ongoing_trials[trial_id]['hp_values'] = hp_values
 
         return ongoing_trials, status
 

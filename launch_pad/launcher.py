@@ -9,8 +9,8 @@ class Launcher:
 
     def launch_c(self, ongoing_trials):
         metrics_dic = {}
-        for trial_id, hp_values in ongoing_trials.items():
-            experiment = Experiment(hp_values, self.configs, self.model, self.data)
+        for trial_id, trial in ongoing_trials.items():
+            experiment = Experiment(trial['hp_values'], self.configs, self.model, self.data)
             metrics = experiment.run()
             metrics_dic[trial_id] = metrics
         return metrics_dic
