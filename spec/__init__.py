@@ -6,20 +6,17 @@ class SpecBase:
     def __init__(self):
         self._specData = {}
 
-    def load(self, specData):
-        if os.path.isfile(specData):
-            with os.open(specData) as f:
-                specData = json.load(f)
-        self._specData = specData
-        # validate indeed object was recieved
+    def reload(self, file_path_name):
+        if os.path.isfile(file_path_name):
+            with open(file_path_name) as f:
+                state = json.load(f)
+        self.set_state(state)
 
-
-class Metric:
-    pass
-
-
-class hpValues:
-    pass
+    def save(self, file_path_name):
+        # covert object state to dict
+        state = self.get_state()
+        with open(file_path_name, "w") as f:
+            json.dump(state, f)
 
 
 class Trial:
@@ -30,5 +27,17 @@ class Oracle:
     pass
 
 
-class ongoingTrial:
+class OngoingTrial:
+    pass
+
+
+class Metric:
+    pass
+
+
+class HpValues:
+    pass
+
+
+class SearchSpace:
     pass
