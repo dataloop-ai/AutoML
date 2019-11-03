@@ -1,0 +1,17 @@
+{
+  "version": "1",
+  "specs": [
+    {
+      "id": "some uuid",
+      "name": "my name",
+      "type": "model_search",
+      "body": {}
+    },
+    {
+      "id": "some uuid2",
+      "name": "my name2",
+      "type": "hyperparameters",
+      "body": {}
+    }
+  ]
+}
