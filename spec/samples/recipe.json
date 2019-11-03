@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "specs": [
+  "modules": [
     {
       "id_": "some uuid2",
       "name_": "my recipie",

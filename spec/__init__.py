@@ -1,6 +1,11 @@
 import os.path
 import json
+from enum import Enum
+class SPEC_TYPE(Enum):
+    MODEL_SELECTION="model_selection"
 
+class MODULE_TYPE(Enum):
+    RECIPE = "recipe"
 
 class SpecModule:
     def __init__(self):
@@ -21,9 +26,12 @@ class SpecModule:
 class Spec:
     def __init__(self):
         self._specData = {}
+        self.modules = []
 
     def loadState(self,state):
-        pass
+        self._specData = state
+        for i in state['modules']:
+            self.modules.append()
 
     def reload(self, file_path_name):
         if not self.validate():
@@ -44,7 +52,7 @@ class Spec:
         pass
 
     @property
-    def modules(self):
+    def modulesJson(self):
         if not self._specData['modules']:
             return []
         return self._specData['modules']
@@ -52,6 +60,9 @@ class Spec:
     @property
     def modulesNum(self):
         return len(self.modules)
+
+    def getModuleByType(self),moduleType:
+
 
 class ModelSelectionSpec(Spec):
     def validate(self):
