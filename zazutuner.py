@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def main(recipe, data, priority):
-    selector = ModelSelector(modelSelectionSpec)
+    selector = ModelSelector(recipe, priority)
     search_space, model, configs = selector.find_closest_model_and_hp()
     #initialize tuner and gun i.e.
     tuner = Tuner(search_space, configs)

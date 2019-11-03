@@ -28,7 +28,7 @@ class Spec:
         self._specData = {}
         self.modules = []
 
-    def loadState(self,state):
+    def load_state(self, state):
         self._specData = state
         for i in state['modules']:
             self.modules.append()
@@ -52,7 +52,7 @@ class Spec:
         pass
 
     @property
-    def modulesJson(self):
+    def modules_json(self):
         if not self._specData['modules']:
             return []
         return self._specData['modules']
@@ -61,12 +61,14 @@ class Spec:
     def modulesNum(self):
         return len(self.modules)
 
-    def getModuleByType(self),moduleType:
+    def getModuleByType(self):
+        pass
 
 
 class ModelSelectionSpec(Spec):
     def validate(self):
         #code to validate here ...
+        pass
 
 
 class Trial:
