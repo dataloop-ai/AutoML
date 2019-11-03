@@ -1,1 +1,1 @@
-from .core import Spinner
+from .core import ModelSelector
