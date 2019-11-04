@@ -32,6 +32,10 @@ class Spec:
     def __init__(self):
         pass
 
+    def load_state(self, state):
+        for specific_state in state:
+            pass
+
     def load(self, file_path_name):
         if os.path.isfile(file_path_name):
             with open(file_path_name) as f:
@@ -44,19 +48,6 @@ class Spec:
         with open(file_path_name, "w") as f:
             json.dump(state, f)
 
-    @property
-    def modules_json(self):
-        if not self._specData['modules']:
-            return []
-        return self._specData['modules']
-
-    @property
-    def modulesNum(self):
-        return len(self.modules)
-
-    def getModuleByType(self):
-        pass
-
 
 class ModelSelectionSpec(Spec):
     def validate(self):
@@ -65,15 +56,26 @@ class ModelSelectionSpec(Spec):
 
 
 class Trial(Spec):
-    def __init__(self, trial_id, hyperparameters, status):
+    def __init__(self, trial_id, hp_values, status):
         self.trial_id = trial_id
-        self.hyperparameters = hyperparameters
+        self.hp_values = hp_values
         self.status = status
         self.metrics = {}
 
     def load_state(self, state):
         self.trial_id = state['trial_id']
-        
+        self.hp_values = state['hp_values'] # dict at first
+        self.metrics = state['metrics']
+        self.status = state['status']
+
+    def get_state(self):
+        state_dict = {
+            'trial_id': self.trial_id,
+            'hp_values': self.hp_values,
+            'metrics': self.metrics,
+            'status': self.status
+        }
+        return state_dict
 
 class Oracle:
     pass
