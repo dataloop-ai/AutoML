@@ -3,5 +3,5 @@
   "id": "some uuid",
   "name": "my recipe name",
   "type": "recipe",
-  "task": "detection"
+  "ta2sk": "detection"
 }

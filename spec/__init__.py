@@ -29,18 +29,18 @@ class SpecModule:
 
 
 class Spec:
-    def __init__(self):
-        pass
+    def __init__(self,spec_data):
+        self.spec_data_={}
+        self.load(spec_data)
 
-    def load_state(self, state):
-        for specific_state in state:
-            pass
-
-    def load(self, file_path_name):
-        if os.path.isfile(file_path_name):
-            with open(file_path_name) as f:
-                state = json.load(f)
-            self.load_state(state)
+    def load(self, dict_or_spec_file_path):
+        if os.path.isfile(dict_or_spec_file_path):
+            with open(dict_or_spec_file_path) as f:
+                spec_data = json.load(f)
+        else:
+            spec_data = dict_or_spec_file_path
+        self.spec_data_ = spec_data
+        self.validate()
 
     def save(self, file_path_name):
         # covert object state to dict
@@ -48,6 +48,42 @@ class Spec:
         with open(file_path_name, "w") as f:
             json.dump(state, f)
 
+    @property
+    def name(self):
+        if not 'name' in self.spec_data_:
+            return ''
+        return self.spec_data_['name']
+
+    @property
+    def uuid(self):
+        if not 'uuid' in self.spec_data_:
+            return 'NA'
+        return self.spec_data_['uuid']
+
+    @property
+    def type(self):
+        if not 'type' in self.spec_data_:
+            return 'NA'
+        return self.spec_data_['type']
+
+    @property
+    def specs(self):
+        if not 'specs' in self.spec_data_:
+            return []
+        return self.spec_data_['specs']
+
+    def validate(self):
+        pass
+
+class RecipeSpec(Spec):
+
+    def validate(self):
+        if not 'task' in self.spec_data_:
+            raise Exception("Recipe must have a task field")
+
+    @property
+    def task(self):
+        return self.spec_data_['task']
 
 class ModelSelectionSpec(Spec):
     def validate(self):

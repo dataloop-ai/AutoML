@@ -3,7 +3,7 @@ from model_selector import ModelSelector
 from launch_pad.launcher import Launcher
 from tuner import Tuner, Oracle
 import pandas as pd
-
+from spec import RecipeSpec
 
 
 def main(recipe, data, priority):
@@ -39,6 +39,6 @@ if __name__ == '__main__':
 
     x = x[:10000]
     y = y[:10000]
-
-    data = {'images': x, 'labels': y}
-    main(recipe='detection', data=data, priority='high_accuracy_high_latency')
+    recipe = RecipeSpec(r'C:\Users\Eran Shlomo\PycharmProjects\zazu\spec\samples\recipe.json')
+    #data = {'images': x, 'labels': y}
+    #main(recipe='detection', data=data, priority='high_accuracy_high_latency')
