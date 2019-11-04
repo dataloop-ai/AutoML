@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "specs": [
+    {
+      "id_": "some uuid2",
+      "name_": "my optimization preferences",
+      "type": "model_optimization",
+      "optimization": "accuracy"
+    }
+  ]
+}

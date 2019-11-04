@@ -3,11 +3,11 @@ from model_selector import ModelSelector
 from launch_pad.launcher import Launcher
 from tuner import Tuner, Oracle
 import pandas as pd
-from spec import RecipeSpec
+from spec import RecipeSpec,DataSpec,ModelOptimizationSpec
 
 
-def main(recipe, data, priority):
-    selector = ModelSelector(recipe, priority)
+def main(recipe, data, optimization):
+    selector = ModelSelector(recipe, optimization)
     search_space, model, configs = selector.find_closest_model_and_hp()
     #initialize tuner and gun i.e.
     tuner = Tuner(search_space, configs)
@@ -40,5 +40,9 @@ if __name__ == '__main__':
     x = x[:10000]
     y = y[:10000]
     recipe = RecipeSpec(r'C:\Users\Eran Shlomo\PycharmProjects\zazu\spec\samples\recipe.json')
+    data = DataSpec()
+    opt = ModelOptimizationSpec()
+    data.fill(x,y)
+    main(recipe='detection', data=data, optimization=opt)
     #data = {'images': x, 'labels': y}
     #main(recipe='detection', data=data, priority='high_accuracy_high_latency')

@@ -1,0 +1,10 @@
+
+{
+  "version": "1",
+  "id": "some uuid",
+  "name": "my recipe name",
+  "type": "dataset",
+  "data_type": "image",
+  "items": []
+  "labels": []
+}

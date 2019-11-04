@@ -2,6 +2,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import cv2
 import numpy as np
+from spec import DataSpec
 
 
 
@@ -23,7 +24,7 @@ class myHyperModel:
 
 class Experiment:
     def __init__(self, hp_values, configs, model, data):
-
+        assert (isinstance(data,DataSpec))
         self.configs = configs
         self.model = model
         self.data = data
@@ -31,14 +32,13 @@ class Experiment:
         init_model = myHyperModel(hp_values['input_size'], hp_values['learning_rate'])
         self.model = init_model.build()
 
-        for img in self.data['images']:
+        for img in self.data.items:
             res = cv2.resize(img, dsize=(hp_values['input_size'], hp_values['input_size']), interpolation=cv2.INTER_CUBIC)
             self.new_images.append(res)
         self.new_images_array = np.array(self.new_images)
         pass
     def run(self):
-
-        history = self.model.fit(self.new_images_array, self.data['labels'], epochs=self.configs['epochs'], validation_split=0.1)
+        history = self.model.fit(self.new_images_array, self.data.labels, epochs=self.configs['epochs'], validation_split=0.1)
         metrics = {}
         metrics['val_accuracy'] = history.history['val_accuracy'][-1]
         return metrics

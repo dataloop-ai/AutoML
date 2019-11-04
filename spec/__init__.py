@@ -4,8 +4,15 @@ from enum import Enum
 
 
 class SPEC_TYPE(Enum):
+    DATASET = "dataset"
     MODEL_SELECTION = "model_selection"
 
+class OPTIMIZATION_TYPE(Enum):
+    ACCURACY = "accuracy"
+
+class DATASET_TYPE(Enum):
+    UNKNOWN = "unknown"
+    IMAGES = "images"
 
 class MODULE_TYPE(Enum):
     RECIPE = "recipe"
@@ -31,10 +38,11 @@ class SpecModule:
 class Spec:
     def __init__(self,spec_data):
         self.spec_data_={}
-        self.load(spec_data)
+        if spec_data:
+            self.load(spec_data)
 
     def load(self, dict_or_spec_file_path):
-        if os.path.isfile(dict_or_spec_file_path):
+        if isinstance(dict_or_spec_file_path, str) and os.path.isfile(dict_or_spec_file_path):
             with open(dict_or_spec_file_path) as f:
                 spec_data = json.load(f)
         else:
@@ -84,6 +92,60 @@ class RecipeSpec(Spec):
     @property
     def task(self):
         return self.spec_data_['task']
+
+
+class DataSpec(Spec):
+
+    def __init__(self,spec_data=None):
+        if not spec_data:
+            spec_data={}
+            spec_data['type']=SPEC_TYPE.DATASET
+            spec_data['data_type'] = DATASET_TYPE.UNKNOWN
+        super().__init__(spec_data)
+        self._items=[]
+        self._labels =[]
+
+    def validate(self):
+        if not 'data_type' in self.spec_data_:
+            raise Exception("Missing data type")
+
+    @property
+    def data_type(self):
+        return self.spec_data_['data_type']
+
+    @property
+    def items(self):
+        if 'items' in self.spec_data_ and len(self.spec_data_['items'])>0:
+            return self.spec_data_['items']
+        return self._items
+
+    @property
+    def labels(self):
+        if 'labels' in self.spec_data_ and len(self.spec_data_['labels'])>0:
+            return self.spec_data_['labels']
+        return self._labels
+
+    def fill(self,items,labels):
+        self._items=items
+        self._labels = labels
+
+class ModelOptimizationSpec(Spec):
+    def __init__(self,spec_data=None):
+        if not spec_data:
+            spec_data={}
+            spec_data['optimization']=OPTIMIZATION_TYPE.ACCURACY
+        super().__init__(spec_data)
+        self._items=[]
+        self._labels =[]
+
+    def validate(self):
+        if not 'optimization' in self.spec_data_:
+            raise Exception("Model optimization must have a optimization field")
+
+    @property
+    def optimization(self):
+        return self.spec_data_['optimization']
+
 
 class ModelSelectionSpec(Spec):
     def validate(self):
