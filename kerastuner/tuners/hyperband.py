@@ -236,7 +236,7 @@ class HyperbandOracle(oracle_module.Oracle):
 
     def get_state(self):
         state = super(HyperbandOracle, self).get_state()
-        state.update({
+        state.update_metrics({
             'seed': self.seed,
             'factor': self.factor,
             'min_epochs': self.min_epochs,

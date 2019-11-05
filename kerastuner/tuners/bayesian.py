@@ -107,7 +107,7 @@ class BayesianOptimizationOracle(oracle_module.Oracle):
     def get_state(self):
         state = super(BayesianOptimizationOracle, self).get_state()
 
-        state.update({
+        state.update_metrics({
             'num_initial_points': self.num_initial_points,
             'alpha': self.alpha,
             'beta': self.beta,

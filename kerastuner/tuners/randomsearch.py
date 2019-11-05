@@ -108,7 +108,7 @@ class RandomSearchOracle(oracle_module.Oracle):
 
     def get_state(self):
         state = super(RandomSearchOracle, self).get_state()
-        state.update({
+        state.update_metrics({
             'seed': self.seed,
             'seed_state': self._seed_state,
             'tried_so_far': list(self._tried_so_far),

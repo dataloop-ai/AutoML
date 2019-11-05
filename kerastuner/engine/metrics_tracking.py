@@ -185,7 +185,7 @@ class MetricsTracker(object):
             self.register(name)
 
         prev_best = self.metrics[name].get_best_value()
-        self.metrics[name].update(value, step=step)
+        self.metrics[name].update_metrics(value, step=step)
         new_best = self.metrics[name].get_best_value()
 
         improved = new_best != prev_best

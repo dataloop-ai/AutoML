@@ -6,11 +6,11 @@ import pandas as pd
 
 class Oracle:
 
-    def __init__(self, space, config):
+    def __init__(self, space, configs):
         self.space = space
         self.trials = {}
         self._tried_so_far = set()
-        self.max_trials = config['max_trials']
+        self.max_trials = configs['max_trials']
         self.are_metrics = False
 
     def create_trial(self):
@@ -28,14 +28,13 @@ class Oracle:
             response = self._populate_space(trial_id)
             status = response['status']
             values = response['values'] if 'values' in response else None
-            self.trials[trial_id] = {}
-            self.trials[trial_id]['hp_values'] = values
+            self.trials[trial_id] = {'hp_values': values}
 
         return trial_id, values, status
 
-    def update(self, metrics):
-        for trial_id, metric in metrics.items():
-            self.trials[trial_id]['metrics'] = metric
+    def update_metrics(self, ongoing_trials):
+        for trial_id, trial in ongoing_trials.items():
+            self.trials[trial_id]['metrics'] = trial['metrics']
 
     def _populate_space(self, _):
         while 1:

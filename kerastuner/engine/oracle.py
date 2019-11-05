@@ -177,7 +177,7 @@ class Oracle(stateful.Stateful):
                 direction = _maybe_infer_direction_from_objective(
                     self.objective, metric_name)
                 trial.metrics.register(metric_name, direction=direction)
-            trial.metrics.update(metric_name, metric_value, step=step)
+            trial.metrics.update_metrics(metric_name, metric_value, step=step)
         # To signal early stopping, set Trial.status to "STOPPED".
         return trial.status
 
