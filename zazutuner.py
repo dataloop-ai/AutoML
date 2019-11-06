@@ -1,9 +1,9 @@
 from tensorflow import keras
 from model_selector import ModelSelector
 from launch_pad.launcher import Launcher
-from tuner import Tuner, OngoingTrials
+from tuner import Tuner
 import pandas as pd
-from spec import RecipeSpec, DataSpec, ModelSpaceSpec, OptModel, Spec
+from spec import RecipeSpec, DataSpec, ModelSpaceSpec, OptModel, Spec, OngoingTrials
 
 
 def search(opt_model):
@@ -11,7 +11,7 @@ def search(opt_model):
     selector = ModelSelector(opt_model)
     selector.find_model_and_hp_search_space()
 
-    #initialize tuner and gun i.e.
+    # initialize tuner and gun i.e.
     ongoing_trials = OngoingTrials()
     tuner = Tuner(opt_model, ongoing_trials)
     gun = Launcher(opt_model, ongoing_trials)
@@ -25,8 +25,7 @@ def search(opt_model):
         gun.launch_c()
         tuner.end_trial()
 
-
-    print('best trial:', tuner.get_best_trial())
+    return tuner.get_best_trial()
 
 
 if __name__ == '__main__':
@@ -46,5 +45,6 @@ if __name__ == '__main__':
     opt_model.add_child_spec(model_space, 'model_space')
     opt_model.add_attr_from_obj(data, 'items')
     opt_model.add_attr_from_obj(data, 'labels')
-    search(opt_model)
+    best_trial = search(opt_model)
 
+    print('best trial: ', best_trial)
