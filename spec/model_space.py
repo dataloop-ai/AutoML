@@ -1,8 +1,7 @@
 from .spec_base import Spec
-from .recipe_spec import RecipeSpec
 
 
-class ModelSpec(RecipeSpec):
+class ModelSpaceSpec(Spec):
 
     def __init__(self, spec_data=None):
         if not spec_data:
@@ -10,11 +9,9 @@ class ModelSpec(RecipeSpec):
         super().__init__(spec_data)
 
     def validate(self):
-        if 'model_space' not in self.__dir__():
+        if 'model_space' not in self.spec_data:
             raise Exception("Model spec must have a model_space field")
 
-    def add_attr(self, value, name):
-        setattr(self, name, value)
-
-    def add_attr_from_obj(self, obj, name):
-        setattr(self, name, getattr(obj, name))
+    @property
+    def model_space(self):
+        return self.spec_data['model_space']

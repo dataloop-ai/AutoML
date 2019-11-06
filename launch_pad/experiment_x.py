@@ -23,22 +23,20 @@ class myHyperModel:
 
 
 class Experiment:
-    def __init__(self, hp_values, configs, model, data):
-        assert (isinstance(data,DataSpec))
-        self.configs = configs
-        self.model = model
-        self.data = data
+    def __init__(self, hp_values, opt_model):
+
+        self.opt_model = opt_model
         self.new_images = []
         init_model = myHyperModel(hp_values['input_size'], hp_values['learning_rate'])
         self.model = init_model.build()
 
-        for img in self.data.items:
+        for img in self.opt_model.items:
             res = cv2.resize(img, dsize=(hp_values['input_size'], hp_values['input_size']), interpolation=cv2.INTER_CUBIC)
             self.new_images.append(res)
         self.new_images_array = np.array(self.new_images)
         pass
     def run(self):
-        history = self.model.fit(self.new_images_array, self.data.labels, epochs=self.configs['epochs'], validation_split=0.1)
+        history = self.model.fit(self.new_images_array, self.opt_model.labels, epochs=self.opt_model.configs['epochs'], validation_split=0.1)
         metrics = {}
         metrics['val_accuracy'] = history.history['val_accuracy'][-1]
         return metrics

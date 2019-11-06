@@ -11,9 +11,10 @@ class DataSpec(Spec):
         self.labels = []
 
     def validate(self):
-        if 'data_type' not in self.__dir__():
+        if 'data_type' not in self.spec_data:
             raise Exception("Missing data type")
 
     def fill(self, items, labels):
         self.items = items
         self.labels = labels
+

@@ -1,5 +1,6 @@
 from .oracle import Oracle
-from .ongoingtrials import OngoingTrials
+import pandas as pd
+
 
 class Tuner:
 
@@ -17,12 +18,16 @@ class Tuner:
 
         for _ in range(self.max_instances_at_once):
             trial_id, hp_values, status = self.oracle.create_trial()
+            self.ongoing_trials.update_status(status)
             if status == 'STOPPED':
                 break
-            else:
-
-                self.ongoing_trials.update_trial_hp(trial_id, hp_values=hp_values)
-        return self.ongoing_trials, status
+            self.ongoing_trials.update_trial_hp(trial_id, hp_values=hp_values)
 
     def get_trials(self):
         return self.oracle.trials
+
+    def get_best_trial(self):
+        df = pd.DataFrame(self.oracle.trials)
+        temp_df = df.loc['metrics'].dropna()
+        best_trial_id = temp_df.apply(lambda x: x['val_accuracy']).idxmax()
+        return self.oracle.trials[best_trial_id]

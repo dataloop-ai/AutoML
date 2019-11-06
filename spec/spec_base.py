@@ -4,9 +4,11 @@ import json
 
 class Spec:
 
-    def __init__(self, spec_data):
+    def __init__(self, spec_data=None):
         if spec_data:
             self.load(spec_data)
+        else:
+            self.spec_data = {}
 
     def load(self, dict_or_spec_file_path):
         # if str and path exists
@@ -17,9 +19,7 @@ class Spec:
             # assume its a dict
             spec_data = dict_or_spec_file_path
         # turn into class attributes
-        for spec_name, spec_body in spec_data.items():
-            setattr(self, spec_name, spec_body)
-
+        self.spec_data = spec_data
         self.validate()
 
     def save(self, file_path_name):
@@ -27,6 +27,15 @@ class Spec:
         state = self.get_state()
         with open(file_path_name, "w") as f:
             json.dump(state, f)
+
+    def add_child_spec(self, obj, name):
+        self.spec_data[name] = obj.spec_data
+
+    def add_attr(self, value, name):
+        setattr(self, name, value)
+
+    def add_attr_from_obj(self, obj, name):
+        setattr(self, name, getattr(obj, name))
 
     def validate(self):
         pass

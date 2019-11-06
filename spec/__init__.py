@@ -1,7 +1,9 @@
-from .model_spec import ModelSpec
-from .recipe_spec import RecipeSpec
-from .data_spec import DataSpec
+from .model_space import ModelSpaceSpec
+from .recipe import RecipeSpec
+from .data import DataSpec
 from .spec_base import Spec
+from .optimal_model import OptModel
+from .ongoing_trials import OngoingTrials
 
 class Trial(Spec):
     def __init__(self, trial_id, hp, status):
