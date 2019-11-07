@@ -3,7 +3,6 @@ from .recipe import RecipeSpec
 from .data import DataSpec
 from .spec_base import Spec
 from .optimal_model import OptModel
-from .ongoing_trials import OngoingTrials
 
 
 class Oracle:

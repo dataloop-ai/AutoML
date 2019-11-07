@@ -1,4 +1,4 @@
-from kerastuner.engine import trial as trial_lib
+from .trial import generate_trial_id
 import random
 import hashlib
 import pandas as pd
@@ -14,7 +14,7 @@ class Oracle:
         self.are_metrics = False
 
     def create_trial(self):
-        trial_id = trial_lib.generate_trial_id()
+        trial_id = generate_trial_id()
         if self.are_metrics:
             df = pd.DataFrame(self.trials)
             temp_df = df.loc['metrics'].dropna().apply(lambda x: x['val_accuracy'])

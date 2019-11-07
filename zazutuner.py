@@ -1,9 +1,8 @@
 from tensorflow import keras
 from model_selector import ModelSelector
 from launch_pad.launcher import Launcher
-from tuner import Tuner
-import pandas as pd
-from spec import RecipeSpec, DataSpec, ModelSpaceSpec, OptModel, Spec, OngoingTrials
+from tuner import Tuner, OngoingTrials
+from spec import RecipeSpec, DataSpec, ModelSpaceSpec, OptModel
 
 
 def search(opt_model):
