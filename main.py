@@ -32,7 +32,7 @@ class PluginRunner(dl.BasePluginRunner):
 
         experiment = Experiment(hp_values, model, configs, x, y)
         metrics = experiment.run()
-
+        logging.info('return value :', metrics)
         return metrics
 
 if __name__ == "__main__":
