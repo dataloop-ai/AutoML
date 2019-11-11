@@ -43,5 +43,5 @@ class Experiment:
         history = self.model.fit(self.new_items, self.labels, epochs=self.configs['epochs'], validation_split=0.1)
         logging.info('history')
         logging.info(history.history)
-        metrics = {'val_accuracy': history.history['val_accuracy'][-1]}
+        metrics = {'val_accuracy': history.history['val_accuracy'][-1].item()}
         return metrics
