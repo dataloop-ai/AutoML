@@ -3,6 +3,7 @@ from model_selector import ModelSelector
 from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import RecipeSpec, DataSpec, ModelSpaceSpec, OptModel
+import argparse
 
 
 def search(opt_model, remote=False):
@@ -28,16 +29,26 @@ def search(opt_model, remote=False):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--remote", type=bool, default=False)
+    args = parser.parse_args()
+
+    (x, y), (val_x, val_y) = keras.datasets.mnist.load_data()
+    x = x.astype('float32') / 255.
+    val_x = val_x.astype('float32') / 255.
+
+    x = x[:10000]
+    y = y[:10000]
 
     recipe = RecipeSpec('/Users/noam/zazu/spec/samples/recipe.json')
     model_space = ModelSpaceSpec()
     data = DataSpec()
-
+    data.fill(x, y)
     opt_model = OptModel()
     opt_model.add_child_spec(recipe, 'recipie')
     opt_model.add_child_spec(model_space, 'model_space')
     opt_model.add_attr_from_obj(data, 'items')
     opt_model.add_attr_from_obj(data, 'labels')
-    best_trial = search(opt_model, remote=False)
+    best_trial = search(opt_model, remote=args.remote)
 
     print('best trial: ', best_trial)
