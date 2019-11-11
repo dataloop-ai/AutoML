@@ -3,8 +3,8 @@ from tensorflow.keras import layers
 import cv2
 import numpy as np
 from spec import DataSpec
-
-
+import json
+import logging
 
 class myHyperModel:
     def __init__(self, img_size, lr):
@@ -23,20 +23,25 @@ class myHyperModel:
 
 
 class Experiment:
-    def __init__(self, hp_values, opt_model):
+    def __init__(self, hp_values, model, configs, items, labels):
 
-        self.opt_model = opt_model
-        self.new_images = []
+        new_images = []
+        self.model = model
+        self.configs = configs
+        self.labels = labels
         init_model = myHyperModel(hp_values['input_size'], hp_values['learning_rate'])
         self.model = init_model.build()
 
-        for img in self.opt_model.items:
+        for img in items:
             res = cv2.resize(img, dsize=(hp_values['input_size'], hp_values['input_size']), interpolation=cv2.INTER_CUBIC)
-            self.new_images.append(res)
-        self.new_images_array = np.array(self.new_images)
-        pass
+            new_images.append(res)
+        new_images_array = np.array(new_images)
+        self.new_items = new_images_array
+
     def run(self):
-        history = self.model.fit(self.new_images_array, self.opt_model.labels, epochs=self.opt_model.configs['epochs'], validation_split=0.1)
-        metrics = {}
-        metrics['val_accuracy'] = history.history['val_accuracy'][-1]
+
+        history = self.model.fit(self.new_items, self.labels, epochs=self.configs['epochs'], validation_split=0.1)
+        logging.info('history')
+        logging.info(history.history)
+        metrics = {'val_accuracy': history.history['val_accuracy'][-1]}
         return metrics

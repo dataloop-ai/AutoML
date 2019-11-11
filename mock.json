@@ -1,0 +1,1 @@
+{"inputs": [{"name": "configs", "value": {"max_trials": 5, "epochs": 10, "max_instances_at_once": 2, "data_local_path": "/Users/noam/searchJob/mini_coco", "data_remote_id": 32409823}}, {"name": "model", "value": {"model_str": "retinanet"}}, {"name": "hp_values", "value": {"input_size": 56, "learning_rate": 0.01}}], "config": {}}

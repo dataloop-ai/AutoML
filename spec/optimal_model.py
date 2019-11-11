@@ -1,5 +1,6 @@
 from .spec_base import Spec
 
+
 class OptModel(Spec):
 
     @property
@@ -13,4 +14,3 @@ class OptModel(Spec):
         for dic in self.spec_data.values():
             if 'task' in dic:
                 return dic['task']
-

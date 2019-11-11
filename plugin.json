@@ -1,0 +1,18 @@
+{
+  "inputs": [
+        {
+            "type": "Json",
+            "name": "configs"
+        },
+        {
+            "type": "Json",
+            "name": "model"
+        },
+        {
+            "type": "Json",
+            "name": "hp_values"
+        }
+    ],
+  "outputs": [],
+  "name": "default_plugin"
+}
