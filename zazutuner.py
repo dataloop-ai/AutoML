@@ -30,7 +30,7 @@ def search(opt_model, remote=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--remote", type=bool, default=False)
+    parser.add_argument("--remote", type=int, default=0)
     args = parser.parse_args()
 
     (x, y), (val_x, val_y) = keras.datasets.mnist.load_data()

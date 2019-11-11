@@ -3,8 +3,25 @@ import dtlpy as dl
 import json
 
 
-def _deploy_remote_plugin(inputs):
+def _push_and_deploy_plugin():
+    dl.setenv('dev')
+    project = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e")
+    plugin = project.plugins.push(src_path='/Users/noam/zazu')
+    plugin.deployments.deploy(deployment_name='thisdeployment',
+                              plugin=plugin,
+                              config={
+                                  'project_id': project.id,
+                                  'plugin_name': plugin.name
+                              },
+                              runtime={
+                                  'gpu': True,
+                                  'numReplicas': 1,
+                                  'concurrency': 1,
+                                  'image': 'gcr.io/viewo-g/piper/custom/zazuim:1.0'
+                              })
 
+
+def _run_remote_session(inputs):
     deployment = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e").deployments.get(
         deployment_name="thisdeployment")
     metrics = deployment.sessions.create(deployment_id=deployment.id,
@@ -13,8 +30,7 @@ def _deploy_remote_plugin(inputs):
     return metrics
 
 
-def _deploy_local_plugin(inputs):
-
+def _run_local_session(inputs):
     one = "configs"
     one_item = inputs[one]
     two = "model"
@@ -36,24 +52,6 @@ class Launcher:
         self.optimal_model = optimal_model
         self.ongoing_trials = ongoing_trials
         self.remote = remote
-        dl.setenv('dev')
-
-        project = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e")
-
-        plugin = project.plugins.push(src_path='/Users/noam/zazu')
-
-        plugin.deployments.deploy(deployment_name='thisdeployment',
-                                  plugin=plugin,
-                                  config={
-                                      'project_id': project.id,
-                                      'plugin_name': plugin.name
-                                  },
-                                  runtime={
-                                      'gpu': True,
-                                      'numReplicas': 1,
-                                      'concurrency': 1,
-                                      'image': 'gcr.io/viewo-g/piper/custom/zazu-im:1.0'
-                                  })
 
     def launch_c(self):
         for trial_id, trial in self.ongoing_trials.trials.items():
@@ -63,8 +61,9 @@ class Launcher:
                 'hp_values': trial['hp_values']
             }
             if self.remote:
-                metrics = _deploy_remote_plugin(inputs)
+                _push_and_deploy_plugin()
+                metrics = _run_remote_session(inputs)
             else:
-                metrics = _deploy_local_plugin(inputs)
+                metrics = _run_local_session(inputs)
 
             self.ongoing_trials.update_metrics(trial_id, metrics)
