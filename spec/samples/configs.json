@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "max_trials": 5,
+  "epochs": 10,
+  "max_instances_at_once": 2,
+  "items_local_path": null,
+  "labels_local_path": null,
+  "remote_dataset_id": null
+}

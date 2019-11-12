@@ -31,16 +31,12 @@ def _run_remote_session(inputs):
 
 
 def _run_local_session(inputs):
-    one = "configs"
-    one_item = inputs[one]
-    two = "model"
-    two_item = inputs[two]
-    three = "hp_values"
-    three_item = inputs[three]
-    mock = {"inputs": [{"name": one, "value": one_item},
-                       {"name": two, "value": two_item},
-                       {"name": three, "value": three_item}],
-            "config": {}}
+
+    dict_keys = inputs.keys()
+    mock = {"inputs": [], "config": {}}
+    for key in dict_keys:
+        mock['inputs'].append({"name": key, "value": inputs[key]})
+
     with open('mock.json', 'w') as f:
         json.dump(mock, f)
     metrics = dl.plugins.test_local_plugin('/Users/noam/zazu/')
@@ -59,9 +55,9 @@ class Launcher:
     def launch_c(self):
         for trial_id, trial in self.ongoing_trials.trials.items():
             inputs = {
-                'configs': self.optimal_model.configs,
+                'configs': self.optimal_model.spec_data['configs'],
                 'model': {'model_str': self.optimal_model.model},
-                'hp_values': trial['hp_values']
+                'hp_values': trial['hp_values'],
             }
             if self.remote:
                 metrics = _run_remote_session(inputs)

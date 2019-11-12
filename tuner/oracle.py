@@ -6,11 +6,11 @@ import pandas as pd
 
 class Oracle:
 
-    def __init__(self, space, configs):
+    def __init__(self, space, max_trials):
         self.space = space
         self.trials = {}
         self._tried_so_far = set()
-        self.max_trials = configs['max_trials']
+        self.max_trials = max_trials
         self.are_metrics = False
 
     def create_trial(self):

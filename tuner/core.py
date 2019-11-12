@@ -6,9 +6,9 @@ class Tuner:
 
     def __init__(self, optimal_model, ongoing_trials):
 
-        self.oracle = Oracle(space=optimal_model.hp_space, configs=optimal_model.configs)
+        self.oracle = Oracle(space=optimal_model.hp_space, max_trials=optimal_model.max_trials)
         self.ongoing_trials = ongoing_trials
-        self.max_instances_at_once = optimal_model.configs['max_instances_at_once']
+        self.max_instances_at_once = optimal_model.max_instances_at_once
 
     def end_trial(self):
         self.oracle.update_metrics(self.ongoing_trials.trials)
