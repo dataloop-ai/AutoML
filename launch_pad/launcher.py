@@ -1,4 +1,4 @@
-from launch_pad.experiment_x import Experiment
+
 import dtlpy as dl
 import json
 
@@ -53,6 +53,9 @@ class Launcher:
         self.ongoing_trials = ongoing_trials
         self.remote = remote
 
+        if self.remote:
+            _push_and_deploy_plugin()
+
     def launch_c(self):
         for trial_id, trial in self.ongoing_trials.trials.items():
             inputs = {
@@ -61,7 +64,6 @@ class Launcher:
                 'hp_values': trial['hp_values']
             }
             if self.remote:
-                _push_and_deploy_plugin()
                 metrics = _run_remote_session(inputs)
             else:
                 metrics = _run_local_session(inputs)
