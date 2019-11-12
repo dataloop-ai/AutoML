@@ -6,7 +6,25 @@ from spec import DataSpec
 import json
 import logging
 
+
+def get_example_data():
+    (x, y), (val_x, val_y) = keras.datasets.mnist.load_data()
+    x = x.astype('float32') / 255.
+    val_x = val_x.astype('float32') / 255.
+    x = x[:10000]
+    y = y[:10000]
+    return x, y
+
+def resize_images(images, new_size):
+    new_images = []
+    for img in images:
+        res = cv2.resize(img, dsize=(new_size, new_size),
+                         interpolation=cv2.INTER_CUBIC)
+        new_images.append(res)
+    return np.array(new_images)
+
 class myHyperModel:
+
     def __init__(self, img_size, lr):
         self.img_size = (img_size, img_size)
         self.lr = lr
@@ -23,25 +41,23 @@ class myHyperModel:
 
 
 class Experiment:
-    def __init__(self, hp_values, model, configs, items, labels):
-
-        new_images = []
+    def __init__(self, hp_values, model, configs):
         self.model = model
         self.configs = configs
-        self.labels = labels
         init_model = myHyperModel(hp_values['input_size'], hp_values['learning_rate'])
         self.model = init_model.build()
 
-        for img in items:
-            res = cv2.resize(img, dsize=(hp_values['input_size'], hp_values['input_size']), interpolation=cv2.INTER_CUBIC)
-            new_images.append(res)
-        new_images_array = np.array(new_images)
-        self.new_items = new_images_array
+        if configs['items_local_path'] and configs['labels_local_path']:
+            pass
+        elif configs['remote_dataset_id']:
+            pass
+        else:
+            items, labels = get_example_data()
+
+        self.labels = labels
+        self.items = resize_images(items, hp_values['input_size'])
 
     def run(self):
-
-        history = self.model.fit(self.new_items, self.labels, epochs=self.configs['epochs'], validation_split=0.1)
-        logging.info('history')
-        logging.info(history.history)
+        history = self.model.fit(self.items, self.labels, epochs=self.configs['epochs'], validation_split=0.1)
         metrics = {'val_accuracy': history.history['val_accuracy'][-1].item()}
         return metrics

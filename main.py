@@ -22,17 +22,8 @@ class PluginRunner(dl.BasePluginRunner):
 
     def run(self, model, configs, hp_values, progress=None):
 
-        if configs['items_local_path'] is None and configs['remote_dataset_id'] is None:
-            # then run example dataset
-            (x, y), (val_x, val_y) = keras.datasets.mnist.load_data()
-            x = x.astype('float32') / 255.
-            val_x = val_x.astype('float32') / 255.
-            x = x[:10000]
-            y = y[:10000]
-
         model = model['model_str']
-
-        experiment = Experiment(hp_values, model, configs, x, y)
+        experiment = Experiment(hp_values, model, configs)
         metrics = experiment.run()
         logging.info('return value :', metrics)
         return metrics
