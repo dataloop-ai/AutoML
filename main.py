@@ -2,8 +2,7 @@ import dtlpy as dl
 import logging
 
 logger = logging.getLogger(name=__name__)
-from tensorflow import keras
-from launch_pad import Experiment
+from models import HyperModel
 
 
 class PluginRunner(dl.BasePluginRunner):
@@ -21,12 +20,12 @@ class PluginRunner(dl.BasePluginRunner):
         """
 
     def run(self, model, configs, hp_values, progress=None):
-
         model = model['model_str']
-        experiment = Experiment(hp_values, model, configs)
+        experiment = HyperModel(model, hp_values, configs)
         metrics = experiment.run()
         logging.info('return value :', metrics)
         return metrics
+
 
 if __name__ == "__main__":
     """
