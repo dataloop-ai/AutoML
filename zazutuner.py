@@ -2,7 +2,7 @@ from tensorflow import keras
 from model_selector import ModelSelector
 from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
-from spec import ConfigSpec, DataSpec, ModelSpaceSpec, OptModel
+from spec import ConfigSpec, ModelSpaceSpec, OptModel
 import argparse
 
 

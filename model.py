@@ -10,9 +10,6 @@ class Model():
         self.validate()
         weights = self.build_dic['weights']
 
-    def validate(self):
-
-
     @staticmethod
     def list_available_models():
         return ['retinanet', 'yolo', 'mobilenet', 'example_model']

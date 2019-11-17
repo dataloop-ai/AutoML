@@ -56,7 +56,7 @@ class HyperModel:
         train_metrics = {'val_accuracy': history.history['val_accuracy'][-1].item()}
         return train_metrics
 
-    def inference(self):
+    def infer(self):
         pass
 
     def eval(self):
