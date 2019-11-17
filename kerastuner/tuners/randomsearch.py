@@ -35,7 +35,7 @@ class RandomSearchOracle(oracle_module.Oracle):
         max_trials: Int. Total number of trials
             (model configurations) to test at most.
             Note that the oracle may interrupt the search
-            before `max_trial` models have been tested.
+            before `max_trial` keras_toy_model have been tested.
         seed: Int. Random seed.
         hyperparameters: HyperParameters class instance.
             Can be used to override (or register in advance)
@@ -134,7 +134,7 @@ class RandomSearch(multi_execution_tuner.MultiExecutionTuner):
         max_trials: Int. Total number of trials
             (model configurations) to test at most.
             Note that the oracle may interrupt the search
-            before `max_trial` models have been tested.
+            before `max_trial` keras_toy_model have been tested.
         seed: Int. Random seed.
         hyperparameters: HyperParameters class instance.
             Can be used to override (or register in advance)

@@ -241,7 +241,7 @@ def reload_model(tuner_state,
         compile: bool, if true, compile the model before returning it.
 
     Returns:
-        tf.keras.models.Model, the reloaded model.
+        tf.keras.keras_toy_model.Model, the reloaded model.
     """
 
     model = instance_state.recreate_model()

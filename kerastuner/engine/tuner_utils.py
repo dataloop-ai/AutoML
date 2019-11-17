@@ -33,8 +33,8 @@ class TunerStats(object):
 
     def __init__(self):
         self.num_generated_models = 0  # overall number of instances generated
-        self.num_invalid_models = 0  # how many models didn't work
-        self.num_oversized_models = 0  # num models with params> max_params
+        self.num_invalid_models = 0  # how many keras_toy_model didn't work
+        self.num_oversized_models = 0  # num keras_toy_model with params> max_params
 
     def summary(self, extended=False):
         display.subsection('Tuning stats')

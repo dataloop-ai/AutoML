@@ -37,9 +37,9 @@ class HyperbandOracle(oracle_module.Oracle):
         max_trials: Int. Total number of trials
             (model configurations) to test at most.
             Note that the oracle may interrupt the search
-            before `max_trial` models have been tested.
+            before `max_trial` keras_toy_model have been tested.
         factor: Int. Reduction factor for the number of epochs
-            and number of models for each bracket.
+            and number of keras_toy_model for each bracket.
         min_epochs: Int. The minimum number of epochs to train a model.
         max_epochs: Int. The maximum number of epochs to train a model.
         seed: Int. Random seed.
@@ -309,9 +309,9 @@ class Hyperband(multi_execution_tuner.MultiExecutionTuner):
         max_trials: Int. Total number of trials
             (model configurations) to test at most.
             Note that the oracle may interrupt the search
-            before `max_trial` models have been tested.
+            before `max_trial` keras_toy_model have been tested.
         factor: Int. Reduction factor for the number of epochs
-            and number of models for each bracket.
+            and number of keras_toy_model for each bracket.
         min_epochs: Int. Minimum number of epochs to train a model.
         max_epochs: Int. Maximum number of epochs to train a model.
         seed: Int. Random seed.

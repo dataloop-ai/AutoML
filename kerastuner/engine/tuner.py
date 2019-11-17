@@ -33,7 +33,7 @@ from ..abstractions import display
 
 
 class Tuner(base_tuner.BaseTuner):
-    """Tuner class for Keras models.
+    """Tuner class for Keras keras_toy_model.
 
     May be subclassed to create new tuners.
 
@@ -44,22 +44,22 @@ class Tuner(base_tuner.BaseTuner):
             and returns a Model instance).
         max_model_size: Int. Maximum size of weights
             (in floating point coefficients) for a valid
-            models. Models larger than this are rejected.
+            keras_toy_model. Models larger than this are rejected.
         optimizer: Optional. Optimizer instance.
             May be used to override the `optimizer`
             argument in the `compile` step for the
-            models. If the hypermodel
-            does not compile the models it generates,
+            keras_toy_model. If the hypermodel
+            does not compile the keras_toy_model it generates,
             then this argument must be specified.
         loss: Optional. May be used to override the `loss`
             argument in the `compile` step for the
-            models. If the hypermodel
-            does not compile the models it generates,
+            keras_toy_model. If the hypermodel
+            does not compile the keras_toy_model it generates,
             then this argument must be specified.
         metrics: Optional. May be used to override the
             `metrics` argument in the `compile` step
-            for the models. If the hypermodel
-            does not compile the models it generates,
+            for the keras_toy_model. If the hypermodel
+            does not compile the keras_toy_model it generates,
             then this argument must be specified.
         distribution_strategy: Optional. A TensorFlow
             `tf.distribute` DistributionStrategy instance. If
@@ -161,13 +161,13 @@ class Tuner(base_tuner.BaseTuner):
     def get_best_models(self, num_models=1):
         """Returns the best model(s), as determined by the tuner's objective.
 
-        The models are loaded with the weights corresponding to
+        The keras_toy_model are loaded with the weights corresponding to
         their best checkpoint (at the end of the best epoch of best trial).
 
         This method is only a convenience shortcut.
 
         Args:
-            num_models (int, optional): Number of best models to return.
+            num_models (int, optional): Number of best keras_toy_model to return.
                 Models will be returned in sorted order. Defaults to 1.
 
         Returns:
@@ -238,7 +238,7 @@ class Tuner(base_tuner.BaseTuner):
                     'Oversized model: %s parameters -- skipping' % (size))
                 if oversized_streak >= self._max_fail_streak:
                     raise RuntimeError(
-                        'Too many consecutive oversized models.')
+                        'Too many consecutive oversized keras_toy_model.')
                 continue
             break
 

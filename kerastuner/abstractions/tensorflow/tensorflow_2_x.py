@@ -220,7 +220,7 @@ class Utils_2_x(proxy.UtilsBase):
 
     def clear_tf_session(self):
         """Clear the tensorflow graph/session. Used to avoid OOM issues related to
-        having numerous models."""
+        having numerous keras_toy_model."""
 
         tf.keras.backend.clear_session()
         gc.collect()
@@ -280,7 +280,7 @@ class Utils_2_x(proxy.UtilsBase):
             "tf_frozen"
         ]
 
-        # Not yet supported for tf 2.0 - numerous issues with GPU models, and
+        # Not yet supported for tf 2.0 - numerous issues with GPU keras_toy_model, and
         # other issues we haven't debugged yet.
         unsupported_output_types = [
             "tf_lite",

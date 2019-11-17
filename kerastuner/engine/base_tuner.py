@@ -31,7 +31,7 @@ from ..abstractions.tensorflow import TENSORFLOW_UTILS as tf_utils
 class BaseTuner(stateful.Stateful):
     """Tuner base class.
 
-    May be subclassed to create new tuners, including for non-Keras models.
+    May be subclassed to create new tuners, including for non-Keras keras_toy_model.
 
     Args:
         oracle: Instance of Oracle class.
@@ -152,7 +152,7 @@ class BaseTuner(stateful.Stateful):
         This method is only a convenience shortcut.
 
         Args:
-            num_models (int, optional): Number of best models to return.
+            num_models (int, optional): Number of best keras_toy_model to return.
                 Models will be returned in sorted order. Defaults to 1.
 
         Returns:
@@ -186,7 +186,7 @@ class BaseTuner(stateful.Stateful):
             num_trials (int, optional): Number of trials to display.
                 Defaults to 10.
             sort_metric (str, optional): Sorting metric, when not specified
-                sort models by objective value. Defaults to None.
+                sort keras_toy_model by objective value. Defaults to None.
         """
         display.section('Results summary')
         display.display_setting('Results in %s' % self.project_dir)

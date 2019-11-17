@@ -2,7 +2,7 @@ import dtlpy as dl
 import logging
 
 logger = logging.getLogger(name=__name__)
-from models import HyperModel
+from keras_toy_model import HyperModel
 
 
 class PluginRunner(dl.BasePluginRunner):
@@ -21,8 +21,13 @@ class PluginRunner(dl.BasePluginRunner):
 
     def run(self, model, configs, hp_values, progress=None):
         model = model['model_str']
-        experiment = HyperModel(model, hp_values, configs)
-        metrics = experiment.run()
+
+        experiment = HyperModel(model)
+        experiment.data_loader(configs)
+        experiment.add_preprocess(hp_values)
+        experiment.build(hp_values)
+        metrics = experiment.train()
+
         logging.info('return value :', metrics)
         return metrics
 

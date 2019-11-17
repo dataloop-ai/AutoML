@@ -197,7 +197,7 @@ class Utils_1_x(proxy.UtilsBase):
     def clear_tf_session(self):
         """Clear the tensorflow graph/session.
 
-        Used to avoid OOM issues related to having numerous models.
+        Used to avoid OOM issues related to having numerous keras_toy_model.
         """
 
         tf.keras.backend.clear_session()

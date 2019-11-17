@@ -276,7 +276,7 @@ class UtilsBase(object):
                 compiled.
 
         Returns:
-            tf.keras.models.Model: The(optionally compiled) Model.
+            tf.keras.keras_toy_model.Model: The(optionally compiled) Model.
         """
 
         # Reconstruct the model.
