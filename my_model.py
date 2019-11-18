@@ -1,10 +1,14 @@
 import json
-from retinanet.train import train
+from retinanet.hyper_model import HyperModel
 
 
 class Model():
     def __init__(self, model):
         assert (model in self.list_available_models()), "we only have {} models".format(self.list_available_models())
+
+    def data_loader(self, configs):
+        hmodel = HyperModel()
+        hmodel.data_loader(configs)
 
     def build(self, json_path):
         with open(json_path) as f:

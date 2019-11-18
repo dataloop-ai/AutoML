@@ -4,6 +4,7 @@ from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, ModelSpaceSpec, OptModel
 import argparse
+import os
 
 
 def search(opt_model, remote=False):
@@ -33,7 +34,9 @@ if __name__ == '__main__':
     parser.add_argument("--remote", type=int, default=0)
     args = parser.parse_args()
     # recipe includes configs
-    configs = ConfigSpec('/Users/noam/zazu/spec/samples/configs.json')
+    this_path = path = os.getcwd()
+    configs_path = os.path.join(this_path,'spec','samples','configs.json')
+    configs = ConfigSpec(configs_path)
     model_space = ModelSpaceSpec()
     opt_model = OptModel()
     opt_model.add_child_spec(configs, 'configs')

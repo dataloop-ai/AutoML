@@ -1,46 +1,7 @@
-
 import dtlpy as dl
 import json
-
-
-def _push_and_deploy_plugin():
-    dl.setenv('dev')
-    project = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e")
-    plugin = project.plugins.push(src_path='/Users/noam/zazu')
-    plugin.deployments.deploy(deployment_name='thisdeployment',
-                              plugin=plugin,
-                              config={
-                                  'project_id': project.id,
-                                  'plugin_name': plugin.name
-                              },
-                              runtime={
-                                  'gpu': True,
-                                  'numReplicas': 1,
-                                  'concurrency': 1,
-                                  'image': 'gcr.io/viewo-g/piper/custom/zazuim:1.0'
-                              })
-
-
-def _run_remote_session(inputs):
-    deployment = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e").deployments.get(
-        deployment_name="thisdeployment")
-    metrics = deployment.sessions.create(deployment_id=deployment.id,
-                                         session_input=inputs,
-                                         sync=True).output
-    return metrics
-
-
-def _run_local_session(inputs):
-
-    dict_keys = inputs.keys()
-    mock = {"inputs": [], "config": {}}
-    for key in dict_keys:
-        mock['inputs'].append({"name": key, "value": inputs[key]})
-
-    with open('mock.json', 'w') as f:
-        json.dump(mock, f)
-    metrics = dl.plugins.test_local_plugin('/Users/noam/zazu/')
-    return metrics
+import os
+from main import PluginRunner
 
 
 class Launcher:
@@ -49,8 +10,10 @@ class Launcher:
         self.ongoing_trials = ongoing_trials
         self.remote = remote
 
-        if self.remote:
-            _push_and_deploy_plugin()
+        if self.remote == 1:
+            self._push_and_deploy_plugin()
+        elif self.remote == -1:
+            self.plugin = PluginRunner()
 
     def launch_c(self):
         for trial_id, trial in self.ongoing_trials.trials.items():
@@ -59,9 +22,52 @@ class Launcher:
                 'model': {'model_str': self.optimal_model.model},
                 'hp_values': trial['hp_values'],
             }
-            if self.remote:
-                metrics = _run_remote_session(inputs)
+            if self.remote == 1:
+                metrics = self._run_remote_session(inputs)
+            elif self.remote == 0:
+                metrics = self._run_local_session(inputs)
             else:
-                metrics = _run_local_session(inputs)
-
+                metrics = self._run_demo_session(inputs)
             self.ongoing_trials.update_metrics(trial_id, metrics)
+
+    def _push_and_deploy_plugin(self):
+        dl.setenv('dev')
+        project = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e")
+        plugin = project.plugins.push(src_path='/Users/noam/zazu')
+        self.deployment = plugin.deployments.deploy(deployment_name='thisdeployment',
+                                                    plugin=plugin,
+                                                    config={
+                                                        'project_id': project.id,
+                                                        'plugin_name': plugin.name
+                                                    },
+                                                    runtime={
+                                                        'gpu': True,
+                                                        'numReplicas': 1,
+                                                        'concurrency': 1,
+                                                        'image': 'gcr.io/viewo-g/piper/custom/zazuim:1.0'
+                                                    })
+
+    def _run_remote_session(self, inputs):
+
+        # deployment = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e").deployments.get(deployment_name="thisdeployment")
+
+        metrics = self.deployment.sessions.create(deployment_id=self.deployment.id,
+                                                  session_input=inputs,
+                                                  sync=True).output
+        return metrics
+
+    @staticmethod
+    def _run_local_session(inputs):
+
+        dict_keys = inputs.keys()
+        mock = {"inputs": [], "config": {}}
+        for key in dict_keys:
+            mock['inputs'].append({"name": key, "value": inputs[key]})
+
+        with open('mock.json', 'w') as f:
+            json.dump(mock, f)
+        metrics = dl.plugins.test_local_plugin(os.getcwd())
+        return metrics
+
+    def _run_demo_session(self, inputs):
+        return self.plugin.run(inputs['model'], inputs['configs'], inputs['hp_values'])

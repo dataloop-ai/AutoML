@@ -2,9 +2,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import cv2
 import numpy as np
-from spec import DataSpec
-import json
-import logging
 from .example_model import ExampleModel
 
 

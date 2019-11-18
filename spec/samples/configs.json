@@ -3,7 +3,7 @@
   "max_trials": 5,
   "epochs": 10,
   "max_instances_at_once": 2,
-  "items_local_path": null,
-  "labels_local_path": null,
+  "items_local_path": "/Users/noam/dataloop_dataset/items",
+  "labels_local_path": "/Users/noam/dataloop_dataset/json",
   "remote_dataset_id": null
 }
