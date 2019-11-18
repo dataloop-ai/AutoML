@@ -1,4 +1,6 @@
 import json
+from retinanet.train import train
+
 
 class Model():
     def __init__(self, model):
@@ -8,7 +10,7 @@ class Model():
         with open(json_path) as f:
             self.build_dic = json.load(f)
         self.validate()
-        weights = self.build_dic['weights']
+        path = self.build_dic['path']
 
     @staticmethod
     def list_available_models():
@@ -19,3 +21,7 @@ class Model():
             print('weights not in json, so weight initialized to small random')
         if 'hp_values' not in self.build_dic:
             raise Exception('hp_values must be defined in json')
+
+
+if __name__ == '__main__':
+    train()

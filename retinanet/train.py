@@ -8,13 +8,13 @@ import torch.optim as optim
 from torchvision import transforms
 
 from . import model
+
 from .dataloader import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
 
 from . import coco_eval
 from . import csv_eval
 
-assert torch.__version__.split('.')[1] == '4'
 
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
@@ -24,7 +24,7 @@ def train(args=None):
 	parser     = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
 
 	parser.add_argument('--dataset', help='Dataset type, must be one of csv or coco.', default='coco')
-	parser.add_argument('--coco_path', help='Path to COCO directory')
+	parser.add_argument('--coco_path', help='Path to COCO directory', default='/home/noam/data/coco')
 	parser.add_argument('--csv_train', help='Path to file containing training annotations (see readme)')
 	parser.add_argument('--csv_classes', help='Path to file containing class list (see readme)')
 	parser.add_argument('--csv_val', help='Path to file containing validation annotations (optional, see readme)')
@@ -64,7 +64,7 @@ def train(args=None):
 		raise ValueError('Dataset type not understood (must be csv or coco), exiting.')
 
 	sampler = AspectRatioBasedSampler(dataset_train, batch_size=2, drop_last=False)
-	dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, batch_sampler=sampler)
+	dataloader_train = DataLoader(dataset_train, num_workers=0, collate_fn=collater, batch_sampler=sampler)
 
 	if dataset_val is not None:
 		sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
@@ -89,7 +89,7 @@ def train(args=None):
 	if use_gpu:
 		retinanet = retinanet.cuda()
 	
-	retinanet = torch.nn.DataParallel(retinanet).cuda()
+	#retinanet = torch.nn.DataParallel(retinanet).cuda()
 
 	retinanet.training = True
 
@@ -99,15 +99,12 @@ def train(args=None):
 
 	loss_hist = collections.deque(maxlen=500)
 
-	retinanet.train()
-	retinanet.module.freeze_bn()
-
 	print('Num training images: {}'.format(len(dataset_train)))
 
 	for epoch_num in range(parser.epochs):
 
 		retinanet.train()
-		retinanet.module.freeze_bn()
+		retinanet.freeze_bn()
 		
 		epoch_loss = []
 		
@@ -115,7 +112,7 @@ def train(args=None):
 			try:
 				optimizer.zero_grad()
 
-				classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot']])
+				classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot'].cuda()])
 
 				classification_loss = classification_loss.mean()
 				regression_loss = regression_loss.mean()
