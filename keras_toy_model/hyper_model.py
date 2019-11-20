@@ -3,6 +3,7 @@ from tensorflow.keras import layers
 import cv2
 import numpy as np
 from .example_model import ExampleModel
+import os
 
 
 def get_example_data():
@@ -24,19 +25,12 @@ def resize_images(images, new_size):
 
 
 class HyperModel:
-    def __init__(self, model):
-        pass
+    def __init__(self, model, hp_values):
+        self.model = model
+        self.hp_values = hp_values
 
-    def data_loader(self, configs):
-
-        if configs['items_local_path'] and configs['labels_local_path']:
-            pass
-        elif configs['remote_dataset_id']:
-            pass
-        else:
-            items, labels = get_example_data()
-
-        self.configs = configs
+    def data_loader(self):
+        items, labels = get_example_data()
         self.labels = labels
         self.items = items
 
@@ -49,7 +43,7 @@ class HyperModel:
         self.hp_values = hp_values
 
     def train(self):
-        history = self.model.fit(self.items, self.labels, epochs=self.configs['epochs'], validation_split=0.1)
+        history = self.model.fit(self.items, self.labels, epochs=self.model['training_configs']['epochs'], validation_split=0.1)
         train_metrics = {'val_accuracy': history.history['val_accuracy'][-1].item()}
         return train_metrics
 

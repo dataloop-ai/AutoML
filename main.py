@@ -1,7 +1,7 @@
 import dtlpy as dl
 import logging
-from retinanet import HyperModel
-# from keras_toy_model import HyperModel
+# from retinanet import HyperModel
+from keras_toy_model import HyperModel
 logger = logging.getLogger(name=__name__)
 
 
