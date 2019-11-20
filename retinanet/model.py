@@ -6,7 +6,7 @@ from .utils import BasicBlock, Bottleneck, BBoxTransform, ClipBoxes
 from .anchors import Anchors
 from . import losses
 # from lib.nms.pth_nms import pth_nms
-from retinanet.lib.nms import gpu_nms
+from retinanet.lib.nms.gpu_nms import gpu_nms
 
 
 def nms(dets, thresh):
@@ -279,7 +279,7 @@ class ResNet(nn.Module):
             transformed_anchors = transformed_anchors[:, scores_over_thresh, :]
             scores = scores[:, scores_over_thresh, :]
 
-            anchors_nms_idx = nms(torch.cat([transformed_anchors, scores], dim=2)[0, :, :], 0.5)
+            anchors_nms_idx = nms(torch.cat([transformed_anchors, scores], dim=2)[0, :, :].cpu().numpy(), 0.5)
 
             nms_scores, nms_class = classification[0, anchors_nms_idx, :].max(dim=1)
 

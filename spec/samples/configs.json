@@ -3,7 +3,8 @@
   "max_trials": 5,
   "epochs": 10,
   "max_instances_at_once": 2,
-  "items_local_path": "/Users/noam/dataloop_dataset/items",
-  "labels_local_path": "/Users/noam/dataloop_dataset/json",
+  "items_relative_path": "dataloop_dataset/items",
+  "labels_relative_path": "dataloop_dataset/json",
+  "labels_list": ["kite", "dog", "cat", "person", "bird"],
   "remote_dataset_id": null
 }

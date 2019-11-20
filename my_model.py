@@ -2,13 +2,13 @@ import json
 from retinanet.hyper_model import HyperModel
 
 
-class Model():
+class Model(HyperModel):
     def __init__(self, model):
         assert (model in self.list_available_models()), "we only have {} models".format(self.list_available_models())
+        super(Model, self).__init__()
 
     def data_loader(self, configs):
-        hmodel = HyperModel()
-        hmodel.data_loader(configs)
+        pass
 
     def build(self, json_path):
         with open(json_path) as f:

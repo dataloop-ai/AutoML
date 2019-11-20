@@ -18,7 +18,7 @@ from . import csv_eval
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 
-def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_path=None):
+def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_path=None, depth=50, epochs=1):
     # parser     = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
     #
     # parser.add_argument('--dataset', help='Dataset type, must be one of csv or coco.', default='coco')
@@ -72,15 +72,15 @@ def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_pa
         dataloader_val = DataLoader(dataset_val, num_workers=3, collate_fn=collater, batch_sampler=sampler_val)
 
     # Create the model
-    if parser.depth == 18:
+    if depth == 18:
         retinanet = model.resnet18(num_classes=dataset_train.num_classes(), pretrained=True)
-    elif parser.depth == 34:
+    elif depth == 34:
         retinanet = model.resnet34(num_classes=dataset_train.num_classes(), pretrained=True)
-    elif parser.depth == 50:
+    elif depth == 50:
         retinanet = model.resnet50(num_classes=dataset_train.num_classes(), pretrained=True)
-    elif parser.depth == 101:
+    elif depth == 101:
         retinanet = model.resnet101(num_classes=dataset_train.num_classes(), pretrained=True)
-    elif parser.depth == 152:
+    elif depth == 152:
         retinanet = model.resnet152(num_classes=dataset_train.num_classes(), pretrained=True)
     else:
         raise ValueError('Unsupported model depth, must be one of 18, 34, 50, 101, 152')
@@ -102,7 +102,7 @@ def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_pa
 
     print('Num training images: {}'.format(len(dataset_train)))
 
-    for epoch_num in range(parser.epochs):
+    for epoch_num in range(epochs):
 
         retinanet.train()
         retinanet.freeze_bn()
@@ -143,13 +143,13 @@ def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_pa
                 print(e)
                 continue
 
-        if parser.dataset == 'coco':
+        if dataset == 'coco':
 
             print('Evaluating dataset')
 
             coco_eval.evaluate_coco(dataset_val, retinanet)
 
-        elif parser.dataset == 'csv' and parser.csv_val is not None:
+        elif dataset == 'csv' and csv_val is not None:
 
             print('Evaluating dataset')
 
@@ -157,7 +157,7 @@ def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_pa
 
         scheduler.step(np.mean(epoch_loss))
 
-        torch.save(retinanet.module, '{}_retinanet_{}.pt'.format(parser.dataset, epoch_num))
+        torch.save(retinanet.module, '{}_retinanet_{}.pt'.format(dataset, epoch_num))
 
     retinanet.eval()
 
