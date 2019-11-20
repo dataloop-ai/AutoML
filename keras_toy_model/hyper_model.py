@@ -25,7 +25,7 @@ def resize_images(images, new_size):
 
 class HyperModel:
     def __init__(self, model):
-        assert (model in self.list_available_models()), "we only have {} keras_toy_model".format(self.list_available_models())
+        pass
 
     def data_loader(self, configs):
 

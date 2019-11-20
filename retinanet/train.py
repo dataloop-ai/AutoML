@@ -1,4 +1,3 @@
-import argparse
 import collections
 
 import numpy as np
@@ -9,7 +8,7 @@ from torchvision import transforms
 
 from . import model
 
-from .dataloader import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
+from retinanet.dataloaders.dataloader import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, Normalizer
 from torch.utils.data import DataLoader
 
 from . import coco_eval
@@ -18,7 +17,7 @@ from . import csv_eval
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 
-def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_path=None, depth=50, epochs=1):
+def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_path=None, depth=50, epochs=1, resize_min_side=None):
     # parser     = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
     #
     # parser.add_argument('--dataset', help='Dataset type, must be one of csv or coco.', default='coco')
@@ -52,7 +51,7 @@ def train(dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_pa
             raise ValueError('Must provide --csv_classes when training on COCO,')
 
         dataset_train = CSVDataset(train_file=csv_train, class_list=csv_classes,
-                                   transform=transforms.Compose([Normalizer(), Augmenter(), Resizer()]))
+                                   transform=transforms.Compose([Normalizer(), Augmenter(), Resizer()]), resize=resize_min_side)
 
         if csv_val is None:
             dataset_val = None

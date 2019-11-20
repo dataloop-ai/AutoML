@@ -18,6 +18,7 @@ import skimage.color
 import skimage
 
 from PIL import Image
+from .custom_transforms import TransformTr, TransformVal
 
 
 class CocoDataset(Dataset):
@@ -125,7 +126,7 @@ class CocoDataset(Dataset):
 class CSVDataset(Dataset):
     """CSV dataset."""
 
-    def __init__(self, train_file, class_list, transform=None):
+    def __init__(self, train_file, class_list, transform=None, resize=None):
         """
         Args:
             train_file (string): CSV file with training annotations
@@ -154,6 +155,8 @@ class CSVDataset(Dataset):
         except ValueError as e:
             raise_from(ValueError('invalid CSV annotations file: {}: {}'.format(self.train_file, e)), None)
         self.image_names = list(self.image_data.keys())
+        self.resize = resize
+        self.transform_this = self.get_transform()
 
     def _parse(self, value, function, fmt):
         """
@@ -205,8 +208,13 @@ class CSVDataset(Dataset):
         sample = {'img': img, 'annot': annot}
         if self.transform:
             sample = self.transform(sample)
+#            sample = self.transform_this(sample)
 
         return sample
+
+    def get_transform(self):
+        return TransformTr(resize=self.resize)
+
 
     def load_image(self, image_index):
         img = skimage.io.imread(self.image_names[image_index])

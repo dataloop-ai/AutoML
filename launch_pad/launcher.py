@@ -18,10 +18,10 @@ class Launcher:
     def launch_c(self):
         for trial_id, trial in self.ongoing_trials.trials.items():
             inputs = {
-                'configs': self.optimal_model.spec_data['configs'],
-                'model': {'model_str': self.optimal_model.model},
                 'hp_values': trial['hp_values'],
+                'model': self.optimal_model.unwrap()
             }
+
             if self.remote == 1:
                 metrics = self._run_remote_session(inputs)
             elif self.remote == 0:
@@ -33,7 +33,7 @@ class Launcher:
     def _push_and_deploy_plugin(self):
         dl.setenv('dev')
         project = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e")
-        plugin = project.plugins.push(src_path='/Users/noam/zazu')
+        plugin = project.plugins.push(src_path='/Users/noam/zazuML')
         self.deployment = plugin.deployments.deploy(deployment_name='thisdeployment',
                                                     plugin=plugin,
                                                     config={
@@ -70,4 +70,4 @@ class Launcher:
         return metrics
 
     def _run_demo_session(self, inputs):
-        return self.plugin.run(inputs['model'], inputs['configs'], inputs['hp_values'])
+        return self.plugin.run(inputs['model'], inputs['hp_values'])

@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "max_trials": 5,
+  "max_instances_at_once": 2,
+  "model_priority_space": [
+    10,
+    0,
+    0
+  ],
+  "task": "detection",
+  "data": {
+    "items_relative_path": "dataloop_dataset/items",
+    "labels_relative_path": "dataloop_dataset/json"
+  },
+  "remote_dataset_id": null
+}

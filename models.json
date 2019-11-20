@@ -1,0 +1,77 @@
+{
+  "retinanet": {
+    "task": "detection",
+    "model_space": {
+      "accuracy_rating": 8,
+      "speed_rating": 2,
+      "memory_rating": 4
+    },
+    "hp_search_space": [
+      {
+        "name": "input_size",
+        "default": null,
+        "values": [
+          14,
+          28,
+          56
+        ],
+        "step": 1,
+        "sampling": null
+      },
+      {
+        "name": "learning_rate",
+        "default": 0.01,
+        "values": [
+          0.01,
+          0.001,
+          0.0001
+        ],
+        "ordered": null
+      }
+    ],
+    "training_configs": {
+      "epochs": 3,
+      "labels_list": [
+        "kite",
+        "dog",
+        "cat",
+        "person",
+        "bird"
+      ]
+    }
+  },
+  "toy_model": {
+    "task": "detection",
+    "model_space": {
+      "accuracy_rating": 0,
+      "speed_rating": 10,
+      "memory_rating": 9
+    },
+    "hp_search_space": [
+      {
+        "name": "input_size",
+        "default": null,
+        "values": [
+          14,
+          28,
+          56
+        ],
+        "step": 1,
+        "sampling": null
+      },
+      {
+        "name": "learning_rate",
+        "default": 0.01,
+        "values": [
+          0.01,
+          0.001,
+          0.0001
+        ],
+        "ordered": null
+      }
+    ],
+    "training_configs": {
+      "epochs": 10
+    }
+  }
+}

@@ -1,9 +1,9 @@
 import dtlpy as dl
 import logging
-from my_model import Model
-
+from retinanet import HyperModel
+# from keras_toy_model import HyperModel
 logger = logging.getLogger(name=__name__)
-from keras_toy_model import HyperModel
+
 
 
 class PluginRunner(dl.BasePluginRunner):
@@ -20,17 +20,14 @@ class PluginRunner(dl.BasePluginRunner):
         :return:
         """
 
-    def run(self, model, configs, hp_values, progress=None):
-        model = model['model_str']
+    def run(self, model, hp_values, progress=None):
 
-        model = Model(model)
-        model.data_loader(configs)
-        model.add_preprocess(hp_values)
-        model.build(hp_values)
-        metrics = model.train()
+        h_model = HyperModel(model, hp_values)
+        h_model.data_loader()
+        h_model.train()
 
-        logging.info('return value :', metrics)
-        return metrics
+        # logging.info('return value :', metrics)
+        # return metrics
 
 
 if __name__ == "__main__":

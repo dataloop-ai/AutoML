@@ -1,4 +1,0 @@
-{
-  "hp_search_space":[{"name": "input_size", "default": null, "values": [14, 28, 56], "step": 1, "sampling": null},
-                    {"name": "learning_rate", "default": 0.01, "values": [0.01, 0.001, 0.0001], "ordered": null}]
-}

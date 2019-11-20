@@ -20,26 +20,10 @@ class OptModel(Spec):
         return None
 
     @property
-    def items_local_path(self):
+    def data(self):
         for dic in self.spec_data.values():
-            if 'items_local_path' in dic:
-                return dic['items_local_path']
-
-        return None
-
-    @property
-    def labels_local_path(self):
-        for dic in self.spec_data.values():
-            if 'labels_local_path' in dic:
-                return dic['labels_local_path']
-
-        return None
-
-    @property
-    def remote_dataset_id(self):
-        for dic in self.spec_data.values():
-            if 'remote_dataset_id' in dic:
-                return dic['remote_dataset_id']
+            if 'data' in dic:
+                return dic['data']
 
         return None
 
@@ -58,3 +42,18 @@ class OptModel(Spec):
                 return dic['max_instances_at_once']
 
         return None
+
+    @property
+    def model_priority_space(self):
+        for dic in self.spec_data.values():
+            if 'model_priority_space' in dic:
+                return dic['model_priority_space']
+
+        return None
+
+    def unwrap(self):
+        return {
+            'model': self.model,
+            'training_configs': self.training_configs,
+            'data': self.data
+        }

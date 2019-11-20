@@ -5,7 +5,9 @@ from .train import train
 
 class HyperModel:
 
-    def __init__(self):
+    def __init__(self, model, hp_values):
+        self.model = model
+        self.hp_values = hp_values
         self.path = os.getcwd()
         self.output_path = os.path.join(self.path, 'output')
 
@@ -13,10 +15,10 @@ class HyperModel:
         self.annotations_train_filepath = os.path.join(self.output_path, 'annotations_train.txt')
         self.annotations_val_filepath = os.path.join(self.output_path, 'annotations_val.txt')
 
-    def data_loader(self, configs):
-        labels_list = configs["label_list"]
-        local_labels_path = os.path.join(self.path, configs['labels_relative_path'])
-        local_items_path = os.path.join(self.path, configs['items_relative_path'])
+    def data_loader(self):
+        labels_list = self.model['training_configs']['labels_list']
+        local_labels_path = os.path.join(self.path, self.model['data']['labels_relative_path'])
+        local_items_path = os.path.join(self.path, self.model['data']['items_relative_path'])
 
         create_annotations_txt(annotations_path=local_labels_path,
                                images_path=local_items_path,
@@ -34,7 +36,7 @@ class HyperModel:
 
     def train(self):
         train('csv', csv_train=self.annotations_train_filepath, csv_val=self.annotations_val_filepath,
-              csv_classes=self.classes_filepath)
+              csv_classes=self.classes_filepath, epochs=self.model['training_configs']['epochs'], resize_min_side=self.hp_values['input_size'])
 
     def infer(self):
         pass

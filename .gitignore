@@ -1,7 +1,7 @@
 
 # Default .gitignore
 # Files within the following rules will be excluded from plugin
-
+dataloop_dataset/*
 ### Code ###
 .vscode/*
 !.vscode/settings.json

@@ -1,20 +1,15 @@
 import numpy as np
-import torchvision
-import time
-import os
-import copy
-import pdb
 import time
 import argparse
 
-import sys
 import cv2
 
 import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import datasets, models, transforms
+from torch.utils.data import DataLoader
+from torchvision import transforms
 
-from .dataloader import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, UnNormalizer, Normalizer
+from retinanet.dataloaders.dataloader import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
+    UnNormalizer, Normalizer
 
 
 assert torch.__version__.split('.')[1] == '4'
