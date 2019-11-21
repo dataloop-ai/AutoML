@@ -22,22 +22,16 @@
         "name": "learning_rate",
         "default": 0.01,
         "values": [
-          0.01,
-          0.001,
-          0.0001
+          1e-4,
+          1e-5,
+          1e-6
         ],
         "ordered": null
       }
     ],
     "training_configs": {
       "epochs": 1,
-      "labels_list": [
-        "kite",
-        "dog",
-        "cat",
-        "person",
-        "bird"
-      ]
+      "depth": 50
     }
   },
   "toy_model": {

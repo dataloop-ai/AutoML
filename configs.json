@@ -10,7 +10,13 @@
   "task": "detection",
   "data": {
     "items_relative_path": "dataloop_dataset/items",
-    "labels_relative_path": "dataloop_dataset/json"
-  },
-  "remote_dataset_id": null
+    "labels_relative_path": "dataloop_dataset/json",
+    "labels_list": [
+      "kite",
+      "dog",
+      "cat",
+      "person",
+      "bird"
+    ]
+  }
 }

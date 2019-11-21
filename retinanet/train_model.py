@@ -21,7 +21,7 @@ print('CUDA available: {}'.format(torch.cuda.is_available()))
 class RetinaModel:
 
     def preprocess(self, dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_path=None,
-                   resize=None):
+                   resize=608):
         self.dataset = dataset
         if self.dataset == 'coco':
             if coco_path is None:
@@ -58,7 +58,7 @@ class RetinaModel:
 
         print('Num training images: {}'.format(len(self.dataset_train)))
 
-    def build(self, depth=50):
+    def build(self, depth=50, learning_rate=1e-5):
         # Create the model
         if depth == 18:
             retinanet = model.resnet18(num_classes=self.dataset_train.num_classes(), pretrained=True)
@@ -75,7 +75,7 @@ class RetinaModel:
 
         self.retinanet = retinanet.cuda()
         self.retinanet.training = True
-        self.optimizer = optim.Adam(self.retinanet.parameters(), lr=1e-5)
+        self.optimizer = optim.Adam(self.retinanet.parameters(), lr=learning_rate)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, patience=3, verbose=True)
 
     def train(self, epochs=1):

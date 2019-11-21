@@ -53,7 +53,7 @@ class OptModel(Spec):
 
     def unwrap(self):
         return {
-            'model': self.model,
+            'name': self.name,
             'training_configs': self.training_configs,
             'data': self.data
         }

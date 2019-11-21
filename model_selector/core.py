@@ -21,6 +21,6 @@ class ModelSelector:
             distance_from_dic[model] = np.linalg.norm(self.model_space - space)
         closest_model = min(distance_from_dic.keys(), key=(lambda x: distance_from_dic[x]))
 
-        self.optimal_model.add_attr(closest_model, 'model')
+        self.optimal_model.add_attr(closest_model, 'name')
         self.optimal_model.add_attr(self.models.spec_data[closest_model]['hp_search_space'], 'hp_space')
         self.optimal_model.add_attr(self.models.spec_data[closest_model]['training_configs'], 'training_configs')

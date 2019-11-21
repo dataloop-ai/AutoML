@@ -19,7 +19,7 @@ class Launcher:
         for trial_id, trial in self.ongoing_trials.trials.items():
             inputs = {
                 'hp_values': trial['hp_values'],
-                'model': self.optimal_model.unwrap()
+                'model_specs': self.optimal_model.unwrap()
             }
 
             if self.remote == 1:
@@ -70,4 +70,4 @@ class Launcher:
         return metrics
 
     def _run_demo_session(self, inputs):
-        return self.plugin.run(inputs['model'], inputs['hp_values'])
+        return self.plugin.run(inputs['model_specs'], inputs['hp_values'])

@@ -7,7 +7,7 @@ import os
 
 
 def get_example_data():
-    (x, y), (val_x, val_y) = keras.datasets.mnist.reformat()
+    (x, y), (val_x, val_y) = keras.datasets.mnist.load_data()
     x = x.astype('float32') / 255.
     val_x = val_x.astype('float32') / 255.
     x = x[:10000]
@@ -25,33 +25,26 @@ def resize_images(images, new_size):
 
 
 class AdaptModel:
-    def __init__(self, model, hp_values):
-        self.model = model
+    def __init__(self, model_specs, hp_values):
+        self.model_specs = model_specs
         self.hp_values = hp_values
-
-    def reformat(self):
-        pass
 
     def data_loader(self):
         items, labels = get_example_data()
         self.labels = labels
         self.items = items
 
-    def preprocess(self, hp_values):
-        self.items = resize_images(self.items, hp_values['input_size'])
+    def preprocess(self):
+        self.items = resize_images(self.items, self.hp_values['input_size'])
 
-    def build(self, hp_values):
-        init_model = ExampleModel(hp_values['input_size'], hp_values['learning_rate'])
-        self.model = init_model.build()
-        self.hp_values = hp_values
+    def build(self):
+        init_model = ExampleModel(self.hp_values['input_size'], self.hp_values['learning_rate'])
+        self.toy_model = init_model.build()
+        self.hp_values = self.hp_values
 
     def train(self):
-        history = self.model.fit(self.items, self.labels, epochs=self.model['training_configs']['epochs'], validation_split=0.1)
-        train_metrics = {'val_accuracy': history.history['val_accuracy'][-1].item()}
-        return train_metrics
-
-    def infer(self):
-        pass
+        history = self.toy_model.fit(self.items, self.labels, epochs=self.model_specs['training_configs']['epochs'], validation_split=0.1)
+        self.val_accuracy = {'val_accuracy': history.history['val_accuracy'][-1].item()}
 
     def get_metrics(self):
-        pass
+        return self.val_accuracy

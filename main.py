@@ -1,10 +1,10 @@
 import dtlpy as dl
 import logging
 from retinanet import AdaptModel
-# from keras_toy_model import HyperModel
+
+# from toy_model import HyperModel
 logger = logging.getLogger(name=__name__)
-
-
+from importlib import import_module
 
 class PluginRunner(dl.BasePluginRunner):
     """
@@ -20,9 +20,9 @@ class PluginRunner(dl.BasePluginRunner):
         :return:
         """
 
-    def run(self, model, hp_values, progress=None):
-
-        adapter = AdaptModel(model, hp_values)
+    def run(self, model_specs, hp_values, progress=None):
+        cls = getattr(import_module('.' + 'adapter', model_specs['name']), 'AdaptModel')
+        adapter = cls(model_specs, hp_values)
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
         if hasattr(adapter, 'data_loader'):
@@ -32,8 +32,17 @@ class PluginRunner(dl.BasePluginRunner):
         if hasattr(adapter, 'build'):
             adapter.build()
         adapter.train()
-        return adapter.get_metrics()
 
+        metrics = adapter.get_metrics()
+
+        if type(metrics) is not dict:
+            raise Exception('adapter, get_metrics method must return dict object')
+        if type(metrics['val_accuracy']) is not float:
+            raise Exception(
+                'adapter, get_metrics method must return dict with only python floats. '
+                'Not numpy floats or any other objects like that')
+
+        return metrics
 
 if __name__ == "__main__":
     """
