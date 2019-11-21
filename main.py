@@ -1,7 +1,7 @@
 import dtlpy as dl
 import logging
-# from retinanet import HyperModel
-from keras_toy_model import HyperModel
+from retinanet import AdaptModel
+# from keras_toy_model import HyperModel
 logger = logging.getLogger(name=__name__)
 
 
@@ -22,12 +22,17 @@ class PluginRunner(dl.BasePluginRunner):
 
     def run(self, model, hp_values, progress=None):
 
-        h_model = HyperModel(model, hp_values)
-        h_model.data_loader()
-        h_model.train()
-
-        # logging.info('return value :', metrics)
-        # return metrics
+        adapter = AdaptModel(model, hp_values)
+        if hasattr(adapter, 'reformat'):
+            adapter.reformat()
+        if hasattr(adapter, 'data_loader'):
+            adapter.data_loader()
+        if hasattr(adapter, 'preprocess'):
+            adapter.preprocess()
+        if hasattr(adapter, 'build'):
+            adapter.build()
+        adapter.train()
+        return adapter.get_metrics()
 
 
 if __name__ == "__main__":

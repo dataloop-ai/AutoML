@@ -11,9 +11,9 @@
         "name": "input_size",
         "default": null,
         "values": [
-          14,
-          28,
-          56
+          100,
+          200,
+          300
         ],
         "step": 1,
         "sampling": null
@@ -30,7 +30,7 @@
       }
     ],
     "training_configs": {
-      "epochs": 3,
+      "epochs": 1,
       "labels_list": [
         "kite",
         "dog",

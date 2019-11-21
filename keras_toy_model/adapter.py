@@ -7,7 +7,7 @@ import os
 
 
 def get_example_data():
-    (x, y), (val_x, val_y) = keras.datasets.mnist.data_loader()
+    (x, y), (val_x, val_y) = keras.datasets.mnist.reformat()
     x = x.astype('float32') / 255.
     val_x = val_x.astype('float32') / 255.
     x = x[:10000]
@@ -24,17 +24,20 @@ def resize_images(images, new_size):
     return np.array(new_images)
 
 
-class HyperModel:
+class AdaptModel:
     def __init__(self, model, hp_values):
         self.model = model
         self.hp_values = hp_values
+
+    def reformat(self):
+        pass
 
     def data_loader(self):
         items, labels = get_example_data()
         self.labels = labels
         self.items = items
 
-    def add_preprocess(self, hp_values):
+    def preprocess(self, hp_values):
         self.items = resize_images(self.items, hp_values['input_size'])
 
     def build(self, hp_values):
@@ -50,9 +53,5 @@ class HyperModel:
     def infer(self):
         pass
 
-    def eval(self):
+    def get_metrics(self):
         pass
-
-    @staticmethod
-    def list_available_models():
-        return ['retinanet', 'yolo', 'mobilenet', 'example_model']

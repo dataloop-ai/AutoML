@@ -1,9 +1,9 @@
 import os
 from dl_to_csv import create_annotations_txt
-from .train import train
+from .train_model import RetinaModel
 
 
-class HyperModel:
+class AdaptModel:
 
     def __init__(self, model, hp_values):
         self.model = model
@@ -14,8 +14,9 @@ class HyperModel:
         self.classes_filepath = os.path.join(self.output_path, 'classes.txt')
         self.annotations_train_filepath = os.path.join(self.output_path, 'annotations_train.txt')
         self.annotations_val_filepath = os.path.join(self.output_path, 'annotations_val.txt')
+        self.retinanet_model = RetinaModel()
 
-    def data_loader(self):
+    def reformat(self):
         labels_list = self.model['training_configs']['labels_list']
         local_labels_path = os.path.join(self.path, self.model['data']['labels_relative_path'])
         local_items_path = os.path.join(self.path, self.model['data']['items_relative_path'])
@@ -28,18 +29,18 @@ class HyperModel:
                                classes_filepath=self.classes_filepath,
                                labels_list=labels_list)
 
-    def add_preprocess(self, hp_values):
-        pass
+    def preprocess(self):
+        self.retinanet_model.preprocess(dataset='csv', csv_train=self.annotations_train_filepath, csv_val=self.annotations_val_filepath,
+                               csv_classes=self.classes_filepath, resize=self.hp_values['input_size'])
 
-    def build(self, hp_values):
-        pass
+    def build(self):
+        self.retinanet_model.build()
 
     def train(self):
-        train('csv', csv_train=self.annotations_train_filepath, csv_val=self.annotations_val_filepath,
-              csv_classes=self.classes_filepath, epochs=self.model['training_configs']['epochs'], resize_min_side=self.hp_values['input_size'])
+        self.retinanet_model.train(epochs=self.model['training_configs']['epochs'])
 
     def infer(self):
         pass
 
-    def eval(self):
-        pass
+    def get_metrics(self):
+        return self.retinanet_model.get_metrics()
