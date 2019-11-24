@@ -42,7 +42,7 @@ Once you've finished editing your preferences you're ready to run
 python zazutuner.py --remote 0
 ```
 
-## Adding your own model to *ZazuML model Zoo*
+## Adding your own model to the ***ZazuML model Zoo***
 We encourage you to add your own model to the *ZazuML model zoo* and become an 
 official contributor to the project. 
 
@@ -96,7 +96,7 @@ The methods are run in the order of the example above, i.e. first the "init" the
 Once you've added your model to the *ZazuML model zoo* you have to append it to the 
 *models.json* file so that *ZazuML* knows to call upon it. 
 
-### Example key value in model.json
+### *Example key value in model.json*
 
 ```
   "retinanet": {
