@@ -55,7 +55,7 @@ The "init", "train" and "get_metrics" methods are mandatory methods for running 
 The methods are run in the order of the example above, i.e. first the "init" then "reformat" and so on . . 
 
 Once you've added your model to the *ZazuML model zoo* you have to append it to the 
-*models.json* file so that ZazuML knows to call upon it. 
+*models.json* file so that *ZazuML* knows to call upon it. 
 
 ### Example key value in model.json object
 
@@ -92,14 +92,21 @@ Once you've added your model to the *ZazuML model zoo* you have to append it to 
     }
   }
 ```
-"task","model_space", "hp_search_space" and "training_configs" are mandatory fields
+*"task","model_space", "hp_search_space"* and *"training_configs"* are mandatory fields
 in your addition to the *models.json* file. 
 
-*"hp_search_space"* is for defining hyper-parameters that will over-go 
-optimization, while *"training_configs"* is where set hyper-parameters 
-are defined. The json object key must match the model directory name exactly so that
-ZazuML knows what model to call upon, in our example the name of the model directory will 
-both be **"retinanet"**.
+*"hp_search_space" - * is for defining hyper-parameters that will over-go 
+optimization 
+
+*"training_configs" - * is where set *(frozen)* hyper-parameters 
+are defined. 
+
+Which parameters will be frozen and which will be optimized is a design decision 
+and will be immutable once the model is pushed to the *ZazuML model zoo*.
+
+The json object key must match the model directory name exactly so that
+ZazuML knows what model to call upon, in our example the name of 
+both will be **"retinanet"**.
 
 
 ## Refrences
