@@ -35,7 +35,7 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **data** - this is relative to the model
 
-Once you've finished editing your preferences you're ready to run 
+Once you've finished editing your preferences you're ready to begin!
 
 ### Begin model and hyper-parameter search
 ```
