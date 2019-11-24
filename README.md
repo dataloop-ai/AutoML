@@ -1,7 +1,7 @@
 # ZazuML
 
-## Running ZazuML
-
+## Getting started
+ZazuML contains both a requirements file and a dockerfile for your convenience.
 
 
 ## Adding your own model to ZazuML model Zoo
@@ -22,8 +22,8 @@ official contributor to the project.
 │   ├── utils.py
 ```
 <br/><br/>  
-Every model must have a mandatory adapter.py file which contains an AdaptModel 
-class which serves as an adapter between our main.py via a range of 
+Every model must have a mandatory ***adapter.py*** file which contains an **AdaptModel 
+class** which serves as an adapter between our ***main.py*** via a range of 
 predefined class methods.
 
 ### Template for your AdaptModel class
