@@ -92,17 +92,20 @@ Once you've added your model to the *ZazuML model zoo* you have to append it to 
     }
   }
 ```
-*"task","model_space", "hp_search_space"* and *"training_configs"* are mandatory fields
+*"task", "model_space", "hp_search_space"* and *"training_configs"* are mandatory fields
 in your addition to the *models.json* file. 
 
-*"hp_search_space" - * is for defining hyper-parameters that will over-go 
-optimization 
+**hp_search_space** - is for defining hyper-parameters that will over-go optimization 
 
-*"training_configs" - * is where set *(frozen)* hyper-parameters 
-are defined. 
+**training_configs** - is where fixed hyper-parameters are defined
 
-Which parameters will be frozen and which will be optimized is a design decision 
+Which parameters will be frozen and which will be optimizable is a design decision 
 and will be immutable once the model is pushed to the *ZazuML model zoo*.
+
+**model_space** - is where you define the relative location of your model in a euclidean vector space
+
+**task** - is the defining task of your model, currently you can choose from either 
+*classification*, *detection* or *instance segmentation*
 
 The json object key must match the model directory name exactly so that
 ZazuML knows what model to call upon, in our example the name of 
