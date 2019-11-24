@@ -57,7 +57,7 @@ The methods are run in the order of the example above, i.e. first the "init" the
 Once you've added your model to the *ZazuML model zoo* you have to append it to the 
 *models.json* file so that *ZazuML* knows to call upon it. 
 
-### Example key value in model.json object
+### Example key value in model.json
 
 ```
   "retinanet": {
@@ -92,8 +92,6 @@ Once you've added your model to the *ZazuML model zoo* you have to append it to 
     }
   }
 ```
-*"task", "model_space", "hp_search_space"* and *"training_configs"* are mandatory fields
-in your addition to the *models.json* file. 
 
 **hp_search_space** - is for defining hyper-parameters that will over-go optimization 
 
