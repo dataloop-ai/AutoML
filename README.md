@@ -3,6 +3,48 @@
 ## Getting started
 ZazuML contains both a requirements file and a dockerfile for your convenience.
 
+First thing you gotta do is:
+
+Edit the configs.json file, and define your preferences
+
+### ***configs.json example***
+```
+{
+  "max_trials": 5,
+  "max_instances_at_once": 2,
+  "model_priority_space": [0, 9, 10],
+  "task": "detection",
+  "data": {
+    "items_relative_path": "dataloop_dataset/items",
+    "labels_relative_path": "dataloop_dataset/json",
+    "labels_list": ["kite", "dog", "cat", "person"]
+  }
+}
+```
+**max_trials** - defines the maximum total number of trials that will be tested
+
+**max_instances_at_once** - defines the number of trials that will run simultaneously, 
+i.e. in parallel to each other
+
+**model_priority_space** -  define the model specs that best suits your priorities.
+
+This is a 3 dimensional vector describing your model preferences in a euclidean vector space.
+0 dimension - accuracy
+1 dimension - inference speed
+2 dimension - memory
+For example "model_priority_space": [2, 9, 10] indicates a very light but low accuracy model
+
+**task** - i.e. detection vs classification vs instance segmentation
+
+**data** - this is relative to the model
+
+Once you've finished editing your preferences you're ready to run 
+
+
+
+```
+python zazutuner.py --remote 0
+```
 
 ## Adding your own model to ZazuML model Zoo
 We encourage you to add your own model to the *ZazuML model zoo* and become an 
