@@ -37,8 +37,7 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 Once you've finished editing your preferences you're ready to run 
 
-
-
+### Begin model and hyper-parameter search
 ```
 python zazutuner.py --remote 0
 ```
