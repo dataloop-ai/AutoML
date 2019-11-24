@@ -21,7 +21,7 @@ official contributor to the project.
 │   ├── train_model.py
 │   ├── utils.py
 ```
-
+<br/><br/>
 Every model must have a mandatory adapter.py file which contains an AdaptModel 
 class which serves as an adapter between our main.py via a range of 
 predefined class methods.
