@@ -10,9 +10,9 @@ class Launcher:
         self.ongoing_trials = ongoing_trials
         self.remote = remote
 
-        if self.remote == 1:
+        if self.remote:
             self._push_and_deploy_plugin()
-        elif self.remote == -1:
+        else:
             self.plugin = PluginRunner()
 
     def launch_c(self):
@@ -22,12 +22,11 @@ class Launcher:
                 'model_specs': self.optimal_model.unwrap()
             }
 
-            if self.remote == 1:
+            if self.remote:
                 metrics = self._run_remote_session(inputs)
-            elif self.remote == 0:
-                metrics = self._run_local_session(inputs)
             else:
                 metrics = self._run_demo_session(inputs)
+
             self.ongoing_trials.update_metrics(trial_id, metrics)
 
     def _push_and_deploy_plugin(self):
