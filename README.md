@@ -42,7 +42,7 @@ Once you've finished editing your preferences you're ready to run
 python zazutuner.py --remote 0
 ```
 
-## Adding your own model to the ***ZazuML*** model Zoo
+## Adding your own model to the ***ZazuML*** *model Zoo*
 We encourage you to add your own model to the *ZazuML model zoo* and become an 
 official contributor to the project. 
 
