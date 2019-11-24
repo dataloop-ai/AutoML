@@ -1,11 +1,8 @@
 # ZazuML
 
 ## Getting started
-ZazuML contains both a requirements file and a dockerfile for your convenience.
 
-First thing you gotta do is:
-
-Edit the configs.json file, and define your preferences
+The first thing you gotta do is edit the configs.json file
 
 ### ***configs.json example***
 ```
@@ -29,9 +26,9 @@ i.e. in parallel to each other
 **model_priority_space** -  define the model specs that best suits your priorities.
 
 This is a 3 dimensional vector describing your model preferences in a euclidean vector space.
-0 dimension - accuracy
-1 dimension - inference speed
-2 dimension - memory
+* axis 0 - accuracy
+* axis 1 - inference speed
+* axis 2 - memory
 For example "model_priority_space": [2, 9, 10] indicates a very light but low accuracy model
 
 **task** - i.e. detection vs classification vs instance segmentation
