@@ -5,9 +5,9 @@
 
 
 ## Adding your own model to ZazuML model Zoo
-We encourage you to add your own model to ZazuML model zoo and become an 
-official contributor to the project. The structure of your model directory should 
-be as follows:
+We encourage you to add your own model to the *ZazuML model zoo* and become an 
+official contributor to the project. 
+###Example of the directory structure of your model
 ```
 ├── retinanet
 │   ├── __init__.py
@@ -20,9 +20,12 @@ be as follows:
 │   ├── train_model.py
 │   ├── utils.py
 ```
-Every model must have a mandatory adapter.py file 
-which contains an AdaptModel class which serves as an adapter between our main.py 
-via a range of predefined class methods as exemplified below:
+<br/><br/>
+Every model must have a mandatory adapter.py file which contains an AdaptModel 
+class which serves as an adapter between our main.py via a range of 
+predefined class methods.
+
+### Template for your AdaptModel class
 ```
 class AdaptModel:
 
@@ -50,11 +53,10 @@ class AdaptModel:
 The "init", "train" and "get_metrics" methods are mandatory methods for running your model. 
 The methods are run in the order of the example above, i.e. first the "init" then "reformat" and so on . . 
 
-Once you've added your model to the ZazuML model zoo you have to append it to the 
-models.json file ZazuML so that Zazu knows to call upon it. 
+Once you've added your model to the *ZazuML model zoo* you have to append it to the 
+*models.json* file so that ZazuML knows to call upon it. 
 
-At this point you should define the "task", "model_space", "hp_search_space", 
-and "training_configs" fields using the following template:
+### Example key value in model.json object
 
 ```
   "retinanet": {
@@ -89,12 +91,15 @@ and "training_configs" fields using the following template:
     }
   }
 ```
-The "hp_search_space" field is for defining hyper-parameters that will over-go 
-optimization, while "training_configs" is where set hyper-parameters 
+"task","model_space", "hp_search_space" and "training_configs" are mandatory fields
+in your addition to the *models.json* file. 
+
+*"hp_search_space"* is for defining hyper-parameters that will over-go 
+optimization, while *"training_configs"* is where set hyper-parameters 
 are defined. The json object key must match the model directory name exactly so that
 ZazuML knows what model to call upon, in our example the name of the model directory will 
-be "retinanet".
+both be **"retinanet"**.
 
 
-### Refrences
+## Refrences
 Some of the code was influenced by [keras-tuner](https://github.com/keras-team/keras-tuner)
