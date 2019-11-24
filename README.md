@@ -37,9 +37,13 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 Once you've finished editing your configs.json you're ready to begin!
 
-### Begin model and hyper-parameter search
+### Begin model and hyper-parameter search on a machine of your choice
 ```
-python zazutuner.py --remote 0
+python zazutuner.py
+```
+### Launch model and hyper-parameter search on Kubernetes via our remote Dataloop engine
+```
+python zazutuner.py --remote 1
 ```
 
 ## Adding your own model to the ***ZazuML*** *model Zoo*
