@@ -107,7 +107,7 @@ and will be immutable once the model is pushed to the *ZazuML model zoo*.
 
 The json object key must match the model directory name exactly so that
 ZazuML knows what model to call upon, in our example the name of 
-both will be **"retinanet"**.
+both will be ***"retinanet"***.
 
 
 ## Refrences
