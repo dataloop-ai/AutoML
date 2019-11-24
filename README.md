@@ -8,7 +8,7 @@
 We encourage you to add your own model to the *ZazuML model zoo* and become an 
 official contributor to the project. 
 
-###Example of the directory structure of your model
+### Example of the directory structure of your model
 ```
 ├── retinanet
 │   ├── __init__.py
@@ -21,8 +21,6 @@ official contributor to the project.
 │   ├── train_model.py
 │   ├── utils.py
 ```
-
-<br/><br/>
 
 Every model must have a mandatory adapter.py file which contains an AdaptModel 
 class which serves as an adapter between our main.py via a range of 
