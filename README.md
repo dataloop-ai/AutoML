@@ -26,9 +26,11 @@ i.e. in parallel to each other
 **model_priority_space** -  define the model specs that best suits your priorities.
 
 This is a 3 dimensional vector describing your model preferences in a euclidean vector space.
-* axis 0 - accuracy
-* axis 1 - inference speed
-* axis 2 - memory
+
+- axis 0 - accuracy
+- axis 1 - inference speed
+- axis 2 - memory
+
 For example "model_priority_space": [2, 9, 10] indicates a very light but low accuracy model
 
 **task** - i.e. detection vs classification vs instance segmentation
@@ -65,13 +67,13 @@ official contributor to the project.
 ```
 <br/><br/>    
 
-Every model must have a mandatory ***adapter.py*** file which contains an **AdaptModel** 
+Every model must have a mandatory ***adapter.py*** file which contains an **AdapterModel** 
 class which serves as an adapter between our ***main.py*** and model directory via a range of 
 predefined class methods.
 
-### Template for your AdaptModel class
+### Template for your AdapterModel class
 ```
-class AdaptModel:
+class AdapterModel:
 
     def __init__(self, model_specs, hp_values):
         pass
@@ -96,6 +98,9 @@ class AdaptModel:
 ```
 The "init", "train" and "get_metrics" methods are mandatory methods for running your model. 
 The methods are run in the order of the example above, i.e. first the "init" then "reformat" and so on . . 
+
+**get_metrics** method expects to receive a dictionary object in the form of `{'val_accuracy': 0.928}` 
+where `0.928` in this example is a python float.
 
 Once you've added your model to the *ZazuML model zoo* you have to append it to the 
 *models.json* file so that *ZazuML* knows to call upon it. 
