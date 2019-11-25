@@ -24,7 +24,7 @@ def resize_images(images, new_size):
     return np.array(new_images)
 
 
-class AdaptModel:
+class AdapterModel:
     def __init__(self, model_specs, hp_values):
         self.model_specs = model_specs
         self.hp_values = hp_values

@@ -1,2 +1,2 @@
 from .example_model import ExampleModel
-from .adapter import AdaptModel
+from .adapter import AdapterModel

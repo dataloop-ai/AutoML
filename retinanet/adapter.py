@@ -3,7 +3,7 @@ from dl_to_csv import create_annotations_txt
 from .train_model import RetinaModel
 
 
-class AdaptModel:
+class AdapterModel:
 
     def __init__(self, model_specs, hp_values):
         self.model_specs = model_specs

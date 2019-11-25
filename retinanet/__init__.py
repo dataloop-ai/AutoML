@@ -1,1 +1,1 @@
-from .adapter import AdaptModel
+from .adapter import AdapterModel

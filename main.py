@@ -1,6 +1,6 @@
 import dtlpy as dl
 import logging
-from retinanet import AdaptModel
+from retinanet import AdapterModel
 
 # from toy_model import HyperModel
 logger = logging.getLogger(name=__name__)
@@ -21,7 +21,7 @@ class PluginRunner(dl.BasePluginRunner):
         """
 
     def run(self, model_specs, hp_values, progress=None):
-        cls = getattr(import_module('.' + 'adapter', model_specs['name']), 'AdaptModel')
+        cls = getattr(import_module('.' + 'adapter', model_specs['name']), 'AdapterModel')
         adapter = cls(model_specs, hp_values)
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
