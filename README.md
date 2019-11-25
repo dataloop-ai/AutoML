@@ -9,7 +9,7 @@ The first thing you gotta do is edit the configs.json file
 {
   "max_trials": 5,
   "max_instances_at_once": 2,
-  "model_priority_space": [0, 9, 10],
+  "model_priority_space": [10, 0, 0],
   "task": "detection",
   "data": {
     "coco_path": "/home/noam/data/coco",
