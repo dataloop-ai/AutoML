@@ -34,8 +34,7 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **task** - i.e. detection vs classification vs instance segmentation
 
-**data** - This is an example of how to run on Coco or a Coco styled dataset.
-We currently also support CSV styled annotations and Dataloop styled annotations.
+**data** - This is an example of how to run on Coco dataset.
 
 Once you've finished editing your configs.json you're ready to begin!
 
