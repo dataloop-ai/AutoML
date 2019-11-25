@@ -1,3 +1,4 @@
+import dtlpy as dl
 import logging
 
 logger = logging.getLogger(name=__name__)
@@ -40,3 +41,9 @@ class PluginRunner(dl.BasePluginRunner):
                 'Not numpy floats or any other objects like that')
 
         return metrics
+
+if __name__ == "__main__":
+    """
+    Run this main to locally debug your plugin
+    """
+    dl.plugins.test_local_plugin()
