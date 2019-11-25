@@ -12,9 +12,8 @@ The first thing you gotta do is edit the configs.json file
   "model_priority_space": [0, 9, 10],
   "task": "detection",
   "data": {
-    "items_relative_path": "dataloop_dataset/items",
-    "labels_relative_path": "dataloop_dataset/json",
-    "labels_list": ["kite", "dog", "cat", "person"]
+    "coco_path": "/home/noam/data/coco",
+    "annotation_type": "coco"
   }
 }
 ```
@@ -35,7 +34,8 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **task** - i.e. detection vs classification vs instance segmentation
 
-**data** - this is relative to the model
+**data** - This is an example of how to run on Coco or a Coco styled dataset.
+We currently also support CSV styled annotations and Dataloop styled annotations.
 
 Once you've finished editing your configs.json you're ready to begin!
 
@@ -98,6 +98,9 @@ class AdapterModel:
 ```
 The "init", "train" and "get_metrics" methods are mandatory methods for running your model. 
 The methods are run in the order of the example above, i.e. first the "init" then "reformat" and so on . . 
+
+**reformat** method is where you'd be expected to reformat the input image annotations into a format your
+model can handle. Your model is required to handle CSV and Coco styled annotations at the very least.
 
 **get_metrics** method is expected to return a dictionary object in the form of `{'val_accuracy': 0.928}` 
 where `0.928` in this example is a python float.
