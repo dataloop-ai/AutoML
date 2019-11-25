@@ -1,4 +1,3 @@
-import dtlpy as dl
 import json
 import os
 from main import PluginRunner
@@ -30,6 +29,7 @@ class Launcher:
             self.ongoing_trials.update_metrics(trial_id, metrics)
 
     def _push_and_deploy_plugin(self):
+        import dtlpy as dl
         dl.setenv('dev')
         project = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e")
         plugin = project.plugins.push(src_path='/Users/noam/zazuML')
