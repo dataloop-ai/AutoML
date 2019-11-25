@@ -1,6 +1,6 @@
 import os
 from dl_to_csv import create_annotations_txt
-from .train_model import RetinaModel
+from .retinanet_model import RetinaModel
 
 
 class AdapterModel:
@@ -17,17 +17,21 @@ class AdapterModel:
         self.retinanet_model = RetinaModel()
 
     def reformat(self):
-        labels_list = self.model_specs['data']['labels_list']
-        local_labels_path = os.path.join(self.path, self.model_specs['data']['labels_relative_path'])
-        local_items_path = os.path.join(self.path, self.model_specs['data']['items_relative_path'])
+        if self.model_specs['data']['annotation_type'] == 'coco':
+            pass
+        elif self.model_specs['data']['annotation_type'] == 'dataloop':
+            labels_list = self.model_specs['data']['labels_list']
+            local_labels_path = os.path.join(self.path, self.model_specs['data']['labels_relative_path'])
+            local_items_path = os.path.join(self.path, self.model_specs['data']['items_relative_path'])
 
-        create_annotations_txt(annotations_path=local_labels_path,
-                               images_path=local_items_path,
-                               train_split=0.9,
-                               train_filepath=self.annotations_train_filepath,
-                               val_filepath=self.annotations_val_filepath,
-                               classes_filepath=self.classes_filepath,
-                               labels_list=labels_list)
+            create_annotations_txt(annotations_path=local_labels_path,
+                                   images_path=local_items_path,
+                                   train_split=0.9,
+                                   train_filepath=self.annotations_train_filepath,
+                                   val_filepath=self.annotations_val_filepath,
+                                   classes_filepath=self.classes_filepath,
+                                   labels_list=labels_list)
+            self.model_specs['data']['annotation_type'] == 'csv'
 
     def preprocess(self):
         self.retinanet_model.preprocess(dataset='csv', csv_train=self.annotations_train_filepath, csv_val=self.annotations_val_filepath,
