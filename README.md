@@ -99,7 +99,7 @@ class AdapterModel:
 The "init", "train" and "get_metrics" methods are mandatory methods for running your model. 
 The methods are run in the order of the example above, i.e. first the "init" then "reformat" and so on . . 
 
-**get_metrics** method expects to receive a dictionary object in the form of `{'val_accuracy': 0.928}` 
+**get_metrics** method is expected to return a dictionary object in the form of `{'val_accuracy': 0.928}` 
 where `0.928` in this example is a python float.
 
 Once you've added your model to the *ZazuML model zoo* you have to append it to the 
