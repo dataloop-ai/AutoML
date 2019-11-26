@@ -12,7 +12,6 @@ from retinanet.dataloaders.dataloader import CocoDataset, CSVDataset, collater, 
     Augmenter, Normalizer
 from torch.utils.data import DataLoader
 
-from . import coco_eval
 from . import csv_eval
 
 print('CUDA available: {}'.format(torch.cuda.is_available()))
