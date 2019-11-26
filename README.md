@@ -2,7 +2,11 @@
 
 ## Getting started
 
-The first thing you gotta do is edit the configs.json file
+clone the repository and its submodules
+```
+git clone --recurse-submodules https://noamrosenberg@bitbucket.org/dataloop-ai/zazuml.git
+```
+The next thing to do is edit the configs.json file
 
 ### *configs.json example*
 ```
