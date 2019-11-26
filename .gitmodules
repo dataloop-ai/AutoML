@@ -1,0 +1,3 @@
+[submodule "zazuzoo"]
+	path = zazuzoo
+	url = git@bitbucket.org:noamrosenberg/zazuzoo.git
