@@ -1,6 +1,18 @@
 import json
 import os
 from main import PluginRunner
+from concurrent.futures import ThreadPoolExecutor
+from threading import Thread
+
+
+def _join_threads(threads):
+    for id_hash, thread in threads.items():
+        thread.join()
+
+
+def _collect_outputs(function, inputs, id_hash, results_dict):
+    metrics = function(inputs)
+    results_dict[id_hash] = metrics
 
 
 class Launcher:
@@ -15,17 +27,32 @@ class Launcher:
             self.plugin = PluginRunner()
 
     def launch_c(self):
+        ongoing_results = {}
+        ongoing_threads = {}
+        model_specs = self.optimal_model.unwrap()
         for trial_id, trial in self.ongoing_trials.trials.items():
             inputs = {
                 'hp_values': trial['hp_values'],
-                'model_specs': self.optimal_model.unwrap()
+                'model_specs': model_specs
             }
-
             if self.remote:
-                metrics = self._run_remote_session(inputs)
+                ongoing_threads[trial_id] = Thread(target=_collect_outputs,
+                                                   args=(self._run_remote_session,
+                                                         inputs,
+                                                         trial_id,
+                                                         ongoing_results))
             else:
-                metrics = self._run_demo_session(inputs)
+                ongoing_threads[trial_id] = Thread(target=_collect_outputs,
+                                                   args=(self._run_demo_session,
+                                                         inputs,
+                                                         trial_id,
+                                                         ongoing_results))
 
+            ongoing_threads[trial_id].start()
+
+        _join_threads(ongoing_threads)
+
+        for trial_id, metrics in ongoing_results.items():
             self.ongoing_trials.update_metrics(trial_id, metrics)
 
     def _push_and_deploy_plugin(self):

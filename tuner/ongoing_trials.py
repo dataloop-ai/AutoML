@@ -19,3 +19,6 @@ class OngoingTrials:
         for trial_id, _ in dict_copy.items():
             self.trials.pop(trial_id)
 
+    @property
+    def num_trials(self):
+        return len(self.trials)
