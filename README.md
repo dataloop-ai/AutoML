@@ -52,7 +52,7 @@ python zazutuner.py
 python zazutuner.py --remote 1
 ```
 
-## Adding your own model to the ***ZazuML*** *model Zoo*
+## Adding your own model to the ***ZaZoo***
 We encourage you to add your own model to the *ZazuML model zoo* and become an 
 official contributor to the project. 
 
