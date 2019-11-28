@@ -1,18 +1,12 @@
 import json
 import os
+import threading
+import logging
 from main import PluginRunner
-from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
+from .thread_manager import ThreadManager
 
-
-def _join_threads(threads):
-    for id_hash, thread in threads.items():
-        thread.join()
-
-
-def _collect_outputs(function, inputs, id_hash, results_dict):
-    metrics = function(inputs)
-    results_dict[id_hash] = metrics
+logger = logging.getLogger('launcher')
 
 
 class Launcher:
@@ -27,33 +21,33 @@ class Launcher:
             self.plugin = PluginRunner()
 
     def launch_c(self):
-        ongoing_results = {}
-        ongoing_threads = {}
+        threads = ThreadManager()
         model_specs = self.optimal_model.unwrap()
+        logger.info('launching new set of trials')
         for trial_id, trial in self.ongoing_trials.trials.items():
             inputs = {
                 'hp_values': trial['hp_values'],
                 'model_specs': model_specs
             }
-            if self.remote:
-                ongoing_threads[trial_id] = Thread(target=_collect_outputs,
-                                                   args=(self._run_remote_session,
-                                                         inputs,
-                                                         trial_id,
-                                                         ongoing_results))
-            else:
-                ongoing_threads[trial_id] = Thread(target=_collect_outputs,
-                                                   args=(self._run_demo_session,
-                                                         inputs,
-                                                         trial_id,
-                                                         ongoing_results))
 
-            ongoing_threads[trial_id].start()
+            threads.new_thread(target=self._collect_metrics,
+                               inputs=inputs,
+                               trial_id=trial_id)
 
-        _join_threads(ongoing_threads)
-
-        for trial_id, metrics in ongoing_results.items():
+        threads.wait()
+        ongoing_trials_results = threads.results
+        for trial_id, metrics in ongoing_trials_results.items():
             self.ongoing_trials.update_metrics(trial_id, metrics)
+
+    def _collect_metrics(self, inputs, id_hash, results_dict):
+        thread_name = threading.currentThread().getName()
+        logger.info('starting thread: ' + thread_name)
+        if not self.remote:
+            metrics = self._run_demo_session(inputs)
+        else:
+            metrics = self._run_remote_session(inputs)
+        results_dict[id_hash] = metrics
+        logger.info('finshed thread: ' + thread_name)
 
     def _push_and_deploy_plugin(self):
         import dtlpy as dl
