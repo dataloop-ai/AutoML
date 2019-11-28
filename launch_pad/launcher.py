@@ -2,6 +2,7 @@ import json
 import os
 import threading
 import logging
+import torch
 from main import PluginRunner
 from threading import Thread
 from .thread_manager import ThreadManager
@@ -14,7 +15,7 @@ class Launcher:
         self.optimal_model = optimal_model
         self.ongoing_trials = ongoing_trials
         self.remote = remote
-
+        self.num_available_devices = torch.cuda.device_count()
         if self.remote:
             self._push_and_deploy_plugin()
         else:
@@ -24,8 +25,10 @@ class Launcher:
         threads = ThreadManager()
         model_specs = self.optimal_model.unwrap()
         logger.info('launching new set of trials')
+        device = 0
         for trial_id, trial in self.ongoing_trials.trials.items():
             inputs = {
+                'device': device, # this also has to be a json?
                 'hp_values': trial['hp_values'],
                 'model_specs': model_specs
             }
@@ -33,6 +36,7 @@ class Launcher:
             threads.new_thread(target=self._collect_metrics,
                                inputs=inputs,
                                trial_id=trial_id)
+            device = device + 1
 
         threads.wait()
         ongoing_trials_results = threads.results
@@ -90,4 +94,4 @@ class Launcher:
         return metrics
 
     def _run_demo_session(self, inputs):
-        return self.plugin.run(inputs['model_specs'], inputs['hp_values'])
+        return self.plugin.run(inputs['device'], inputs['model_specs'], inputs['hp_values'])
