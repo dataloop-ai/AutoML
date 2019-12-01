@@ -104,6 +104,7 @@ The "init", "train" and "get_metrics" methods are mandatory methods for running 
 The methods are run in the order of the example above, i.e. first the "init" then "reformat" and so on . . 
 
 **Init** method is where you pass all the important information to your model 
+
 - device - gpu index to be specified to all parameters and operations requiring gpu in this specific trial
 - model_specs - contains model configurations and information relevant to the location of your data and annotation type
 - hp_values - are the final hyper parameter values passed to this specific trial
