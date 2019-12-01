@@ -16,7 +16,7 @@ class ThreadManager:
     def new_thread(self, target, inputs, trial_id):
         name = 'trial_' + trial_id
         args = (inputs, trial_id, self.ongoing_results)
-        self.ongoing_threads[name] = Thread(target=target, args=args, name=name,
+        self.ongoing_threads[name] = Thread(target=target, args=args, name=name[:9],
                                             daemon=True)
         self.ongoing_threads[name].start()
 
