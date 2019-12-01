@@ -79,7 +79,7 @@ predefined class methods.
 ```
 class AdapterModel:
 
-    def __init__(self, model_specs, hp_values):
+    def __init__(self, device, model_specs, hp_values):
         pass
 
     def reformat(self):
@@ -102,6 +102,11 @@ class AdapterModel:
 ```
 The "init", "train" and "get_metrics" methods are mandatory methods for running your model. 
 The methods are run in the order of the example above, i.e. first the "init" then "reformat" and so on . . 
+
+**Init** method is where you pass all the important information to your model 
+- device - gpu index to be specified to all parameters and operations requiring gpu in this specific trial
+- model_specs - contains model configurations and information relevant to the location of your data and annotation type
+- hp_values - are the final hyper parameter values passed to this specific trial
 
 **reformat** method is where you'd be expected to reformat the input image annotations into a format your
 model can handle. Your model is required to handle CSV and Coco styled annotations at the very least.
