@@ -55,3 +55,5 @@ RUN pip install \
 	urllib3==1.24.3 \
 	dtlpy==1.8.16
 
+WORKDIR /root
+
