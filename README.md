@@ -4,14 +4,14 @@
 
 First thing to do is . . .  
 
-### Pull & Run the Docker Image
+### *pull & run the Docker Image*
 ```
 docker run -it buffalonoam/zazu-image:0.1 bash
 ```
 <br/><br/>  
 On the other hand you can `pip install -r requirements.txt` . . . aaaand hope for the best.
 
-### Clone the Repo
+### *Clone the repo*
 ```
 git clone --recurse-submodules https://noamrosenberg@bitbucket.org/dataloop-ai/zazuml.git
 ```
