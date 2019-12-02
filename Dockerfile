@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libglib2.0-0 \
- && rm -rf /var/lib/apt/lists/*
+    nano \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
 RUN wget \
@@ -32,6 +33,7 @@ RUN conda install -y -c pytorch \
     torchvision=0.4.0 \
  && conda clean -ya
 
+RUN conda install -c conda-forge pycocotools
 # Install HDF5 Python bindings
 RUN pip install \
 	h5py==2.9.0 \
