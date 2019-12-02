@@ -4,7 +4,7 @@
 
 First thing to do is pull and run the docker image
 ```
-docker run -it buffalonoam/zazu-image:0.0 bash
+docker run -it buffalonoam/zazu-image:0.1 bash
 ```
 On the other hand you can `pip install -r requirements.txt` file and hope for the best.
 
@@ -31,7 +31,7 @@ The next thing to do is edit the configs.json file
 **max_trials** - defines the maximum total number of trials that will be tested
 
 **max_instances_at_once** - defines the number of trials that will run simultaneously, 
-i.e. in parallel to each other
+i.e. in parallel to each other. This value must be smaller than the number of available gpus.
 
 **model_priority_space** -  define the model specs that best suits your priorities.
 
@@ -49,11 +49,11 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 Once you've finished editing your configs.json you're ready to begin!
 
-### Begin model and hyper-parameter search on a machine of your choice
+### Begin model & hyper-parameter search on a machine of your choice
 ```
 python zazutuner.py
 ```
-### Launch model and hyper-parameter search on Kubernetes via our remote Dataloop engine
+### Launch search on Kubernetes via our remote Dataloop engine
 ```
 python zazutuner.py --remote 1
 ```
