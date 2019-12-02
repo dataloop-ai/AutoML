@@ -50,7 +50,7 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **data** - This is an example of how to run on Coco dataset.
 
-### **Once you've finished editing your configs.json you're ready to begin!**
+### ***Once you've finished editing your configs.json you're ready to begin!***
 
 ### *Begin model & hyper-parameter search*
 ```
