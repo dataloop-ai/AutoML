@@ -9,7 +9,7 @@ First thing to do is . . .
 docker run -it buffalonoam/zazu-image:0.1 bash
 ```
 <br/><br/>  
-On the other hand you can `pip install -r requirements.txt` . . . aaaand hope for the best.
+On the other hand you can `pip install -r requirements.txt` . . . aaaand good luck!
 
 ### *Clone the repo*
 ```
@@ -50,7 +50,7 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **data** - This is an example of how to run on Coco dataset.
 
-***Once you've finished editing your configs.json you're ready to begin!***
+### *Once you've finished editing your configs.json you're ready to begin!*
 
 ### Begin model & hyper-parameter search on a machine of your choice
 ```
