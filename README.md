@@ -2,13 +2,16 @@
 
 ## Getting started
 
-First thing to do is pull and run the docker image
+First thing to do is . . .  
+
+### Pull & Run the Docker Image
 ```
 docker run -it buffalonoam/zazu-image:0.1 bash
 ```
-On the other hand you can `pip install -r requirements.txt` file and hope for the best.
+<br/><br/>  
+On the other hand you can `pip install -r requirements.txt` . . . aaaand hope for the best.
 
-clone the repository and its submodules
+### Clone the Repo
 ```
 git clone --recurse-submodules https://noamrosenberg@bitbucket.org/dataloop-ai/zazuml.git
 ```
@@ -19,7 +22,7 @@ The next thing to do is edit the configs.json file
 ```
 {
   "max_trials": 5,
-  "max_instances_at_once": 2,
+  "max_instances_at_once": 1,
   "model_priority_space": [10, 0, 0],
   "task": "detection",
   "data": {
@@ -47,7 +50,7 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **data** - This is an example of how to run on Coco dataset.
 
-Once you've finished editing your configs.json you're ready to begin!
+***Once you've finished editing your configs.json you're ready to begin!***
 
 ### Begin model & hyper-parameter search on a machine of your choice
 ```
