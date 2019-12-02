@@ -11,7 +11,7 @@ docker run -it buffalonoam/zazu-image:0.1 bash
 <br/><br/>  
 On the other hand you can `pip install -r requirements.txt` . . . aaaand good luck!
 
-### *Clone the repo*
+### *clone the repo*
 ```
 git clone --recurse-submodules https://noamrosenberg@bitbucket.org/dataloop-ai/zazuml.git
 ```
@@ -52,11 +52,11 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 ### *Once you've finished editing your configs.json you're ready to begin!*
 
-### Begin model & hyper-parameter search on a machine of your choice
+### begin model & hyper-parameter search
 ```
 python zazutuner.py
 ```
-### Launch search on Kubernetes via our remote Dataloop engine
+### launch search on Kubernetes via our remote Dataloop engine
 ```
 python zazutuner.py --remote 1
 ```
