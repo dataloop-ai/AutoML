@@ -5,6 +5,7 @@ from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 import argparse
 import os
+import torch
 
 
 
@@ -14,6 +15,9 @@ def search(opt_model, remote=False):
     selector = ModelSelector(opt_model)
     selector.find_model_and_hp_search_space()
 
+    if not remote:
+        if opt_model.max_instances_at_once > torch.cuda.device_count():
+            raise Exception(''' 'max_instances_at_once' must be smaller or equal to the number of available gpus''')
     # initialize tuner and gun i.e.
     ongoing_trials = OngoingTrials()
     tuner = Tuner(opt_model, ongoing_trials)
