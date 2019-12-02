@@ -50,13 +50,13 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **data** - This is an example of how to run on Coco dataset.
 
-### *Once you've finished editing your configs.json you're ready to begin!*
+### **Once you've finished editing your configs.json you're ready to begin!**
 
-### begin model & hyper-parameter search
+### *Begin model & hyper-parameter search*
 ```
 python zazutuner.py
 ```
-### launch search on Kubernetes via our remote Dataloop engine
+### *Launch search on Kubernetes via our remote Dataloop engine*
 ```
 python zazutuner.py --remote 1
 ```
