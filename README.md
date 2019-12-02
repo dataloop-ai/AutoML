@@ -31,7 +31,7 @@ The next thing to do is edit the configs.json file
 **max_trials** - defines the maximum total number of trials that will be tested
 
 **max_instances_at_once** - defines the number of trials that will run simultaneously, 
-i.e. in parallel to each other. This value must be smaller than the number of available gpus.
+i.e. in parallel to each other and must be smaller than the number of available gpus.
 
 **model_priority_space** -  define the model specs that best suits your priorities.
 
