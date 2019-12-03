@@ -10,7 +10,7 @@ pass
 
 ![model_space](./images/tetra4.jpeg)
 
-The tetrahedron in the image bellow represents a vector space where each model occupies a unique 
+The tetrahedron in the image above represents a vector space where each model occupies a unique 
 position with it's own advantages and short comings. *ZazuML* computes the minimal euclidean distance 
 between your priorities and model architecture. 
 
