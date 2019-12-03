@@ -1,12 +1,18 @@
 # ***ZazuML***
 
-This is an open-source AutoML project. The input to this program is a set of priorities represented by a blue dot in 
-the image bellow.
+This is an open-source AutoML project. Currently this project contains a model finder, hyper-parameter tuner, 
+and trial manager all wrapped up in one synchronious program. The input to this program is a set of priorities. 
+The output is a trained model, with auto-optimized hyper parameters.
 
 ![model_space](./images/tetra4.jpeg)
 
+The tetrahedron in the image bellow represents a vector space where each model occupies a unique 
+position with it's own advantages and short comings. *ZazuML* computes the minimal euclidean distance 
+between your priorities and model architecture. 
 
+## Under the hood
 
+pass 
 
 
 ## Getting started
