@@ -4,16 +4,15 @@ This is an open-source AutoML project. Currently this project contains a model f
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a set of priorities, 
 the output is a trained model with auto-optimized hyper parameters, simple as that.
 
+## Under the hood
+
+pass
+
 ![model_space](./images/tetra4.jpeg)
 
 The tetrahedron in the image bellow represents a vector space where each model occupies a unique 
 position with it's own advantages and short comings. *ZazuML* computes the minimal euclidean distance 
 between your priorities and model architecture. 
-
-## Under the hood
-
-pass 
-
 
 ## Getting started
 
