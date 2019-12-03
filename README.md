@@ -1,8 +1,8 @@
 # ***ZazuML***
 
 This is an open-source AutoML project. Currently this project contains a model finder, hyper-parameter tuner, 
-and trial manager all wrapped up in one synchronious program. The input to this program is a set of priorities. 
-The output is a trained model, with auto-optimized hyper parameters.
+and trial manager all wrapped up in one synchronious program. The input to this program is a set of priorities and 
+the output is a trained model, with auto-optimized hyper parameters, simple as that.
 
 ![model_space](./images/tetra4.jpeg)
 
