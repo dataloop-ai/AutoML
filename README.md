@@ -1,5 +1,14 @@
 # ***ZazuML***
 
+This is an open-source AutoML project. The input to this program is a set of priorities represented by a blue dot in 
+the image bellow.
+
+![model_space](./images/tetra4.jpeg)
+
+
+
+
+
 ## Getting started
 
 First thing to do is . . .  
@@ -62,4 +71,5 @@ python zazutuner.py --remote 1
 ```
 
 ## Refrences
+
 Some of the code was influenced by [keras-tuner](https://github.com/keras-team/keras-tuner)
