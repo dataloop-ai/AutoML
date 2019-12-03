@@ -12,7 +12,7 @@ dataloop_dataset/*
 ### Images ###
 # JPEG
 *.jpg
-*.jpeg
+# *.jpeg
 *.jpe
 *.jif
 *.jfif
