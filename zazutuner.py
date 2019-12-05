@@ -1,4 +1,3 @@
-from tensorflow import keras
 from model_selector import ModelSelector
 from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials

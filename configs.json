@@ -1,6 +1,6 @@
 {
   "max_trials": 5,
-  "max_instances_at_once": 3,
+  "max_instances_at_once": 1,
   "model_priority_space": [
     10,
     0,
