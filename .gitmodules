@@ -1,3 +1,4 @@
 [submodule "zazoo"]
 	path = zazoo
 	url = git@bitbucket.org:noamrosenberg/zazuzoo.git
+	branch = temp_dev
