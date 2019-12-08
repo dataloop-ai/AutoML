@@ -34,6 +34,18 @@
       "depth": 50
     }
   },
+  "yolov3": {
+    "task": "detection",
+    "model_space": {
+      "accuracy_rating": 0,
+      "speed_rating": 10,
+      "memory_rating": 0
+    },
+    "hp_search_space": [
+    ],
+    "training_configs": {
+    }
+  },
   "toy_model": {
     "task": "detection",
     "model_space": {
