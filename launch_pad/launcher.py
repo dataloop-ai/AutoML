@@ -6,7 +6,7 @@ import torch
 from main import PluginRunner
 from threading import Thread
 from .thread_manager import ThreadManager
-
+from zazoo.convert2Yolo import convert
 logger = logging.getLogger('launcher')
 
 
@@ -16,6 +16,34 @@ class Launcher:
         self.ongoing_trials = ongoing_trials
         self.remote = remote
         self.num_available_devices = torch.cuda.device_count()
+        self.home_path = optimal_model.data['home_path']
+        self.dataset_name = optimal_model.data['dataset_name']
+        if self.optimal_model.name == 'coco':
+            pass
+        elif self.optimal_model.name == 'yolov3':
+            if self.optimal_model.data['annotation_type'] == 'coco':
+                # convert to yolo format
+                conversion_config_val = {
+                    "datasets": "COCO",
+                    "img_path": os.path.join(self.home_path, "images", "val" + self.dataset_name),
+                    "label": os.path.join(self.home_path, "annotations", "instances_val" + self.dataset_name + ".json"),
+                    "img_type": ".jpg",
+                    "manipast_path": os.path.join(self.home_path, "val_paths.txt"),
+                    "output_path": os.path.join(self.home_path, "labels", "val" + self.dataset_name),
+                    "cls_list": os.path.join(self.home_path, "d.names")
+                }
+                conversion_config_train = {
+                    "datasets": "COCO",
+                    "img_path": os.path.join(self.home_path, "images", "train" + self.dataset_name),
+                    "label": os.path.join(self.home_path, "annotations", "instances_train" + self.dataset_name + ".json"),
+                    "img_type": ".jpg",
+                    "manipast_path": os.path.join(self.home_path, "train_paths.txt"),
+                    "output_path": os.path.join(self.home_path, "labels", "train" + self.dataset_name),
+                    "cls_list": os.path.join(self.home_path, "d.names")
+                }
+                convert(conversion_config_val)
+                convert(conversion_config_train)
+
         if self.remote:
             self._push_and_deploy_plugin()
         else:
