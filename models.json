@@ -9,24 +9,19 @@
     "hp_search_space": [
       {
         "name": "input_size",
-        "default": null,
         "values": [
           100,
           200,
           300
-        ],
-        "step": 1,
-        "sampling": null
+        ]
       },
       {
         "name": "learning_rate",
-        "default": 0.01,
         "values": [
           1e-4,
           1e-5,
           1e-6
-        ],
-        "ordered": null
+        ]
       }
     ],
     "training_configs": {
@@ -42,8 +37,15 @@
       "memory_rating": 0
     },
     "hp_search_space": [
+      {
+        "name": "learning_rate",
+        "values": [
+          2.61e-3
+        ]
+      }
     ],
     "training_configs": {
+      "epochs": 1
     }
   },
   "toy_model": {
