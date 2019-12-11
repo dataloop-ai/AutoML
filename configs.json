@@ -1,15 +1,14 @@
 {
-  "max_trials": 1,
+  "max_trials": 5,
   "max_instances_at_once": 1,
   "model_priority_space": [
-    1,
     10,
-    1
+    0,
+    0
   ],
   "task": "detection",
   "data": {
-    "home_path": "/home/noam/data/coco",
-    "annotation_type": "yolo",
-    "dataset_name": "2017"
+    "coco_path": "/home/noam/data/coco",
+    "annotation_type": "coco"
   }
 }
