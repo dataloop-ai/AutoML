@@ -4,7 +4,7 @@
   "model_priority_space": [
     1,
     10,
-    1
+    0
   ],
   "task": "detection",
   "data": {

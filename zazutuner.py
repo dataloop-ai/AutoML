@@ -31,7 +31,8 @@ def search(opt_model, remote=False):
         gun.launch_c()
         tuner.end_trial()
 
-    return tuner.get_best_trial()
+    best_trial = tuner.get_best_trial()
+    gun.train_best_trial(best_trial)
 
 
 if __name__ == '__main__':

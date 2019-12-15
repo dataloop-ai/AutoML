@@ -18,7 +18,7 @@ class PluginRunner(dl.BasePluginRunner):
         :return:
         """
 
-    def run(self, devices, model_specs, hp_values, progress=None):
+    def run(self, devices, model_specs, hp_values, final, progress=None):
         cls = getattr(import_module('.adapter', 'zazoo.' + model_specs['name']), 'AdapterModel')
         adapter = cls(devices, model_specs, hp_values)
         if hasattr(adapter, 'reformat'):
@@ -40,8 +40,11 @@ class PluginRunner(dl.BasePluginRunner):
                 'adapter, get_metrics method must return dict with only python floats. '
                 'Not numpy floats or any other objects like that')
 
-        return metrics
-
+        if not final:
+            return metrics
+        else:
+            checkpoint = adapter.get_checkpoint()
+            return metrics, checkpoint
 if __name__ == "__main__":
     """
     Run this main to locally debug your plugin

@@ -27,6 +27,19 @@ class Launcher:
         else:
             self.plugin = PluginRunner()
 
+    def train_best_trial(self, best_trial):
+        model_specs = self.optimal_model.unwrap()
+        inputs = {
+            'devices': {'gpu_index': 0},
+            'hp_values': best_trial['hp_values'],
+            'model_specs': model_specs,
+            'final': True
+        }
+        if not self.remote:
+            metrics, checkpoint = self._run_demo_session(inputs)
+        else:
+            metrics, checkpoint = self._run_remote_session(inputs)
+
     def launch_c(self):
         threads = ThreadManager()
         model_specs = self.optimal_model.unwrap()
@@ -36,7 +49,8 @@ class Launcher:
             inputs = {
                 'devices': {'gpu_index': device},
                 'hp_values': trial['hp_values'],
-                'model_specs': model_specs
+                'model_specs': model_specs,
+                'final': False
             }
 
             threads.new_thread(target=self._collect_metrics,
