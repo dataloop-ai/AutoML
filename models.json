@@ -8,25 +8,18 @@
     },
     "hp_search_space": [
       {
-        "name": "input_size",
-        "values": [
-          512,
-          608,
-          710
-        ]
-      },
-      {
         "name": "learning_rate",
         "values": [
-          1e-4,
+          5e-4,
           1e-5,
-          1e-6
+          5e-5
         ]
       }
     ],
     "training_configs": {
       "epochs": 1,
-      "depth": 50
+      "depth": 50,
+      "input_size": 608
     }
   },
   "yolov3": {
@@ -43,14 +36,6 @@
           1e-3,
           2.61e-3,
           5e-3
-        ]
-      },
-      {
-        "name": "input_size",
-        "values": [
-          512,
-          608,
-          710
         ]
       },
       {

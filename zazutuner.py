@@ -5,6 +5,7 @@ from spec import ConfigSpec, OptModel
 import argparse
 import os
 import torch
+import json
 
 
 
@@ -32,8 +33,14 @@ def search(opt_model, remote=False):
         tuner.end_trial()
 
     best_trial = tuner.get_best_trial()
-    gun.train_best_trial(best_trial)
+    print('best trial: ', best_trial)
+    print('saving search results to best_trial.json')
+    with open('best_trial.json', 'w') as fp:
+        json.dump(best_trial, fp)
 
+    metrics, checkpoint = gun.train_best_trial(best_trial)
+
+    def train():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -44,7 +51,6 @@ if __name__ == '__main__':
     configs = ConfigSpec(configs_path)
     opt_model = OptModel()
     opt_model.add_child_spec(configs, 'configs')
+    search(opt_model, remote=args.remote)
+    train()
 
-    best_trial = search(opt_model, remote=args.remote)
-
-    print('best trial: ', best_trial)

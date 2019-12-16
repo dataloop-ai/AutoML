@@ -33,12 +33,13 @@ class Launcher:
             'devices': {'gpu_index': 0},
             'hp_values': best_trial['hp_values'],
             'model_specs': model_specs,
-            'final': True
+            'final_model': {'final': True}
         }
         if not self.remote:
-            metrics, checkpoint = self._run_demo_session(inputs)
+            return self._run_demo_session(inputs)
         else:
-            metrics, checkpoint = self._run_remote_session(inputs)
+            return self._run_remote_session(inputs)
+
 
     def launch_c(self):
         threads = ThreadManager()
@@ -50,7 +51,7 @@ class Launcher:
                 'devices': {'gpu_index': device},
                 'hp_values': trial['hp_values'],
                 'model_specs': model_specs,
-                'final': False
+                'final_model': {'final': False}
             }
 
             threads.new_thread(target=self._collect_metrics,
@@ -136,4 +137,4 @@ class Launcher:
         return metrics
 
     def _run_demo_session(self, inputs):
-        return self.plugin.run(inputs['devices'], inputs['model_specs'], inputs['hp_values'])
+        return self.plugin.run(inputs['devices'], inputs['model_specs'], inputs['hp_values'], inputs['final_model'])

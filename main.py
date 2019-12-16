@@ -18,9 +18,10 @@ class PluginRunner(dl.BasePluginRunner):
         :return:
         """
 
-    def run(self, devices, model_specs, hp_values, final, progress=None):
+    def run(self, devices, model_specs, hp_values, final_model, progress=None):
         cls = getattr(import_module('.adapter', 'zazoo.' + model_specs['name']), 'AdapterModel')
-        adapter = cls(devices, model_specs, hp_values)
+        final = final_model['final']
+        adapter = cls(devices, model_specs, hp_values, final)
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
         if hasattr(adapter, 'data_loader'):
