@@ -1,1 +1,1 @@
-from .core import ModelSelector
+from .core import find_model

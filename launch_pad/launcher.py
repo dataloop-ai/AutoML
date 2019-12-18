@@ -7,11 +7,12 @@ from main import PluginRunner
 from threading import Thread
 from .thread_manager import ThreadManager
 from zazoo.convert2Yolo import convert
+
 logger = logging.getLogger('launcher')
 
 
 class Launcher:
-    def __init__(self, optimal_model, ongoing_trials, remote=False):
+    def __init__(self, optimal_model, ongoing_trials=None, remote=False):
         self.optimal_model = optimal_model
         self.ongoing_trials = ongoing_trials
         self.remote = remote
@@ -21,6 +22,7 @@ class Launcher:
         if self.optimal_model.name == 'yolov3':
             if self.optimal_model.data['annotation_type'] == 'coco':
                 self._convert_coco_to_yolo_format()
+                self.optimal_model.data['annotation_type'] = 'yolo'
 
         if self.remote:
             self._push_and_deploy_plugin()
@@ -40,8 +42,9 @@ class Launcher:
         else:
             return self._run_remote_session(inputs)
 
-
-    def launch_c(self):
+    def launch_trials(self):
+        if self.ongoing_trials is None:
+            raise Exception('for this method ongoing_trials object must be passed during the init')
         threads = ThreadManager()
         model_specs = self.optimal_model.unwrap()
         logger.info('launching new set of trials')
