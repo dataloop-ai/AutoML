@@ -7,7 +7,7 @@ from main import PluginRunner
 from threading import Thread
 from .thread_manager import ThreadManager
 from zazoo.convert2Yolo import convert
-
+from main_pred import pred_run
 logger = logging.getLogger('launcher')
 
 
@@ -28,6 +28,14 @@ class Launcher:
             self._push_and_deploy_plugin()
         else:
             self.plugin = PluginRunner()
+
+    def predict(self, checkpoint_path):
+        inputs = {
+            'checkpoint_path': checkpoint_path,
+            'name': self.optimal_model.name,
+            'data': self.optimal_model.data
+        }
+        pred_run(checkpoint_path, self.optimal_model.name, self.optimal_model.data)
 
     def train_best_trial(self, best_trial):
         model_specs = self.optimal_model.unwrap()

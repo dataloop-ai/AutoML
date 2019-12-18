@@ -67,9 +67,9 @@ class ZaZu:
             self.update_optimal_model()
         if not os.path.exists(self.path_to_best_trial):
             raise Exception('''best_trial.json doesn't exist, you can run "hp_search" to get it''')
-
         with open(self.path_to_best_trial, 'r') as fp:
             best_trial = json.load(fp)
+
         gun = Launcher(self.opt_model, remote=self.remote)
         checkpoint = gun.train_best_trial(best_trial)
         if os.path.exists(self.path_to_best_checkpoint):
@@ -87,14 +87,20 @@ class ZaZu:
         self.opt_model.add_attr(self.models.spec_data[closest_model]['hp_search_space'], 'hp_space')
         self.opt_model.add_attr(self.models.spec_data[closest_model]['training_configs'], 'training_configs')
 
-
     def run_inference(self):
-        pass
+        if not hasattr(self.opt_model, 'name'):
+            print("no 'update_optimal_model' method, checking for model.txt file . . . ")
+            self.update_optimal_model()
+
+        gun = Launcher(self.opt_model)
+        gun.predict(self.path_to_best_checkpoint)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--remote", type=int, default=0)
+    parser.add_argument("--train", type=int, default=0)
+    parser.add_argument("--predict", type=int, default=0)
     args = parser.parse_args()
     this_path = path = os.getcwd()
     configs_path = os.path.join(this_path, 'configs.json')
@@ -102,7 +108,9 @@ if __name__ == '__main__':
     opt_model = OptModel()
     opt_model.add_child_spec(configs, 'configs')
     zazu = ZaZu(opt_model, remote=args.remote)
-    zazu.find_best_model()
-    zazu.hp_search()
-    zazu.train_new_model()
-    pass
+    if args.train:
+        zazu.find_best_model()
+        zazu.hp_search()
+        zazu.train_new_model()
+    if args.predict:
+        zazu.run_inference()
