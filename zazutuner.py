@@ -99,6 +99,7 @@ class ZaZu:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--remote", type=int, default=0)
+    parser.add_argument("--search", type=int, default=1)
     parser.add_argument("--train", type=int, default=0)
     parser.add_argument("--predict", type=int, default=0)
     args = parser.parse_args()
@@ -109,8 +110,9 @@ if __name__ == '__main__':
     opt_model.add_child_spec(configs, 'configs')
     zazu = ZaZu(opt_model, remote=args.remote)
     if args.train:
-        zazu.find_best_model()
-        zazu.hp_search()
+        if args.search:
+            zazu.find_best_model()
+            zazu.hp_search()
         zazu.train_new_model()
     if args.predict:
         zazu.run_inference()
