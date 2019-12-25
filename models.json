@@ -58,7 +58,7 @@
       }
     ],
     "training_configs": {
-      "epochs": 1,
+      "epochs": 272,
       "batch_size": 16,
       "input_size": 320,
       "learning_rate": 2.61e-3,
