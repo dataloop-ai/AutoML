@@ -10,7 +10,7 @@ the output is a trained model with auto-optimized hyper parameters, ready to run
 1. The *Model Selector* who's job is to select the optimal model based on the 
 priorities of the user.
 
-2. The *Tuner* who's manages and keeps track of trials
+2. The *Tuner* who manages and keeps track of trials
 
 3. The *Launchpad* who is in charge of launches and distribution of gpu resources amongst trials
 
@@ -75,7 +75,8 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 **task** - i.e. detection vs classification vs instance segmentation
 
-**data** - This is an example of how to run on Coco dataset.
+**data** - This is an example of how to run on a Coco styled dataset.
+
 
 ### ***Once you've finished editing your configs.json you're ready to begin!***
 
