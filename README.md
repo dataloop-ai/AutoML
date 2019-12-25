@@ -84,7 +84,7 @@ python zazutuner.py --predict 1
 
 ### *Launch search on Kubernetes via our Dataloop engine* (this feature is not ready yet)
 ```
-python zazutuner.py --remote 1
+python zazutuner.py --search 1 --remote 1
 ```
 
 ## Refrences
