@@ -2,10 +2,9 @@
 
 This is an open-source AutoML project. Currently this project contains a model finder, hyper-parameter tuner, 
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a set of priorities, 
-the output is a trained model with auto-optimized hyper parameters, simple as that.
+the output is a trained model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
 ## Under the hood
-
 pass
 
 ![model_space](./images/tetra4.jpeg)
