@@ -54,8 +54,7 @@ RUN pip install \
 	tensorflow==2.0.0 \
 	tensorflow-gpu==2.0.0 \
 	tqdm==4.32.2 \
-	urllib3==1.24.3 \
-	dtlpy==1.8.16
+	urllib3==1.24.3
 
 WORKDIR /root
 

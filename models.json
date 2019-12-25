@@ -35,9 +35,9 @@
   "yolov3": {
     "task": "detection",
     "model_space": {
-      "accuracy_rating": 0,
+      "accuracy_rating": 4,
       "speed_rating": 10,
-      "memory_rating": 0
+      "memory_rating": 3
     },
     "hp_search_space": [
       {
@@ -70,7 +70,7 @@
     "model_space": {
       "accuracy_rating": 0,
       "speed_rating": 10,
-      "memory_rating": 9
+      "memory_rating": 10
     },
     "hp_search_space": [
       {
