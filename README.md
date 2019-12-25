@@ -4,7 +4,7 @@ This is an open-source AutoML project. Currently this project contains a model f
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a set of priorities, 
 the output is a trained model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
-## Why ZazuML?
+## ***Why ZazuML?***
 You might be building an ML pipeline to avoid model performance degeneration, or maybe you're just too lazy to download, 
 debug, and tune your own model. Either way, you shouldn't be focusing your efforts on simple things like detection. There's
 a whole world out there for you to explore, give your hand at trajectory prediction or action recognition and let *ZazuML*
