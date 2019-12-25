@@ -5,13 +5,24 @@ and trial manager all wrapped up in one synchronous end to end program. The inpu
 the output is a trained model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
 ## Under the hood
-pass
+*ZazuML* is built up from 4 main packages, 
+
+1. The *Model Selector* who's job is to select the optimal model based on the 
+priorities of the user.
+
+2. The *Tuner* who's manages and keeps track of trials
+
+3. The *Launchpad* who is in charge of launches and distribution of gpu resources amongst trials
+
+4. And last but not least, the [ZaZoo](https://bitbucket.org/noamrosenberg/zazoo/src/master/) 
 
 ![model_space](./images/tetra4.jpeg)
 
 The tetrahedron in the image above represents a vector space where each model occupies a unique 
 position with it's own advantages and short comings. *ZazuML* computes the minimal euclidean distance 
 between your priorities and model architecture. 
+
+
 
 ## Getting started
 
