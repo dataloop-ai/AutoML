@@ -37,13 +37,14 @@ The next thing to do is edit the configs.json file
 ### *configs.json example*
 ```
 {
-  "max_trials": 5,
+  "max_trials": 1,
   "max_instances_at_once": 1,
   "model_priority_space": [10, 0, 0],
   "task": "detection",
   "data": {
-    "coco_path": "/home/noam/data/coco",
-    "annotation_type": "coco"
+    "home_path": "/home/noam/data/coco",
+    "annotation_type": "coco",
+    "dataset_name": "2017"
   }
 }
 ```
@@ -72,7 +73,7 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 ```
 python zazutuner.py
 ```
-### *Launch search on Kubernetes via our remote Dataloop engine*
+### *Launch search on Kubernetes* (this feature is not ready yet)
 ```
 python zazutuner.py --remote 1
 ```
