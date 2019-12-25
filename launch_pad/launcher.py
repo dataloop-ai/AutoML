@@ -35,7 +35,7 @@ class Launcher:
             'name': self.optimal_model.name,
             'data': self.optimal_model.data
         }
-        pred_run(checkpoint_path, self.optimal_model.name, self.optimal_model.data)
+        pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
 
     def train_best_trial(self, best_trial):
         model_specs = self.optimal_model.unwrap()
