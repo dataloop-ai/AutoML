@@ -71,9 +71,18 @@ For example "model_priority_space": [2, 9, 10] indicates a very light but low ac
 
 ### *Begin model & hyper-parameter search*
 ```
-python zazutuner.py
+python zazutuner.py --search 1
 ```
-### *Launch search on Kubernetes* (this feature is not ready yet)
+### *Begin training*
+```
+python zazutuner.py --train 1
+```
+### *predict*
+```
+python zazutuner.py --predict 1
+```
+
+### *Launch search on Kubernetes via our Dataloop engine* (this feature is not ready yet)
 ```
 python zazutuner.py --remote 1
 ```
