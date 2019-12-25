@@ -4,6 +4,12 @@ This is an open-source AutoML project. Currently this project contains a model f
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a set of priorities, 
 the output is a trained model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
+## Why ZazuML?
+You might be building an ML pipeline to avoid model performance degeneration, or maybe you're just too lazy to download, 
+debug, and tune your own model. Either way, you shouldn't be focusing your efforts on simple things like detection. There's
+a whole world out there for you to explore, give your hand at trajectory prediction or action recognition and let *ZazuML*
+free you up from the boring stuff.
+
 ## Under the hood
 *ZazuML* is built up from 4 main packages, 
 
@@ -21,7 +27,6 @@ priorities of the user.
 The tetrahedron in the image above represents a vector space where each model occupies a unique 
 position with it's own advantages and short comings. *ZazuML* computes the minimal euclidean distance 
 between your priorities and model architecture. 
-
 
 
 ## Getting started
@@ -73,7 +78,7 @@ This is a 3 dimensional vector describing your model preferences in a euclidean 
 
 For example "model_priority_space": [2, 9, 10] indicates a very light but low accuracy model
 
-**task** - i.e. detection vs classification vs instance segmentation
+**task** - i.e. detection vs classification vs instance segmentation (we currently only support detection)
 
 **data** - This is an example of how to run on a Coco styled dataset.
 
