@@ -42,7 +42,6 @@ docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVI
 ```
 Be sure to update the nvidia-devices flag!
 
-<br/><br/>  
 
 ### *clone the repo*
 ```
