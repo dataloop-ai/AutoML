@@ -43,7 +43,6 @@ docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVI
 Be sure to update the nvidia-devices flag!
 
 <br/><br/>  
-On the other hand you can `pip install -r requirements.txt` . . . aaaand good luck!
 
 ### *clone the repo*
 ```
