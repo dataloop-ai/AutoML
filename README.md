@@ -1,8 +1,8 @@
 # ***ZazuML***
 
 This is an open-source AutoML project. Currently this project contains a model finder, hyper-parameter tuner, 
-and trial manager all wrapped up in one synchronous end to end program. The input to this program is a set of priorities, 
-the output is a trained model with auto-optimized hyper parameters, ready to run inference, simple as that.
+and trial manager all wrapped up in one synchronous end to end program. The input to this program is a dataset and your
+priorities, the output is a trained model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
 **NOTE**: This project is still under development, clone and play, we appreciate and encourage
 pull requests and feedback from the community. Help us make this tool awesome.
