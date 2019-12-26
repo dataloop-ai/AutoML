@@ -106,6 +106,12 @@ python zazutuner.py --predict
 python zazutuner.py --search --remote
 ```
 
+## Contact
+
+If you're interested in becoming a collaborator or just have some questions, feel free to contact me at:
+
+WeChat: BuffaloNoam, Line: buffalonoam, WhatsApp: +972524226459
+
 ## Refrences
 
 Some of the code was influenced by [keras-tuner](https://github.com/keras-team/keras-tuner)
