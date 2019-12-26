@@ -110,7 +110,9 @@ python zazutuner.py --search --remote
 
 If you're interested in becoming a collaborator or just have some questions, feel free to contact me at:
 
-WeChat: BuffaloNoam, Line: buffalonoam, WhatsApp: +972524226459
+WeChat: BuffaloNoam
+Line: buffalonoam
+WhatsApp: +972524226459
 
 ## Refrences
 
