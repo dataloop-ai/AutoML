@@ -98,10 +98,10 @@ class ZaZu:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--remote", type=int, default=0)
-    parser.add_argument("--search", type=int, default=0)
-    parser.add_argument("--train", type=int, default=0)
-    parser.add_argument("--predict", type=int, default=0)
+    parser.add_argument("--remote", action='store_true', default=False)
+    parser.add_argument("--search", action='store_true', default=False)
+    parser.add_argument("--train", action='store_true', default=False)
+    parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
     this_path = path = os.getcwd()
     configs_path = os.path.join(this_path, 'configs.json')
