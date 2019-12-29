@@ -55,7 +55,8 @@ RUN pip install \
 	tensorflow-gpu==2.0.0 \
 	tqdm==4.32.2 \
 	urllib3==1.24.3 \
-	dtlpy==1.8.16
+	dtlpy==1.8.16 \
+	https://storage.googleapis.com/dtlpy/dev/dtlpy_agent-1.9.1.0-py3-none-any.whl
 
 WORKDIR /root
 
