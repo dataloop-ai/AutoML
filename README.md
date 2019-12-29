@@ -74,6 +74,7 @@ i.e. in parallel to each other and must be smaller than the number of available 
 **model_priority_space** -  define the model specs that best suits your priorities.
 
 This is a 3 dimensional vector describing your model preferences in a euclidean vector space.
+Each element can occupy the space [0,10). 
 
 - axis 0 - accuracy
 - axis 1 - inference speed
@@ -110,9 +111,9 @@ python zazutuner.py --search --remote
 
 If you're interested in becoming a collaborator or just have some questions, feel free to contact me at:
 
-WeChat: BuffaloNoam
-Line: buffalonoam
-WhatsApp: +972524226459
+WeChat: BuffaloNoam   
+Line: buffalonoam   
+WhatsApp: +972524226459   
 
 ## Refrences
 
