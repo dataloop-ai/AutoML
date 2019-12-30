@@ -19,7 +19,7 @@ class PluginRunner(dl.BasePluginRunner):
         """
 
     def run(self, devices, model_specs, hp_values, final_model, progress=None):
-        cls = getattr(import_module('.adapter', 'zazoo.' + model_specs['name']), 'AdapterModel')
+        cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
         final = final_model['final']
         adapter = cls(devices, model_specs, hp_values, final)
         if hasattr(adapter, 'reformat'):

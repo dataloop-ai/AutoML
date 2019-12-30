@@ -23,7 +23,7 @@ priorities of the user.
 
 3. The *Launchpad* who is in charge of launches and distribution of gpu resources amongst trials
 
-4. And last but not least, the [ZaZoo](https://github.com/dataloop-ai/zazoo) 
+4. And last but not least, the [ZaZoo](https://github.com/dataloop-ai/zoo) 
 
 ![model_space](./images/tetra4.jpeg)
 

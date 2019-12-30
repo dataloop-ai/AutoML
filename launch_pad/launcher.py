@@ -6,7 +6,7 @@ import torch
 from main import PluginRunner
 from threading import Thread
 from .thread_manager import ThreadManager
-from zazoo.convert2Yolo import convert
+from zoo.convert2Yolo import convert
 from main_pred import pred_run
 logger = logging.getLogger('launcher')
 
