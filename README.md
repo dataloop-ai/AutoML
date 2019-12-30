@@ -1,4 +1,5 @@
 ![Logo](./images/ZazuML.jpeg)
+<br/><br/>   
 
 This is an open-source AutoML project. Currently this project contains a model finder, hyper-parameter tuner, 
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a dataset and your
@@ -50,7 +51,7 @@ git clone https://github.com/dataloop-ai/ZazuML.git
 cd ZazuML
 git clone https://github.com/dataloop-ai/zoo.git
 ```
-<br/><br/>   
+
 The next thing to do is edit the configs.json file
 
 ### *configs.json example*
