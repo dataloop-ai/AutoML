@@ -1,1 +1,0 @@
-{"inputs": [{"name": "configs", "value": {"version": "1.0", "max_trials": 5, "epochs": 10, "max_instances_at_once": 2, "items_local_path": null, "labels_local_path": null, "remote_dataset_id": null}}, {"name": "model", "value": {"model_str": "retinanet"}}, {"name": "hp_values", "value": {"input_size": 14, "learning_rate": 0.01}}], "config": {}}
