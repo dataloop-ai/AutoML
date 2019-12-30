@@ -47,7 +47,7 @@ Be sure to update the nvidia-devices flag!
 ```
 git clone https://github.com/dataloop-ai/ZazuML.git
 cd ZazuML
-git clone https://github.com/dataloop-ai/zazoo.git
+git clone https://github.com/dataloop-ai/zoo.git
 ```
 <br/><br/>   
 The next thing to do is edit the configs.json file
