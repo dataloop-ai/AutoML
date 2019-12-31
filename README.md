@@ -109,6 +109,14 @@ python zazutuner.py --predict
 python zazutuner.py --search --remote
 ```
 
+## TO DO
+
+- Finish remote cloud deployment feature
+- Stabilize, improve readability
+- Implement BOHB instead of random search
+- NAS to replace some of the HP search
+- Intelligent Losses to replace some of the HP search
+
 ## Contact
 
 If you're interested in becoming a collaborator or just have some questions, feel free to contact me at:
@@ -116,13 +124,6 @@ If you're interested in becoming a collaborator or just have some questions, fee
 WeChat: BuffaloNoam   
 Line: buffalonoam   
 WhatsApp: +972524226459   
-
-## TO DO
-
-- Finish remote cloud deployment feature
-- Implement BOHB instead of random search
-- NAS to replace some of the HP search
-- Intelligent Losses to replace some of the HP search
 
 ## Refrences
 
