@@ -20,7 +20,7 @@ free you up from the boring stuff.
 1. The *Model Selector* who's job is to select the optimal model based on the 
 priorities of the user.
 
-2. The *Tuner* who manages and keeps track of trials
+2. The *Tuner* searches for hyper-parameters, manages and keeps track of trials
 
 3. The *Launchpad* who is in charge of launches and distribution of gpu resources amongst trials
 
