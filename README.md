@@ -22,7 +22,7 @@ priorities of the user.
 
 2. The *Tuner* searches for hyper-parameters, manages and keeps track of trials
 
-3. The *Launchpad* is in charge of launches and distribution of gpu resources amongst trials
+3. The *Launchpad* is in charge launching local or remote trials and distribution of gpu resources amongst trials
 
 4. And last but not least, the [Zazu Model Zoo](https://github.com/dataloop-ai/zoo), it was once known as
  the *ZaZOO* (my little joke), but to avoid confusion we removed that name.
