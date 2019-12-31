@@ -17,12 +17,12 @@ free you up from the boring stuff.
 ## Under the hood
 *ZazuML* is built up from 4 main packages, 
 
-1. The *Model Selector* who's job is to select the optimal model based on the 
+1. The *Model Selector* is in charge of selecting the optimal model based on the 
 priorities of the user.
 
 2. The *Tuner* searches for hyper-parameters, manages and keeps track of trials
 
-3. The *Launchpad* who is in charge of launches and distribution of gpu resources amongst trials
+3. The *Launchpad* is in charge of launches and distribution of gpu resources amongst trials
 
 4. And last but not least, the [Zazu Model Zoo](https://github.com/dataloop-ai/zoo), it was once known as
  the *ZaZOO* (my little joke), but to avoid confusion we removed that name.
