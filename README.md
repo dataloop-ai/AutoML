@@ -114,6 +114,7 @@ python zazutuner.py --search --remote
 - Finish remote cloud deployment feature
 - Stabilize, improve readability
 - Implement BOHB instead of random search
+- Make search space dependent on computational budget
 - NAS to replace some of the HP search
 - Intelligent Losses to replace some of the HP search
 
