@@ -24,8 +24,8 @@ priorities of the user.
 
 3. The *Launchpad* is in charge launching local or remote trials and distribution of gpu resources amongst trials
 
-4. And last but not least, the [Zazu Model Zoo](https://github.com/dataloop-ai/zoo), it was once known as
- the *ZaZOO* (my little joke), but to avoid confusion we removed that name.
+4. The [Zazu Model Zoo](https://github.com/dataloop-ai/zoo), was once known as
+ the *ZaZOO* (my little joke), but to avoid confusion we renamed to just plane old *ZOO*.
 
 ![model_space](./images/tetra4.jpeg)
 
