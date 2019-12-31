@@ -117,6 +117,13 @@ WeChat: BuffaloNoam
 Line: buffalonoam   
 WhatsApp: +972524226459   
 
+## TO DO
+
+- Finish remote cloud deployment feature
+- Implement BOHB instead of random search
+- NAS to replace some of the HP search
+- Intelligent Losses to replace some of the HP search
+
 ## Refrences
 
 Some of the code was influenced by [keras-tuner](https://github.com/keras-team/keras-tuner)
