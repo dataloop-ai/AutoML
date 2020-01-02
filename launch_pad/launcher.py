@@ -110,8 +110,13 @@ class Launcher:
     def _push_and_deploy_plugin(self):
         import dtlpy as dl
         dl.setenv('dev')
+        plugin_name = 'tuner'
         project = dl.projects.get(project_id="fcdd792b-5146-4c62-8b27-029564f1b74e")
-        plugin = project.plugins.push(src_path='/Users/noam/zazuML')
+        plugin = project.plugins.push(plugin_name=plugin_name,
+                                      src_path=os.getcwd(),
+                                      inputs=[{"type": "Json",
+                                               "name": "configs"}])
+        
         self.deployment = plugin.deployments.deploy(deployment_name='thisdeployment',
                                                     plugin=plugin,
                                                     config={
