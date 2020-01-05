@@ -4,23 +4,16 @@ import logging
 logger = logging.getLogger(name=__name__)
 from importlib import import_module
 
-class PluginRunner(dl.BasePluginRunner):
-    """
-    Plugin runner class
 
-    """
+class LocalTrialConnector():
 
-    def __init__(self, **kwargs):
-        """
-        Init plugin attributes here
-        
-        :param kwargs: config params
-        :return:
-        """
+    def __init__(self, plugin_name):
+        self.plugin_name = plugin_name
 
-    def run(self, devices, model_specs, hp_values, final_model, progress=None):
+    def run(self, devices, model_specs, hp_values):
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
-        final = final_model['final']
+
+        final = 1 if self.plugin_name == 'trainer' else 0
         adapter = cls(devices, model_specs, hp_values, final)
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
@@ -32,7 +25,7 @@ class PluginRunner(dl.BasePluginRunner):
             adapter.build()
         adapter.train()
 
-        if not final:
+        if final:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
                 raise Exception('adapter, get_metrics method must return dict object')
@@ -43,9 +36,3 @@ class PluginRunner(dl.BasePluginRunner):
             return metrics
         else:
             return adapter.get_checkpoint()
-
-if __name__ == "__main__":
-    """
-    Run this main to locally debug your plugin
-    """
-    dl.plugins.test_local_plugin()
