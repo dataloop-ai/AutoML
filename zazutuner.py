@@ -83,7 +83,7 @@ class ZaZu:
         if not os.path.exists(self.path_to_most_suitable_model):
             raise Exception('''model.txt file doesn't exist, you can run "find_best_model" method to get it''')
         with open(self.path_to_most_suitable_model, "r") as f:
-            closest_model = f.read()
+            closest_model = f.read().strip()
         self.opt_model.add_attr(closest_model, 'name')
         self.opt_model.add_attr(self.models.spec_data[closest_model]['hp_search_space'], 'hp_space')
         self.opt_model.add_attr(self.models.spec_data[closest_model]['training_configs'], 'training_configs')
