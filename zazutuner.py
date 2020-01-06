@@ -12,10 +12,6 @@ import json
 
 class ZaZu:
     def __init__(self, opt_model, remote=False):
-        # download data once and be finished with it
-        if not remote:
-            dataset_obj = get_dataset_obj()
-            download_data(dataset_obj)
         self.remote = remote
         self.opt_model = opt_model
         self.path_to_most_suitable_model = 'model.txt'
