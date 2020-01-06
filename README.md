@@ -40,10 +40,9 @@ First thing to do is . . .
 
 ### *pull & run the Docker Image*
 ```
-docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVICES=0 buffalonoam/zazu-image:0.1 bash
+docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVICES=0 buffalonoam/zazu-image:0.2 bash
 ```
 Be sure to update the nvidia-devices flag!
-
 
 ### *clone the repo*
 ```
