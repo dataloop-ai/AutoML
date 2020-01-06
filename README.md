@@ -58,7 +58,6 @@ cd ..
 mkdir data
 git clone https://github.com/dataloop-ai/tiny_coco.git
 ```
-
 The next thing to do is edit the configs.json file
 
 ### *configs.json example*
