@@ -28,6 +28,7 @@ class Launcher:
 
         if self.remote:
             self.dataset_obj = get_dataset_obj()
+            self.project = self.dataset_obj.project
             self._push_and_deploy_plugin(plugin_name=plugin_name)
         else:
             self.local_trial_connector = LocalTrialConnector(plugin_name)
