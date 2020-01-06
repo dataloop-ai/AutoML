@@ -8,7 +8,7 @@
   ],
   "task": "detection",
   "data": {
-    "home_path": "/home/noam/data/tiny_coco",
+    "home_path": "/root/data/tiny_coco",
     "annotation_type": "coco",
     "dataset_name": "2017"
   }
