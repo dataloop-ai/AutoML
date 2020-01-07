@@ -2,11 +2,12 @@ import os
 import threading
 import logging
 import torch
-from plugins.local import LocalTrialConnector
+from local_plugin import LocalTrialConnector
 from .thread_manager import ThreadManager
 from zoo.convert2Yolo import convert
 from main_pred import pred_run
-from plugins import get_dataset_obj
+from plugin_utils import get_dataset_obj
+import dtlpy as dl
 
 logger = logging.getLogger('launcher')
 
@@ -28,17 +29,17 @@ class Launcher:
 
         if self.remote:
             self.dataset_obj = get_dataset_obj()
+            self.dataset_id = self.dataset_obj.id
             self.project = self.dataset_obj.project
             self._push_and_deploy_plugin(plugin_name=plugin_name)
+            # self.deployment = self.project.deployments.get(deployment_name='trial')
+            # plugin = self.project.plugins.get(plugin_id=self.deployment.pluginId)
+            # print(plugin)
+            # print('***')
         else:
             self.local_trial_connector = LocalTrialConnector(plugin_name)
 
     def predict(self, checkpoint_path):
-        inputs = {
-            'checkpoint_path': checkpoint_path,
-            'name': self.optimal_model.name,
-            'data': self.optimal_model.data
-        }
         pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
 
     def train_best_trial(self, best_trial):
@@ -88,11 +89,11 @@ class Launcher:
         model_specs = self.optimal_model.unwrap()
         logger.info('launching new set of trials')
         for trial_id, trial in self.ongoing_trials.trials.items():
-            inputs = {
-                'dataset_obj': self.dataset_obj,
-                'hp_values': trial['hp_values'],
-                'model_specs': model_specs
-            }
+
+            dataset_input = dl.PluginInput(type='Dataset', name='dataset', value={"dataset_id": self.dataset_id})
+            hp_value_input = dl.PluginInput(type='Json', name='hp_values', value=trial['hp_values'])
+            model_specs_input = dl.PluginInput(type='Json', name='model_specs', value=model_specs)
+            inputs = [dataset_input, hp_value_input, model_specs_input]
 
             threads.new_thread(target=self._collect_metrics,
                                inputs=inputs,
@@ -137,19 +138,11 @@ class Launcher:
 
     def _push_and_deploy_plugin(self, plugin_name):
 
-        inputs = [
-            {
-                "type": "Dataset",
-                "name": "dataset_obj"
-            },
-            {
-                "type": "Json",
-                "name": "model_specs"
-            },
-            {
-                "type": "Json",
-                "name": "hp_values"
-            }]
+        dataset_input = dl.PluginInput(type='Dataset', name='dataset')
+        hp_value_input = dl.PluginInput(type='Json', name='hp_values')
+        model_specs_input = dl.PluginInput(type='Json', name='model_specs')
+
+        inputs = [dataset_input, hp_value_input, model_specs_input]
 
         plugin = self.project.plugins.push(plugin_name=plugin_name,
                                            src_path=os.getcwd(),
@@ -162,13 +155,17 @@ class Launcher:
                                                              'concurrency': 2,
                                                              'image': 'gcr.io/viewo-g/piper/agent/runner/gpu/main/zazu:latest'
                                                              },
-                                                    bot=None)
+                                                    bot=None,
+                                                    config={'plugin_name': plugin.name})
 
     def _run_remote_session(self, inputs):
 
-        metrics = self.deployment.sessions.create(deployment_id=self.deployment.id,
+        session = self.deployment.sessions.create(deployment_id=self.deployment.id,
                                                   session_input=inputs,
-                                                  sync=True).output
+                                                  sync=True)
+
+        metrics = session.output
+
         return metrics
 
     def _run_demo_session(self, inputs):

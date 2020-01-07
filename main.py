@@ -1,11 +1,7 @@
 import logging
 import dtlpy as dl
-import numpy as np
-from PIL import Image
-import uuid
-import os
 from importlib import import_module
-from .plugin_utils import download_data
+from plugin_utils import download_data
 logger = logging.getLogger(__name__)
 
 
@@ -15,20 +11,22 @@ class PluginRunner(dl.BasePluginRunner):
 
     """
 
-    def __init__(self):
+    def __init__(self, plugin_name):
+        self.plugin_name = plugin_name
         pass
 
-    def run(self, dataset_obj, model_specs, hp_values, configs=None, progress=None):
+    def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
 
-        download_data(dataset_obj)
+        download_data(dataset)
 
         # get project
-        project = dataset_obj.project
+        project = dataset.project
         assert isinstance(project, dl.entities.Project)
 
         # start tune
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
-        final = 0
+
+        final = 1 if self.plugin_name == 'trainer' else 0
         devices = {'gpu_index': 0}
 
         adapter = cls(devices, model_specs, hp_values, final)
@@ -42,14 +40,17 @@ class PluginRunner(dl.BasePluginRunner):
             adapter.build()
         adapter.train()
 
-        metrics = adapter.get_metrics()
-        if type(metrics) is not dict:
-            raise Exception('adapter, get_metrics method must return dict object')
-        if type(metrics['val_accuracy']) is not float:
-            raise Exception(
-                'adapter, get_metrics method must return dict with only python floats. '
-                'Not numpy floats or any other objects like that')
-        return metrics
+        if final:
+            metrics = adapter.get_metrics()
+            if type(metrics) is not dict:
+                raise Exception('adapter, get_metrics method must return dict object')
+            if type(metrics['val_accuracy']) is not float:
+                raise Exception(
+                    'adapter, get_metrics method must return dict with only python floats. '
+                    'Not numpy floats or any other objects like that')
+            return metrics
+        else:
+            return adapter.get_checkpoint()
 
 
 
