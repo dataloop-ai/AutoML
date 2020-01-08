@@ -20,8 +20,8 @@ class PluginRunner(dl.BasePluginRunner):
         download_data(dataset)
 
         # get project
-        project = dataset.project
-        assert isinstance(project, dl.entities.Project)
+        # project = dataset.project
+        # assert isinstance(project, dl.entities.Project)
 
         # start tune
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')

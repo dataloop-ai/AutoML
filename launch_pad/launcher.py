@@ -153,7 +153,7 @@ class Launcher:
                                                     runtime={'gpu': True,
                                                              'numReplicas': 1,
                                                              'concurrency': 2,
-                                                             'image': 'gcr.io/viewo-g/piper/agent/runner/gpu/main/zazu:latest'
+                                                             'runnerImage': 'buffalonoam/zazu-image:0.2'
                                                              },
                                                     bot=None,
                                                     config={'plugin_name': plugin.name})
