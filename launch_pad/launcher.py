@@ -139,6 +139,7 @@ class Launcher:
     def _push_and_deploy_plugin(self, plugin_name):
 
         dataset_input = dl.PluginInput(type='Dataset', name='dataset')
+        print('dtlpy version:', dl.__version__)
         hp_value_input = dl.PluginInput(type='Json', name='hp_values')
         model_specs_input = dl.PluginInput(type='Json', name='model_specs')
 
