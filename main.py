@@ -41,6 +41,8 @@ class PluginRunner(dl.BasePluginRunner):
         adapter.train()
 
         if final:
+            return adapter.get_checkpoint()
+        else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
                 raise Exception('adapter, get_metrics method must return dict object')
@@ -49,10 +51,6 @@ class PluginRunner(dl.BasePluginRunner):
                     'adapter, get_metrics method must return dict with only python floats. '
                     'Not numpy floats or any other objects like that')
             return metrics
-        else:
-            return adapter.get_checkpoint()
-
-
 
         # pipeline_id = str(uuid.uuid1())
         # local_path = os.path.join(os.getcwd(), pipeline_id)

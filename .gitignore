@@ -169,28 +169,28 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
+## C extensions
+#*.so
 
 # Distribution / packaging
-.Python
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+#.Python
+#develop-eggs/
+#dist/
+#downloads/
+#eggs/
+#.eggs/
+##lib/
+##lib64/
+#parts/
+#sdist/
+#var/
+#wheels/
+#pip-wheel-metadata/
+#share/python-wheels/
+#*.egg-info/
+#.installed.cfg
+#*.egg
+#MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -202,18 +202,18 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
+## Unit test / coverage reports
+#htmlcov/
+#.tox/
+#.nox/
+#.coverage
+#.coverage.*
+#.cache
+#nosetests.xml
+#coverage.xml
+#*.cover
+#.hypothesis/
+#.pytest_cache/
 
 # Translations
 *.mo
@@ -285,12 +285,12 @@ dmypy.json
 ### VirtualEnv ###
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-[Bb]in
-[Ii]nclude
-[Ll]ib
-[Ll]ib64
-[Ll]ocal
-[Ss]cripts
+#[Bb]in
+#[Ii]nclude
+#[Ll]ib
+#[Ll]ib64
+#[Ll]ocal
+#[Ss]cripts
 pyvenv.cfg
 .env
 .venv
