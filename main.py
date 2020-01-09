@@ -1,7 +1,7 @@
 import logging
 import dtlpy as dl
 from importlib import import_module
-from plugin_utils import download_data
+from plugin_utils import maybe_download_data
 logger = logging.getLogger(__name__)
 
 
@@ -17,7 +17,7 @@ class PluginRunner(dl.BasePluginRunner):
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
 
-        download_data(dataset)
+        maybe_download_data(dataset)
 
         # get project
         # project = dataset.project

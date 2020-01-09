@@ -3,7 +3,7 @@ from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
-from plugin_utils import download_data, get_dataset_obj
+from plugin_utils import maybe_download_data, get_dataset_obj
 import argparse
 import os
 import torch
