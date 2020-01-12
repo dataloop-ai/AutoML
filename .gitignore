@@ -307,3 +307,4 @@ pip-selfcheck.json
 ### dataloop ###
 .dataloop/
 **/.dataloop/**
+best_trial.json
