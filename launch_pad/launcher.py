@@ -43,16 +43,10 @@ class Launcher:
         pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
 
     def train_best_trial(self, best_trial):
-        model_specs = self.optimal_model.unwrap()
-        inputs = {
-            'devices': {'gpu_index': 0},
-            'hp_values': best_trial['hp_values'],
-            'model_specs': model_specs,
-        }
-        if not self.remote:
-            return self._run_demo_session(inputs)
+        if self.remote:
+            return self._launch_remote_best_trial(best_trial)
         else:
-            return self._run_remote_session(inputs)
+            return self._launch_local_best_trial(best_trial)
 
     def launch_trials(self):
         if self.ongoing_trials is None:
@@ -61,6 +55,25 @@ class Launcher:
             self._launch_remote_trials()
         else:
             self._launch_local_trials()
+
+    def _launch_local_best_trial(self, best_trial):
+        model_specs = self.optimal_model.unwrap()
+        inputs = {
+            'devices': {'gpu_index': 0},
+            'hp_values': best_trial['hp_values'],
+            'model_specs': model_specs,
+        }
+
+        return self._run_demo_session(inputs)
+
+    def _launch_remote_best_trial(self, best_trial):
+        model_specs = self.optimal_model.unwrap()
+        dataset_input = dl.PluginInput(type='Dataset', name='dataset', value={"dataset_id": self.dataset_id})
+        hp_value_input = dl.PluginInput(type='Json', name='hp_values', value=best_trial['hp_values'])
+        model_specs_input = dl.PluginInput(type='Json', name='model_specs', value=model_specs)
+        inputs = [dataset_input, hp_value_input, model_specs_input]
+
+        return self._run_remote_session(inputs)
 
     def _launch_local_trials(self):
         threads = ThreadManager()
@@ -89,7 +102,6 @@ class Launcher:
         model_specs = self.optimal_model.unwrap()
         logger.info('launching new set of trials')
         for trial_id, trial in self.ongoing_trials.trials.items():
-
             dataset_input = dl.PluginInput(type='Dataset', name='dataset', value={"dataset_id": self.dataset_id})
             hp_value_input = dl.PluginInput(type='Json', name='hp_values', value=trial['hp_values'])
             model_specs_input = dl.PluginInput(type='Json', name='model_specs', value=model_specs)
