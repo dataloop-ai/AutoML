@@ -1,4 +1,6 @@
 import logging
+import os
+import torch
 import dtlpy as dl
 from importlib import import_module
 from plugin_utils import maybe_download_data
@@ -13,7 +15,7 @@ class PluginRunner(dl.BasePluginRunner):
 
     def __init__(self, plugin_name):
         self.plugin_name = plugin_name
-        pass
+        self.path_to_best_checkpoint = 'checkpoint.pt'
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
 
@@ -41,7 +43,12 @@ class PluginRunner(dl.BasePluginRunner):
         adapter.train()
 
         if final:
-            return adapter.save_checkpoint()
+            checkpoint = adapter.get_checkpoint()
+            # save checkpoint and upload as artifact
+            if os.path.exists(self.path_to_best_checkpoint):
+                print('overwriting checkpoint.pt . . .')
+                os.remove(self.path_to_best_checkpoint)
+            torch.save(checkpoint, self.path_to_best_checkpoint)
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
