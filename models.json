@@ -25,7 +25,7 @@
       }
     ],
     "training_configs": {
-      "epochs": 100,
+      "epochs": 1,
       "depth": 50,
       "input_size": 608,
       "learning_rate": 1e-5,
