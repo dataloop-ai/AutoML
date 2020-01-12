@@ -41,7 +41,7 @@ class PluginRunner(dl.BasePluginRunner):
         adapter.train()
 
         if final:
-            return adapter.get_checkpoint()
+            return adapter.save_checkpoint()
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
