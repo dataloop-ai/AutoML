@@ -3,8 +3,9 @@ import os
 
 def get_dataset_obj():
     import dtlpy as dl
-    dl.login_token(
-        'token here')
+    # dl.login_token(
+    #     'token here')
+    dl.login()
     dl.setenv('dev')
     project = dl.projects.get(project_name='buffs_project')
     dataset_obj = project.datasets.get('my_data')
