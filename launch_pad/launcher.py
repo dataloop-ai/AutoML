@@ -173,11 +173,10 @@ class Launcher:
 
     def _run_remote_session(self, inputs):
 
-        session = self.deployment.sessions.create(deployment_id=self.deployment.id,
-                                                  session_input=inputs,
-                                                  sync=True)
+        session_obj = self.deployment.sessions.create(deployment_id=self.deployment.id,
+                                                  session_input=inputs)
 
-        metrics = session.output
+        metrics = session_obj
 
         return metrics
 
