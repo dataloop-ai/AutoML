@@ -23,7 +23,8 @@ class PluginRunner(dl.BasePluginRunner):
 
         # get project
         # project = dataset.project
-        # assert isinstance(project, dl.entities.Project)
+        assert isinstance(dataset, dl.entities.Dataset)
+        project = dl.projects.get(project_id=dataset.projects[0])
 
         # start tune
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
@@ -49,6 +50,9 @@ class PluginRunner(dl.BasePluginRunner):
                 print('overwriting checkpoint.pt . . .')
                 os.remove(self.path_to_best_checkpoint)
             torch.save(checkpoint, self.path_to_best_checkpoint)
+            project.artifacts.upload(filepath=self.path_to_best_checkpoint,
+                                     plugin_name=self.plugin_name,
+                                     session_id=progress.session.id)
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
