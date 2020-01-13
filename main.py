@@ -50,9 +50,14 @@ class PluginRunner(dl.BasePluginRunner):
                 print('overwriting checkpoint.pt . . .')
                 os.remove(self.path_to_best_checkpoint)
             torch.save(checkpoint, self.path_to_best_checkpoint)
+            checkpoint_save_info = {
+                'plugin_name': self.plugin_name,
+                'session_id': progress.session.id
+                                }
             project.artifacts.upload(filepath=self.path_to_best_checkpoint,
-                                     plugin_name=self.plugin_name,
-                                     session_id=progress.session.id)
+                                     plugin_name=checkpoint_save_info['plugin_name'],
+                                     session_id=checkpoint_save_info['session_id'])
+            return checkpoint_save_info
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
