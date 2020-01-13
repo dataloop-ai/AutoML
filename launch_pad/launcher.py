@@ -73,7 +73,11 @@ class Launcher:
         model_specs_input = dl.PluginInput(type='Json', name='model_specs', value=model_specs)
         inputs = [dataset_input, hp_value_input, model_specs_input]
 
-        return self._run_remote_session(inputs)
+        session_obj = self._run_remote_session(inputs)
+        # TODO: Turn session_obj into checkpoint
+        session_obj
+
+
 
     def _launch_local_trials(self):
         threads = ThreadManager()
@@ -144,7 +148,8 @@ class Launcher:
         if not self.remote:
             metrics = self._run_demo_session(inputs)
         else:
-            metrics = self._run_remote_session(inputs)
+            session_obj = self._run_remote_session(inputs)
+            # TODO: Turn session_obj into metrics
         results_dict[id_hash] = metrics
         logger.info('finshed thread: ' + thread_name)
 
@@ -174,11 +179,8 @@ class Launcher:
     def _run_remote_session(self, inputs):
 
         session_obj = self.deployment.sessions.create(deployment_id=self.deployment.id,
-                                                  session_input=inputs)
-
-        metrics = session_obj
-
-        return metrics
+                                                      session_input=inputs)
+        return session_obj
 
     def _run_demo_session(self, inputs):
         return self.local_trial_connector.run(inputs['devices'], inputs['model_specs'], inputs['hp_values'])
