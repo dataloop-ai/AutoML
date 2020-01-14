@@ -48,7 +48,10 @@ class PluginRunner(dl.BasePluginRunner):
             # save checkpoint and upload as artifact
             if os.path.exists(self.path_to_best_checkpoint):
                 print('overwriting checkpoint.pt . . .')
-                os.remove(self.path_to_best_checkpoint)
+                try:
+                    os.remove(self.path_to_best_checkpoint)
+                except IsADirectoryError:
+                    os.rmdir(self.path_to_best_checkpoint)
             torch.save(checkpoint, self.path_to_best_checkpoint)
             checkpoint_save_info = {
                 'plugin_name': self.plugin_name,

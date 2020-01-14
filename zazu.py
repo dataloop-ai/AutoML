@@ -72,11 +72,7 @@ class ZaZu:
             best_trial = json.load(fp)
 
         gun = Launcher(self.opt_model, remote=self.remote)
-        checkpoint = gun.train_best_trial(best_trial)
-        if os.path.exists(self.path_to_best_checkpoint):
-            print('overwriting checkpoint.pt . . .')
-            os.remove(self.path_to_best_checkpoint)
-        torch.save(checkpoint, self.path_to_best_checkpoint)
+        gun.train_and_save_best_trial(best_trial, self.path_to_best_checkpoint)
 
     def update_optimal_model(self):
         # this will update opt_model with chosen model
