@@ -1,4 +1,5 @@
 import os
+import time
 import threading
 import logging
 import torch
@@ -20,7 +21,7 @@ class Launcher:
         self.num_available_devices = torch.cuda.device_count()
         self.home_path = optimal_model.data['home_path']
         self.dataset_name = optimal_model.data['dataset_name']
-        plugin_name = 'trainer' if self.ongoing_trials is None else 'trial'
+        self.plugin_name = 'trainer' if self.ongoing_trials is None else 'trial'
 
         if self.optimal_model.name == 'yolov3':
             if self.optimal_model.data['annotation_type'] == 'coco':
@@ -31,22 +32,36 @@ class Launcher:
             self.dataset_obj = get_dataset_obj()
             self.dataset_id = self.dataset_obj.id
             self.project = self.dataset_obj.project
-            self._push_and_deploy_plugin(plugin_name=plugin_name)
+            self._push_and_deploy_plugin(plugin_name=self.plugin_name)
             # self.deployment = self.project.deployments.get(deployment_name='trial')
             # plugin = self.project.plugins.get(plugin_id=self.deployment.pluginId)
             # print(plugin)
             # print('***')
         else:
-            self.local_trial_connector = LocalTrialConnector(plugin_name)
+            self.local_trial_connector = LocalTrialConnector(self.plugin_name)
 
     def predict(self, checkpoint_path):
         pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
 
-    def train_best_trial(self, best_trial):
+    def train_and_save_best_trial(self, best_trial, save_checkpoint_location):
         if self.remote:
-            return self._launch_remote_best_trial(best_trial)
+            session_obj = self._launch_remote_best_trial(best_trial)
+            if os.path.exists(save_checkpoint_location):
+                print('overwriting checkpoint.pt . . .')
+                os.remove(save_checkpoint_location)
+                # TODO: change workaround once new sdk version
+            artifact = self.project.artifacts.get(plugin_name=self.plugin_name, session_id=session_obj.id)
+            artifact.download(local_path=save_checkpoint_location)
+
+            os.rename(os.path.join('*/items/artifacts/plugins/trainer/sessions', session_obj.id, save_checkpoint_location), save_checkpoint_location)
+            os.rmdir('*')
+
         else:
-            return self._launch_local_best_trial(best_trial)
+            checkpoint = self._launch_local_best_trial(best_trial)
+            if os.path.exists(save_checkpoint_location):
+                print('overwriting checkpoint.pt . . .')
+                os.remove(save_checkpoint_location)
+            torch.save(checkpoint, save_checkpoint_location)
 
     def launch_trials(self):
         if self.ongoing_trials is None:
@@ -74,10 +89,10 @@ class Launcher:
         inputs = [dataset_input, hp_value_input, model_specs_input]
 
         session_obj = self._run_remote_session(inputs)
-        # TODO: Turn session_obj into checkpoint
-        session_obj
-
-
+        while session_obj.status[-1]['status'] != 'success':
+            time.sleep(5)
+            session_obj = dl.sessions.get(session_id=session_obj.id)
+        return session_obj
 
     def _launch_local_trials(self):
         threads = ThreadManager()
@@ -150,6 +165,12 @@ class Launcher:
         else:
             session_obj = self._run_remote_session(inputs)
             # TODO: Turn session_obj into metrics
+            while session_obj.status is not 'complete':
+                time.sleep(secs=5)
+
+            self.project.artifacts.download(plugin_name=self.plugin_name, session_id=session_obj.id,
+                                            local_path=os.getcwd())
+
         results_dict[id_hash] = metrics
         logger.info('finshed thread: ' + thread_name)
 
