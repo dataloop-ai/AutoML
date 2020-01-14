@@ -1,5 +1,6 @@
 import os
-
+import logging
+logger = logging.getLogger(__name__)
 
 def get_dataset_obj():
     import dtlpy as dl
@@ -21,8 +22,9 @@ def maybe_download_data(dataset_obj):
         os.mkdir(path_to_put_data)
 
     if os.path.exists(os.path.join(path_to_put_data, name)):
-        print(name, 'already exists, no need to download')
+        logger.info(name + ' already exists, no need to download')
     else:
         dataset_obj.items.download(local_path=path_to_put_data)
+        logger.info('downloaded dataset to ', path_to_put_data)
         os.rename(os.path.join(path_to_put_data, 'items', name), os.path.join(path_to_put_data, name))
         os.rmdir(os.path.join(path_to_put_data, 'items'))

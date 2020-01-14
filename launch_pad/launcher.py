@@ -47,7 +47,7 @@ class Launcher:
         if self.remote:
             session_obj = self._launch_remote_best_trial(best_trial)
             if os.path.exists(save_checkpoint_location):
-                print('overwriting checkpoint.pt . . .')
+                logger.info('overwriting checkpoint.pt . . .')
                 os.remove(save_checkpoint_location)
                 # TODO: change workaround once new sdk version
             artifact = self.project.artifacts.get(plugin_name=self.plugin_name, session_id=session_obj.id)
@@ -55,11 +55,11 @@ class Launcher:
 
             os.rename(os.path.join('*/items/artifacts/plugins/trainer/sessions', session_obj.id, save_checkpoint_location), save_checkpoint_location)
             os.rmdir('*')
-
+            self.deployment.delete()
         else:
             checkpoint = self._launch_local_best_trial(best_trial)
             if os.path.exists(save_checkpoint_location):
-                print('overwriting checkpoint.pt . . .')
+                logger.info('overwriting checkpoint.pt . . .')
                 os.remove(save_checkpoint_location)
             torch.save(checkpoint, save_checkpoint_location)
 
@@ -68,6 +68,7 @@ class Launcher:
             raise Exception('for this method ongoing_trials object must be passed during the init')
         if self.remote:
             self._launch_remote_trials()
+            self.deployment.delete()
         else:
             self._launch_local_trials()
 
@@ -177,7 +178,7 @@ class Launcher:
     def _push_and_deploy_plugin(self, plugin_name):
 
         dataset_input = dl.PluginInput(type='Dataset', name='dataset')
-        print('dtlpy version:', dl.__version__)
+        logger.info('dtlpy version:', dl.__version__)
         hp_value_input = dl.PluginInput(type='Json', name='hp_values')
         model_specs_input = dl.PluginInput(type='Json', name='model_specs')
 
@@ -186,7 +187,7 @@ class Launcher:
         plugin = self.project.plugins.push(plugin_name=plugin_name,
                                            src_path=os.getcwd(),
                                            inputs=inputs)
-
+        logger.info('deploying plugin . . .')
         self.deployment = plugin.deployments.deploy(deployment_name=plugin.name,
                                                     plugin=plugin,
                                                     runtime={'gpu': True,
@@ -198,6 +199,7 @@ class Launcher:
                                                     config={'plugin_name': plugin.name})
 
     def _run_remote_session(self, inputs):
+        logger.info('running new session . . .')
 
         session_obj = self.deployment.sessions.create(deployment_id=self.deployment.id,
                                                       session_input=inputs)
