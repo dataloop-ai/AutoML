@@ -46,15 +46,11 @@ class Launcher:
     def train_and_save_best_trial(self, best_trial, save_checkpoint_location):
         if self.remote:
             session_obj = self._launch_remote_best_trial(best_trial)
+            artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
             if os.path.exists(save_checkpoint_location):
                 logger.info('overwriting checkpoint.pt . . .')
                 os.remove(save_checkpoint_location)
-                # TODO: change workaround once new sdk version
-            artifact = self.project.artifacts.get(plugin_name=self.plugin_name, session_id=session_obj.id)
-            artifact.download(local_path=save_checkpoint_location)
-
-            os.rename(os.path.join('*/items/artifacts/plugins/trainer/sessions', session_obj.id, save_checkpoint_location), save_checkpoint_location)
-            os.rmdir('*')
+            artifact.download(local_path=os.getcwd())
             self.deployment.delete()
         else:
             checkpoint = self._launch_local_best_trial(best_trial)
