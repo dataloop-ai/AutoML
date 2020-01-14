@@ -16,6 +16,7 @@ class PluginRunner(dl.BasePluginRunner):
     def __init__(self, plugin_name):
         self.plugin_name = plugin_name
         self.path_to_best_checkpoint = 'checkpoint.pt'
+        logger.info(self.plugin_name + ' initialized')
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
 
@@ -41,13 +42,14 @@ class PluginRunner(dl.BasePluginRunner):
             adapter.preprocess()
         if hasattr(adapter, 'build'):
             adapter.build()
+        logger.info('commencing training . . . ')
         adapter.train()
-
+        logger.info('training finished')
         if final:
             checkpoint = adapter.get_checkpoint()
             # save checkpoint and upload as artifact
             if os.path.exists(self.path_to_best_checkpoint):
-                print('overwriting checkpoint.pt . . .')
+                logger.info('overwriting checkpoint.pt . . .')
                 try:
                     os.remove(self.path_to_best_checkpoint)
                 except IsADirectoryError:
@@ -57,6 +59,7 @@ class PluginRunner(dl.BasePluginRunner):
                 'plugin_name': self.plugin_name,
                 'session_id': progress.session.id
                                 }
+            logger.info('uploading checkpoint to dataloop')
             project.artifacts.upload(filepath=self.path_to_best_checkpoint,
                                      plugin_name=checkpoint_save_info['plugin_name'],
                                      session_id=checkpoint_save_info['session_id'])
@@ -70,6 +73,8 @@ class PluginRunner(dl.BasePluginRunner):
                     'adapter, get_metrics method must return dict with only python floats. '
                     'Not numpy floats or any other objects like that')
             return metrics
+
+        logger.info('FINISHED SESSION')
 
         # pipeline_id = str(uuid.uuid1())
         # local_path = os.path.join(os.getcwd(), pipeline_id)
