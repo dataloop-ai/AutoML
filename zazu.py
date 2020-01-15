@@ -9,6 +9,7 @@ import os
 import torch
 import json
 import logging
+import dtlpy as dl
 
 logger = logging.getLogger('Zazu')
 
@@ -96,6 +97,21 @@ class ZaZu:
         gun.predict(self.path_to_best_checkpoint)
 
 
+def dataloop_login(token_path):
+    if not os.path.exists(token_path):
+        raise Exception('''must have a token in ''' + token_path)
+    with open(token_path, "r") as f:
+        token = f.read().strip()
+    try:
+        dl.login_token(token)
+    except Exception as e:
+        new_token = input("token timed out, enter new token: ")
+        os.remove(token_path)
+        with open(token_path, "w") as f:
+            f.write(new_token)
+    dl.setenv('dev')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--remote", action='store_true', default=False)
@@ -103,6 +119,8 @@ if __name__ == '__main__':
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
+    if args.remote:
+        dataloop_login(token_path='token.txt')
     this_path = path = os.getcwd()
     configs_path = os.path.join(this_path, 'configs.json')
     configs = ConfigSpec(configs_path)
