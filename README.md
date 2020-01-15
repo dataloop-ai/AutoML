@@ -38,6 +38,7 @@ git clone https://github.com/dataloop-ai/zoo.git
 mkdir ../data
 cd ../data
 git clone https://github.com/dataloop-ai/tiny_coco.git
+cd ../ZazuML
 ```
 
 ### *Begin model & hyper-parameter search*
