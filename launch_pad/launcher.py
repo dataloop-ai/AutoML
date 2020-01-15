@@ -1,4 +1,5 @@
 import os
+import json
 import time
 import threading
 import logging
@@ -160,13 +161,20 @@ class Launcher:
         if not self.remote:
             metrics = self._run_demo_session(inputs)
         else:
+            metrics_path = 'metrics.json'
             session_obj = self._run_remote_session(inputs)
             # TODO: Turn session_obj into metrics
             while session_obj.status is not 'complete':
-                time.sleep(secs=5)
-
-            self.project.artifacts.download(plugin_name=self.plugin_name, session_id=session_obj.id,
-                                            local_path=os.getcwd())
+                time.sleep(5)
+                session_obj = dl.sessions.get(session_id=session_obj.id)
+            artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
+            if os.path.exists(metrics_path):
+                logger.info('overwriting checkpoint.pt . . .')
+                os.remove(metrics_path)
+            artifact.download(local_path=os.getcwd())
+            with open(metrics_path, 'r') as fp:
+                metrics = json.load(fp)
+            os.remove(metrics_path)
 
         results_dict[id_hash] = metrics
         logger.info('finshed thread: ' + thread_name)

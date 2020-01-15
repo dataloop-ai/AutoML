@@ -1,6 +1,7 @@
 import logging
 import os
 import torch
+import json
 import dtlpy as dl
 from importlib import import_module
 from plugin_utils import maybe_download_data
@@ -16,6 +17,7 @@ class PluginRunner(dl.BasePluginRunner):
     def __init__(self, plugin_name):
         self.plugin_name = plugin_name
         self.path_to_best_checkpoint = 'checkpoint.pt'
+        self.path_to_metrics = 'trial.txt'
         logger.info(self.plugin_name + ' initialized')
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
@@ -45,6 +47,10 @@ class PluginRunner(dl.BasePluginRunner):
         logger.info('commencing training . . . ')
         adapter.train()
         logger.info('training finished')
+        save_info = {
+            'plugin_name': self.plugin_name,
+            'session_id': progress.session.id
+        }
         if final:
             checkpoint = adapter.get_checkpoint()
             # save checkpoint and upload as artifact
@@ -55,15 +61,12 @@ class PluginRunner(dl.BasePluginRunner):
                 except IsADirectoryError:
                     os.rmdir(self.path_to_best_checkpoint)
             torch.save(checkpoint, self.path_to_best_checkpoint)
-            checkpoint_save_info = {
-                'plugin_name': self.plugin_name,
-                'session_id': progress.session.id
-                                }
+
             logger.info('uploading checkpoint to dataloop')
             project.artifacts.upload(filepath=self.path_to_best_checkpoint,
-                                     plugin_name=checkpoint_save_info['plugin_name'],
-                                     session_id=checkpoint_save_info['session_id'])
-            return checkpoint_save_info
+                                     plugin_name=save_info['plugin_name'],
+                                     session_id=save_info['session_id'])
+            return save_info
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
@@ -72,7 +75,20 @@ class PluginRunner(dl.BasePluginRunner):
                 raise Exception(
                     'adapter, get_metrics method must return dict with only python floats. '
                     'Not numpy floats or any other objects like that')
-            return metrics
+            # save trial and upload as artifact
+            if os.path.exists(self.path_to_metrics):
+                logger.info('overwriting checkpoint.pt . . .')
+                try:
+                    os.remove(self.path_to_metrics)
+                except IsADirectoryError:
+                    os.rmdir(self.path_to_metrics)
+            with open(self.path_to_metrics, 'w') as fp:
+                json.dump(metrics, fp)
+
+            logger.info('uploading metrics to dataloop')
+            project.artifacts.upload(filepath=self.path_to_best_checkpoint,
+                                     plugin_name=save_info['plugin_name'],
+                                     session_id=save_info['session_id'])
 
         logger.info('FINISHED SESSION')
 
