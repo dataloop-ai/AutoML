@@ -1,4 +1,5 @@
 import os
+import time
 import threading
 import logging
 import torch
@@ -20,7 +21,7 @@ class Launcher:
         self.num_available_devices = torch.cuda.device_count()
         self.home_path = optimal_model.data['home_path']
         self.dataset_name = optimal_model.data['dataset_name']
-        plugin_name = 'trainer' if self.ongoing_trials is None else 'trial'
+        self.plugin_name = 'trainer' if self.ongoing_trials is None else 'trial'
 
         if self.optimal_model.name == 'yolov3':
             if self.optimal_model.data['annotation_type'] == 'coco':
@@ -31,28 +32,39 @@ class Launcher:
             self.dataset_obj = get_dataset_obj()
             self.dataset_id = self.dataset_obj.id
             self.project = self.dataset_obj.project
-            self._push_and_deploy_plugin(plugin_name=plugin_name)
+            self._push_and_deploy_plugin(plugin_name=self.plugin_name)
             # self.deployment = self.project.deployments.get(deployment_name='trial')
             # plugin = self.project.plugins.get(plugin_id=self.deployment.pluginId)
             # print(plugin)
             # print('***')
         else:
-            self.local_trial_connector = LocalTrialConnector(plugin_name)
+            self.local_trial_connector = LocalTrialConnector(self.plugin_name)
 
     def predict(self, checkpoint_path):
         pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
 
-    def train_best_trial(self, best_trial):
+    def train_and_save_best_trial(self, best_trial, save_checkpoint_location):
         if self.remote:
-            return self._launch_remote_best_trial(best_trial)
+            session_obj = self._launch_remote_best_trial(best_trial)
+            artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
+            if os.path.exists(save_checkpoint_location):
+                logger.info('overwriting checkpoint.pt . . .')
+                os.remove(save_checkpoint_location)
+            artifact.download(local_path=os.getcwd())
+            self.deployment.delete()
         else:
-            return self._launch_local_best_trial(best_trial)
+            checkpoint = self._launch_local_best_trial(best_trial)
+            if os.path.exists(save_checkpoint_location):
+                logger.info('overwriting checkpoint.pt . . .')
+                os.remove(save_checkpoint_location)
+            torch.save(checkpoint, save_checkpoint_location)
 
     def launch_trials(self):
         if self.ongoing_trials is None:
             raise Exception('for this method ongoing_trials object must be passed during the init')
         if self.remote:
             self._launch_remote_trials()
+            self.deployment.delete()
         else:
             self._launch_local_trials()
 
@@ -73,7 +85,11 @@ class Launcher:
         model_specs_input = dl.PluginInput(type='Json', name='model_specs', value=model_specs)
         inputs = [dataset_input, hp_value_input, model_specs_input]
 
-        return self._run_remote_session(inputs)
+        session_obj = self._run_remote_session(inputs)
+        while session_obj.status[-1]['status'] != 'success':
+            time.sleep(5)
+            session_obj = dl.sessions.get(session_id=session_obj.id)
+        return session_obj
 
     def _launch_local_trials(self):
         threads = ThreadManager()
@@ -144,14 +160,21 @@ class Launcher:
         if not self.remote:
             metrics = self._run_demo_session(inputs)
         else:
-            metrics = self._run_remote_session(inputs)
+            session_obj = self._run_remote_session(inputs)
+            # TODO: Turn session_obj into metrics
+            while session_obj.status is not 'complete':
+                time.sleep(secs=5)
+
+            self.project.artifacts.download(plugin_name=self.plugin_name, session_id=session_obj.id,
+                                            local_path=os.getcwd())
+
         results_dict[id_hash] = metrics
         logger.info('finshed thread: ' + thread_name)
 
     def _push_and_deploy_plugin(self, plugin_name):
 
         dataset_input = dl.PluginInput(type='Dataset', name='dataset')
-        print('dtlpy version:', dl.__version__)
+        logger.info('dtlpy version:', dl.__version__)
         hp_value_input = dl.PluginInput(type='Json', name='hp_values')
         model_specs_input = dl.PluginInput(type='Json', name='model_specs')
 
@@ -160,7 +183,7 @@ class Launcher:
         plugin = self.project.plugins.push(plugin_name=plugin_name,
                                            src_path=os.getcwd(),
                                            inputs=inputs)
-
+        logger.info('deploying plugin . . .')
         self.deployment = plugin.deployments.deploy(deployment_name=plugin.name,
                                                     plugin=plugin,
                                                     runtime={'gpu': True,
@@ -172,14 +195,11 @@ class Launcher:
                                                     config={'plugin_name': plugin.name})
 
     def _run_remote_session(self, inputs):
+        logger.info('running new session . . .')
 
-        session = self.deployment.sessions.create(deployment_id=self.deployment.id,
-                                                  session_input=inputs,
-                                                  sync=True)
-
-        metrics = session.output
-
-        return metrics
+        session_obj = self.deployment.sessions.create(deployment_id=self.deployment.id,
+                                                      session_input=inputs)
+        return session_obj
 
     def _run_demo_session(self, inputs):
         return self.local_trial_connector.run(inputs['devices'], inputs['model_specs'], inputs['hp_values'])
