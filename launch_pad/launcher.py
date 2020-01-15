@@ -164,9 +164,11 @@ class Launcher:
             metrics_path = 'metrics.json'
             session_obj = self._run_remote_session(inputs)
             # TODO: Turn session_obj into metrics
-            while session_obj.status is not 'complete':
+            while session_obj.status[-1]['status'] != 'success':
                 time.sleep(5)
                 session_obj = dl.sessions.get(session_id=session_obj.id)
+                if session_obj.status[-1]['status'] != 'failed':
+                    raise Exception("plugin session failed")
             artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
             if os.path.exists(metrics_path):
                 logger.info('overwriting checkpoint.pt . . .')
