@@ -9,7 +9,6 @@ import os
 import torch
 import json
 import logging
-import dtlpy as dl
 
 logger = logging.getLogger('Zazu')
 
@@ -98,6 +97,7 @@ class ZaZu:
 
 
 def dataloop_login(token_path):
+    import dtlpy as dl
     if not os.path.exists(token_path):
         raise Exception('''must have a token in ''' + token_path)
     with open(token_path, "r") as f:
