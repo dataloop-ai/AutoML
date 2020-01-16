@@ -49,11 +49,13 @@ class ZaZu:
         tuner.search_hp()
         gun.launch_trials()
         tuner.end_trial()
-
+        # starting second set of trials
+        tuner.search_hp()
         while ongoing_trials.status is not 'STOPPED':
-            tuner.search_hp()
             gun.launch_trials()
             tuner.end_trial()
+            # starting next set of trials
+            tuner.search_hp()
 
         best_trial = tuner.get_best_trial()
         logger.info('best trial: ', best_trial)
