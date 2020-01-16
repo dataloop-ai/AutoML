@@ -46,12 +46,15 @@ class Launcher:
 
     def train_and_save_best_trial(self, best_trial, save_checkpoint_location):
         if self.remote:
-            session_obj = self._launch_remote_best_trial(best_trial)
-            artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
-            if os.path.exists(save_checkpoint_location):
-                logger.info('overwriting checkpoint.pt . . .')
-                os.remove(save_checkpoint_location)
-            artifact.download(local_path=os.getcwd())
+            try:
+                session_obj = self._launch_remote_best_trial(best_trial)
+                artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
+                if os.path.exists(save_checkpoint_location):
+                    logger.info('overwriting checkpoint.pt . . .')
+                    os.remove(save_checkpoint_location)
+                artifact.download(local_path=os.getcwd())
+            except Exception as e:
+                print(e)
             self.deployment.delete()
         else:
             checkpoint = self._launch_local_best_trial(best_trial)
@@ -63,11 +66,12 @@ class Launcher:
     def launch_trials(self):
         if self.ongoing_trials is None:
             raise Exception('for this method ongoing_trials object must be passed during the init')
-        if self.remote:
-            self._launch_remote_trials()
-            self.deployment.delete()
-        else:
-            self._launch_local_trials()
+        if self.ongoing_trials.num_trials > 0:
+            if self.remote:
+                self._launch_remote_trials()
+                self.deployment.delete()
+            else:
+                self._launch_local_trials()
 
     def _launch_local_best_trial(self, best_trial):
         model_specs = self.optimal_model.unwrap()
@@ -160,25 +164,28 @@ class Launcher:
     def _collect_metrics(self, inputs, id_hash, results_dict):
         thread_name = threading.currentThread().getName()
         logger.info('starting thread: ' + thread_name)
-        if not self.remote:
-            metrics = self._run_demo_session(inputs)
-        else:
-            metrics_path = 'metrics.json'
-            session_obj = self._run_remote_session(inputs)
-            # TODO: Turn session_obj into metrics
-            while session_obj.status[-1]['status'] != 'success':
-                time.sleep(5)
-                session_obj = dl.sessions.get(session_id=session_obj.id)
-                if session_obj.status[-1]['status'] == 'failed':
-                    raise Exception("plugin session failed")
-            artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
-            if os.path.exists(metrics_path):
-                logger.info('overwriting checkpoint.pt . . .')
+        if self.remote:
+            try:
+                metrics_path = 'metrics.json'
+                session_obj = self._run_remote_session(inputs)
+                # TODO: Turn session_obj into metrics
+                while session_obj.status[-1]['status'] != 'success':
+                    time.sleep(5)
+                    session_obj = dl.sessions.get(session_id=session_obj.id)
+                    if session_obj.status[-1]['status'] == 'failed':
+                        raise Exception("plugin session failed")
+                artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
+                if os.path.exists(metrics_path):
+                    logger.info('overwriting checkpoint.pt . . .')
+                    os.remove(metrics_path)
+                artifact.download(local_path=os.getcwd())
+                with open(metrics_path, 'r') as fp:
+                    metrics = json.load(fp)
                 os.remove(metrics_path)
-            artifact.download(local_path=os.getcwd())
-            with open(metrics_path, 'r') as fp:
-                metrics = json.load(fp)
-            os.remove(metrics_path)
+            except Exception as e:
+                print(e)
+        else:
+            metrics = self._run_demo_session(inputs)
 
         results_dict[id_hash] = metrics
         logger.info('finshed thread: ' + thread_name)
