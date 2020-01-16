@@ -17,7 +17,7 @@ class PluginRunner(dl.BasePluginRunner):
     def __init__(self, plugin_name):
         self.plugin_name = plugin_name
         self.path_to_best_checkpoint = 'checkpoint.pt'
-        self.path_to_metrics = 'trial.txt'
+        self.path_to_metrics = 'metrics.json'
         logger.info(self.plugin_name + ' initialized')
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
@@ -86,7 +86,7 @@ class PluginRunner(dl.BasePluginRunner):
                 json.dump(metrics, fp)
 
             logger.info('uploading metrics to dataloop')
-            project.artifacts.upload(filepath=self.path_to_best_checkpoint,
+            project.artifacts.upload(filepath=self.path_to_metrics,
                                      plugin_name=save_info['plugin_name'],
                                      session_id=save_info['session_id'])
 
