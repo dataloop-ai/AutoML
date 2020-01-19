@@ -18,6 +18,7 @@ class PluginRunner(dl.BasePluginRunner):
         self.plugin_name = plugin_name
         self.path_to_best_checkpoint = 'checkpoint.pt'
         self.path_to_metrics = 'metrics.json'
+        self.path_to_tensorboard_dir = 'runs'
         logger.info(self.plugin_name + ' initialized')
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
@@ -53,20 +54,16 @@ class PluginRunner(dl.BasePluginRunner):
         }
         if final:
             checkpoint = adapter.get_checkpoint()
-            # save checkpoint and upload as artifact
-            if os.path.exists(self.path_to_best_checkpoint):
-                logger.info('overwriting checkpoint.pt . . .')
-                try:
-                    os.remove(self.path_to_best_checkpoint)
-                except IsADirectoryError:
-                    os.rmdir(self.path_to_best_checkpoint)
-            torch.save(checkpoint, self.path_to_best_checkpoint)
-
+            self._save_checkpoint(checkpoint)
+            # upload checkpoint as artifact
             logger.info('uploading checkpoint to dataloop')
             project.artifacts.upload(filepath=self.path_to_best_checkpoint,
                                      plugin_name=save_info['plugin_name'],
                                      session_id=save_info['session_id'])
-            return save_info
+
+            project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
+                                     plugin_name=save_info['plugin_name'],
+                                     session_id=save_info['session_id'])
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
@@ -75,22 +72,40 @@ class PluginRunner(dl.BasePluginRunner):
                 raise Exception(
                     'adapter, get_metrics method must return dict with only python floats. '
                     'Not numpy floats or any other objects like that')
-            # save trial and upload as artifact
-            if os.path.exists(self.path_to_metrics):
-                logger.info('overwriting checkpoint.pt . . .')
-                try:
-                    os.remove(self.path_to_metrics)
-                except IsADirectoryError:
-                    os.rmdir(self.path_to_metrics)
-            with open(self.path_to_metrics, 'w') as fp:
-                json.dump(metrics, fp)
 
+            self._save_metrics(metrics)
+            # upload metrics as artifact
             logger.info('uploading metrics to dataloop')
             project.artifacts.upload(filepath=self.path_to_metrics,
                                      plugin_name=save_info['plugin_name'],
                                      session_id=save_info['session_id'])
 
+            project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
+                                     plugin_name=save_info['plugin_name'],
+                                     session_id=save_info['session_id'])
+
         logger.info('FINISHED SESSION')
+
+    def _save_metrics(self, metrics):
+        # save trial
+        if os.path.exists(self.path_to_metrics):
+            logger.info('overwriting checkpoint.pt . . .')
+            try:
+                os.remove(self.path_to_metrics)
+            except IsADirectoryError:
+                os.rmdir(self.path_to_metrics)
+        with open(self.path_to_metrics, 'w') as fp:
+            json.dump(metrics, fp)
+
+    def _save_checkpoint(self, checkpoint):
+        # save checkpoint
+        if os.path.exists(self.path_to_best_checkpoint):
+            logger.info('overwriting checkpoint.pt . . .')
+            try:
+                os.remove(self.path_to_best_checkpoint)
+            except IsADirectoryError:
+                os.rmdir(self.path_to_best_checkpoint)
+        torch.save(checkpoint, self.path_to_best_checkpoint)
 
         # pipeline_id = str(uuid.uuid1())
         # local_path = os.path.join(os.getcwd(), pipeline_id)

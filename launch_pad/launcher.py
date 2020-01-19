@@ -47,14 +47,20 @@ class Launcher:
     def train_and_save_best_trial(self, best_trial, save_checkpoint_location):
         if self.remote:
             try:
+                path_to_tensorboard_dir = 'runs'
                 session_obj = self._launch_remote_best_trial(best_trial)
-                artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
                 if os.path.exists(save_checkpoint_location):
                     logger.info('overwriting checkpoint.pt . . .')
                     os.remove(save_checkpoint_location)
-                artifact.download(local_path=os.getcwd())
+                if os.path.exists(path_to_tensorboard_dir):
+                    logger.info('overwriting tenorboards runs . . .')
+                    os.rmdir(path_to_tensorboard_dir)
+                # download artifacts, should contain checkpoint and tensorboard logs
+                for artifact in self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id):
+                    artifact.download(local_path=os.getcwd())
             except Exception as e:
                 print(e)
+
             self.deployment.delete()
         else:
             checkpoint = self._launch_local_best_trial(best_trial)
@@ -167,6 +173,7 @@ class Launcher:
         if self.remote:
             try:
                 metrics_path = 'metrics.json'
+                path_to_tensorboard_dir = 'runs'
                 session_obj = self._run_remote_session(inputs)
                 # TODO: Turn session_obj into metrics
                 while session_obj.status[-1]['status'] != 'success':
@@ -174,16 +181,22 @@ class Launcher:
                     session_obj = dl.sessions.get(session_id=session_obj.id)
                     if session_obj.status[-1]['status'] == 'failed':
                         raise Exception("plugin session failed")
-                artifact = self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id)[0]
+
                 if os.path.exists(metrics_path):
                     logger.info('overwriting checkpoint.pt . . .')
                     os.remove(metrics_path)
-                artifact.download(local_path=os.getcwd())
+                if os.path.exists(path_to_tensorboard_dir):
+                    logger.info('overwriting tenorboards runs . . .')
+                    os.rmdir(path_to_tensorboard_dir)
+                # download artifacts, should contain metrics and tensorboard runs
+                for artifact in self.project.artifacts.list(plugin_name=self.plugin_name, session_id=session_obj.id):
+                    artifact.download(local_path=os.getcwd())
+
                 with open(metrics_path, 'r') as fp:
                     metrics = json.load(fp)
                 os.remove(metrics_path)
             except Exception as e:
-                print(e)
+                print('The thread ' + thread_name + ' had an exception: \n', e)
         else:
             metrics = self._run_demo_session(inputs)
 
