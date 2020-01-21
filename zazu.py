@@ -9,7 +9,6 @@ import os
 import torch
 import json
 import logging
-import dtlpy as dl
 
 logger = logging.getLogger('Zazu')
 
@@ -50,11 +49,13 @@ class ZaZu:
         tuner.search_hp()
         gun.launch_trials()
         tuner.end_trial()
-
+        # starting second set of trials
+        tuner.search_hp()
         while ongoing_trials.status is not 'STOPPED':
-            tuner.search_hp()
             gun.launch_trials()
             tuner.end_trial()
+            # starting next set of trials
+            tuner.search_hp()
 
         best_trial = tuner.get_best_trial()
         logger.info('best trial: ', best_trial)
@@ -98,6 +99,7 @@ class ZaZu:
 
 
 def dataloop_login(token_path):
+    import dtlpy as dl
     if not os.path.exists(token_path):
         raise Exception('''must have a token in ''' + token_path)
     with open(token_path, "r") as f:
