@@ -8,18 +8,18 @@ from plugin_utils import maybe_download_data
 logger = logging.getLogger(__name__)
 
 
-class PluginRunner(dl.BasePluginRunner):
+class ServiceRunner(dl.BaseServiceRunner):
     """
     Plugin runner class
 
     """
 
-    def __init__(self, plugin_name):
-        self.plugin_name = plugin_name
+    def __init__(self, package_name):
+        self.package_name = package_name
         self.path_to_best_checkpoint = 'checkpoint.pt'
         self.path_to_metrics = 'metrics.json'
         self.path_to_tensorboard_dir = 'runs'
-        logger.info(self.plugin_name + ' initialized')
+        logger.info(self.package_name + ' initialized')
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
 
@@ -33,7 +33,7 @@ class PluginRunner(dl.BasePluginRunner):
         # start tune
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
 
-        final = 1 if self.plugin_name == 'trainer' else 0
+        final = 1 if self.package_name == 'trainer' else 0
         devices = {'gpu_index': 0}
 
         adapter = cls(devices, model_specs, hp_values, final)
@@ -49,8 +49,8 @@ class PluginRunner(dl.BasePluginRunner):
         adapter.train()
         logger.info('training finished')
         save_info = {
-            'plugin_name': self.plugin_name,
-            'session_id': progress.session.id
+            'package_name': self.package_name,
+            'execution_id': progress.execution.id
         }
         if final:
             checkpoint = adapter.get_checkpoint()
@@ -58,12 +58,12 @@ class PluginRunner(dl.BasePluginRunner):
             # upload checkpoint as artifact
             logger.info('uploading checkpoint to dataloop')
             project.artifacts.upload(filepath=self.path_to_best_checkpoint,
-                                     plugin_name=save_info['plugin_name'],
-                                     session_id=save_info['session_id'])
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
 
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
-                                     plugin_name=save_info['plugin_name'],
-                                     session_id=save_info['session_id'])
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
@@ -77,12 +77,12 @@ class PluginRunner(dl.BasePluginRunner):
             # upload metrics as artifact
             logger.info('uploading metrics to dataloop')
             project.artifacts.upload(filepath=self.path_to_metrics,
-                                     plugin_name=save_info['plugin_name'],
-                                     session_id=save_info['session_id'])
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
 
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
-                                     plugin_name=save_info['plugin_name'],
-                                     session_id=save_info['session_id'])
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
 
         logger.info('FINISHED SESSION')
 
@@ -106,20 +106,3 @@ class PluginRunner(dl.BasePluginRunner):
             except IsADirectoryError:
                 os.rmdir(self.path_to_best_checkpoint)
         torch.save(checkpoint, self.path_to_best_checkpoint)
-
-        # pipeline_id = str(uuid.uuid1())
-        # local_path = os.path.join(os.getcwd(), pipeline_id)
-        #
-        # #####################
-        # # upload for resume #
-        # #####################
-        # project.artifacts.upload(plugin_name='tuner',
-        #                          session_id=pipeline_id,
-        #                          local_path=local_path)
-        #
-        # #######################
-        # # download for resume #
-        # #######################
-        # project.artifacts.download(plugin_name='tuner',
-        #                            session_id=pipeline_id,
-        #                            local_path=local_path)
