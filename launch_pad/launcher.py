@@ -211,7 +211,7 @@ class Launcher:
         inputs = [dataset_input, hp_value_input, model_specs_input]
         function = dl.PackageFunction(name='run', inputs=inputs, outputs=[], description='')
         module = dl.PackageModule(entry_point='service_executor.py', name='service_executor', functions=[function],
-                                  init_inputs=[input_to_init])
+                                  init_inputs=[input_to_init.to_json()])
 
         package = self.project.packages.push(
             package_name=package_name,
