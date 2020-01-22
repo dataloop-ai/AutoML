@@ -33,7 +33,7 @@ class Launcher:
             self.dataset_obj = get_dataset_obj()
             self.dataset_id = self.dataset_obj.id
             self.project = self.dataset_obj.project
-            self._push_and_deploy_package(packge_name=self.package_name)
+            self._push_and_deploy_package(package_name=self.package_name)
         else:
             self.local_trial_connector = LocalTrialConnector(self.package_name)
 
