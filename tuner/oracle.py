@@ -6,7 +6,7 @@ import pandas as pd
 
 class Oracle:
 
-    def __init__(self, space, max_trials):
+    def __init__(self, space, max_trials=None):
         self.space = space
         self.trials = {}
         self._tried_so_far = set()

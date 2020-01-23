@@ -4,9 +4,10 @@ from .oracle import Oracle
 class HyperBand(Oracle):
 
     def __init__(self,
+                 space,
                  max_epochs,
                  factor=3):
-
+        super().__init__(space)
         self.max_epochs = max_epochs
         # Minimum epochs before successive halving, Hyperband sweeps through varying
         # degress of aggressiveness.
@@ -24,28 +25,26 @@ class HyperBand(Oracle):
         self._reset_bracket_if_finished()
 
         if self._bracket:
-            self._fill_bracket(trial_id)
+            values = self._get_trial(trial_id)
+            return {'status': 'RUNNING', 'values': values}
         # This is reached if no trials from current brackets can be run.
 
         # Max sweeps has been reached, no more brackets should be created.
-        if (self._current_bracket_num == 0 and
+        elif (self._current_bracket_num == 0 and
                 self._current_iteration + 1 == self.hyperband_iterations):
-            # Stop creating new brackets, but wait to complete other brackets.
-            if self.ongoing_trials:
-                return {'status': 'IDLE'}
-            else:
-                self._increment_bracket_num()
-                return {'status': 'STOPPED'}
+            self._increment_bracket_num()
+            return {'status': 'STOPPED'}
         # Create a new bracket.
         else:
             self._increment_bracket_num()
             self._start_new_bracket()
-            return self._random_trial(trial_id, self._bracket[-1])
+            values = self._get_trial(trial_id)
+            return {'status': 'RUNNING', 'values': values}
 
-    def _fill_bracket(self, trial_id):
+    def _get_trial(self, trial_id):
         bracket_num = self._bracket['bracket_num']
         rounds = self._bracket['rounds']
-
+        # are we still filling the first bracket ?
         if len(rounds[0]) < self._get_size(bracket_num, round_num=0):
             # Populate the initial random trials for this bracket.
             return self._random_trial(trial_id, self._bracket)
@@ -82,7 +81,8 @@ class HyperBand(Oracle):
 
                     round_info.append({'past_id': best_trial.trial_id,
                                        'id': trial_id})
-                    return {'status': 'RUNNING', 'values': values}
+                    return values
+
 
     def _start_new_bracket(self):
         rounds = []
@@ -114,7 +114,7 @@ class HyperBand(Oracle):
     def _random_trial(self, trial_id, bracket):
         bracket_num = bracket['bracket_num']
         rounds = bracket['rounds']
-        values = self._random_values()
+        values = super()._populate_space()['values']
         if values:
             values['tuner/epochs'] = self._get_epochs(bracket_num, 0)
             values['tuner/initial_epoch'] = 0
@@ -129,3 +129,6 @@ class HyperBand(Oracle):
         else:
             # Collision and no ongoing trials should trigger an exit.
             return {'status': 'STOPPED'}
+
+    def _get_epochs(self, bracket_num, round_num):
+        return math.ceil(self.max_epochs / self.factor**(bracket_num - round_num))

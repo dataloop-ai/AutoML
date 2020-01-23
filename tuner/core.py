@@ -1,4 +1,5 @@
 from .oracle import Oracle
+from .hyperband import HyperBand
 import pandas as pd
 
 
@@ -6,7 +7,7 @@ class Tuner:
 
     def __init__(self, optimal_model, ongoing_trials):
 
-        self.oracle = Oracle(space=optimal_model.hp_space, max_trials=optimal_model.max_trials)
+        self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=10)
         self.ongoing_trials = ongoing_trials
         self.max_instances_at_once = optimal_model.max_instances_at_once
 
