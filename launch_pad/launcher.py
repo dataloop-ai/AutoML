@@ -206,12 +206,14 @@ class Launcher:
         dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
         hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
         model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
-        input_to_init = dl.FunctionIO(type='Json', name='package_name', value=package_name)
+        input_to_init = {
+            'package_name': package_name
+        }
 
         inputs = [dataset_input, hp_value_input, model_specs_input]
         function = dl.PackageFunction(name='run', inputs=inputs, outputs=[], description='')
         module = dl.PackageModule(entry_point='service_executor.py', name='service_executor', functions=[function],
-                                  init_inputs=[input_to_init.to_json()])
+                                  init_inputs=input_to_init)
 
         package = self.project.packages.push(
             package_name=package_name,
@@ -221,6 +223,12 @@ class Launcher:
         logger.info('deploying package . . .')
         self.service = package.services.deploy(service_name=package.name,
                                                module_name='service_executor',
+                                               agent_versions={
+                                                   'dtlpy': '1.9.7',
+                                                   'runner': '1.9.7.latest',
+                                                   'proxy': '1.9.7.latest',
+                                                   'verify': True
+                                               },
                                                package=package,
                                                runtime={'gpu': True,
                                                         'numReplicas': 1,
