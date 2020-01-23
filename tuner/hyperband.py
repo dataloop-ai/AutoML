@@ -24,47 +24,7 @@ class HyperBand(Oracle):
         self._reset_bracket_if_finished()
 
         if self._bracket:
-            bracket_num = self._bracket['bracket_num']
-            rounds = self._bracket['rounds']
-
-            if len(rounds[0]) < self._get_size(bracket_num, round_num=0):
-                # Populate the initial random trials for this bracket.
-                return self._random_trial(trial_id, self._bracket)
-            else:
-                # Try to populate incomplete rounds for this bracket.
-                for round_num in range(1, len(rounds)):
-                    round_info = rounds[round_num]
-                    past_round_info = rounds[round_num - 1]
-                    size = self._get_size(bracket_num, round_num)
-                    past_size = self._get_size(bracket_num, round_num - 1)
-
-                    # If more trials from the last round are ready than will be
-                    # thrown out, we can select the best to run for the next round.
-                    already_selected = [info['past_id'] for info in round_info]
-                    candidates = [self.trials[info['id']]
-                                  for info in past_round_info
-                                  if info['id'] not in already_selected]
-                    candidates = [t for t in candidates if t.status == 'COMPLETED']
-                    if len(candidates) > past_size - size:
-                        sorted_candidates = sorted(
-                            candidates,
-                            key=lambda t: t.score,
-                            reverse=self.objective.direction == 'max')
-                        best_trial = sorted_candidates[0]
-
-                        values = best_trial.hyperparameters.values.copy()
-                        values['tuner/trial_id'] = best_trial.trial_id
-                        values['tuner/epochs'] = self._get_epochs(
-                            bracket_num, round_num)
-                        values['tuner/initial_epoch'] = self._get_epochs(
-                            bracket_num, round_num - 1)
-                        values['tuner/bracket'] = self._current_bracket_num
-                        values['tuner/round'] = round_num
-
-                        round_info.append({'past_id': best_trial.trial_id,
-                                           'id': trial_id})
-                        return {'status': 'RUNNING', 'values': values}
-
+            self._fill_bracket(trial_id)
         # This is reached if no trials from current brackets can be run.
 
         # Max sweeps has been reached, no more brackets should be created.
@@ -81,6 +41,48 @@ class HyperBand(Oracle):
             self._increment_bracket_num()
             self._start_new_bracket()
             return self._random_trial(trial_id, self._bracket[-1])
+
+    def _fill_bracket(self, trial_id):
+        bracket_num = self._bracket['bracket_num']
+        rounds = self._bracket['rounds']
+
+        if len(rounds[0]) < self._get_size(bracket_num, round_num=0):
+            # Populate the initial random trials for this bracket.
+            return self._random_trial(trial_id, self._bracket)
+        else:
+            # Try to populate incomplete rounds for this bracket.
+            for round_num in range(1, len(rounds)):
+                round_info = rounds[round_num]
+                past_round_info = rounds[round_num - 1]
+                size = self._get_size(bracket_num, round_num)
+                past_size = self._get_size(bracket_num, round_num - 1)
+
+                # If more trials from the last round are ready than will be
+                # thrown out, we can select the best to run for the next round.
+                already_selected = [info['past_id'] for info in round_info]
+                candidates = [self.trials[info['id']]
+                              for info in past_round_info
+                              if info['id'] not in already_selected]
+                candidates = [t for t in candidates if t.status == 'COMPLETED']
+                if len(candidates) > past_size - size:
+                    sorted_candidates = sorted(
+                        candidates,
+                        key=lambda t: t.score,
+                        reverse=self.objective.direction == 'max')
+                    best_trial = sorted_candidates[0]
+
+                    values = best_trial.hyperparameters.values.copy()
+                    values['tuner/trial_id'] = best_trial.trial_id
+                    values['tuner/epochs'] = self._get_epochs(
+                        bracket_num, round_num)
+                    values['tuner/initial_epoch'] = self._get_epochs(
+                        bracket_num, round_num - 1)
+                    values['tuner/bracket'] = self._current_bracket_num
+                    values['tuner/round'] = round_num
+
+                    round_info.append({'past_id': best_trial.trial_id,
+                                       'id': trial_id})
+                    return {'status': 'RUNNING', 'values': values}
 
     def _start_new_bracket(self):
         rounds = []

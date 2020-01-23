@@ -311,3 +311,4 @@ best_trial.json
 token.txt
 model.txt
 checkpoint.pt
+/zoo/
