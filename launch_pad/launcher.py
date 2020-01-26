@@ -233,7 +233,7 @@ class Launcher:
                                                runtime={'gpu': True,
                                                         'numReplicas': 1,
                                                         'concurrency': 2,
-                                                        'runnerImage': 'buffalonoam/zazu-image:0.2'
+                                                        'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                         },
                                                init_params=input_to_init)
 
