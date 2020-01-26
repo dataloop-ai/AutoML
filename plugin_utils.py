@@ -1,11 +1,16 @@
 import os
+import json
 import logging
 logger = logging.getLogger(__name__)
 
 def get_dataset_obj():
     import dtlpy as dl
-    project = dl.projects.get(project_name='buffs_project')
-    dataset_obj = project.datasets.get('my_data')
+    with open("dataloop_configs.json") as f:
+        dataloop_configs = json.load(f)
+    project_name = dataloop_configs['project']
+    dataset_name = dataloop_configs['dataset']
+    project = dl.projects.get(project_name=project_name)
+    dataset_obj = project.datasets.get(dataset_name)
     return dataset_obj
 
 
