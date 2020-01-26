@@ -234,7 +234,8 @@ class Launcher:
                                                         'numReplicas': 1,
                                                         'concurrency': 2,
                                                         'runnerImage': 'buffalonoam/zazu-image:0.2'
-                                                        })
+                                                        },
+                                               init_params=input_to_init)
 
     def _run_remote_execution(self, inputs):
         logger.info('running new execution . . .')
