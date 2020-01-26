@@ -18,7 +18,7 @@ class Oracle:
         if self.are_metrics:
             df = pd.DataFrame(self.trials)
             temp_df = df.loc['metrics'].dropna().apply(lambda x: x['val_accuracy'])
-        if len(self.trials) >= self.max_trials:
+        if self.max_trials is not None and len(self.trials) >= self.max_trials:
             status = 'STOPPED'
             values = None
         elif self.are_metrics and temp_df.max() > 0.998:
