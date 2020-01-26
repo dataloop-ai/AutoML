@@ -118,7 +118,7 @@ class HyperBand(Oracle):
         if values:
             values['tuner/epochs'] = self._get_epochs(bracket_num, 0)
             values['tuner/initial_epoch'] = 0
-            values['tuner/bracket'] = self._current_bracket
+            values['tuner/bracket'] = self._current_bracket_num
             values['tuner/round'] = 0
             rounds[0].append({'past_id': None, 'id': trial_id})
             return {'status': 'RUNNING', 'values': values}
