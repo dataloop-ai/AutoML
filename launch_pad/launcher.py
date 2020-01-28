@@ -4,7 +4,7 @@ import time
 import threading
 import logging
 import torch
-from dataloop_services.local_plugin import LocalTrialConnector
+from dataloop_services import LocalTrialConnector
 from .thread_manager import ThreadManager
 from zoo.convert2Yolo import convert
 from main_pred import pred_run
@@ -181,15 +181,15 @@ class Launcher:
                         raise Exception("plugin execution failed")
 
                 if os.path.exists(metrics_path):
-                    logger.info('overwriting checkpoint.pt . . .')
+                    logger.info('overwriting metrics.json . . .')
                     os.remove(metrics_path)
                 if os.path.exists(path_to_tensorboard_dir):
                     logger.info('overwriting tenorboards runs . . .')
                     os.rmdir(path_to_tensorboard_dir)
                 # download artifacts, should contain metrics and tensorboard runs
-                for artifact in self.project.artifacts.list(package_name=self.package_name,
-                                                            execution_id=execution_obj.id):
-                    artifact.download(local_path=os.getcwd())
+                self.project.artifacts.download(package_name=self.package_name,
+                                                            execution_id=execution_obj.id,
+                                                            local_path=os.getcwd())
 
                 with open(metrics_path, 'r') as fp:
                     metrics = json.load(fp)
@@ -207,6 +207,7 @@ class Launcher:
         dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
         hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
         model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
+        init_specs_input = dl.FunctionIO(type='Json', name='package_name')
         input_to_init = {
             'package_name': package_name
         }
@@ -214,7 +215,7 @@ class Launcher:
         inputs = [dataset_input, hp_value_input, model_specs_input]
         function = dl.PackageFunction(name='run', inputs=inputs, outputs=[], description='')
         module = dl.PackageModule(entry_point='dataloop_services/service_executor.py', name='service_executor', functions=[function],
-                                  init_inputs=input_to_init)
+                                  init_inputs=init_specs_input)
 
         package = self.project.packages.push(
             package_name=package_name,

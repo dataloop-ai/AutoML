@@ -1,15 +1,26 @@
 import os
 import json
 import numpy as np
+from shutil import copyfile
+from PIL import Image
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def convert_dataloop_to_coco(path_to_data, name='train'):
     path_to_dataloop_images_dir = os.path.join(path_to_data, 'items')
     path_to_dataloop_annotations_dir = os.path.join(path_to_data, 'json')
 
-    images = [{'file_name': filename,
-               'id': i}
-              for i, filename in enumerate(os.listdir(path_to_dataloop_images_dir))]
+    images = []
+    for i, filename in enumerate(os.listdir(path_to_dataloop_images_dir)):
+        with Image.open(os.path.join(path_to_dataloop_images_dir, filename)) as img:
+            width, height = img.size
+        images.append({'file_name': filename,
+                       'id': i,
+                       'width': width,
+                       'height': height
+                       })
 
     paths_to_dataloop_annotations = [os.path.join(path_to_dataloop_annotations_dir, j) for j in
                                      os.listdir(path_to_dataloop_annotations_dir) if 'json' in j]
@@ -61,18 +72,21 @@ def convert_dataloop_to_coco(path_to_data, name='train'):
     coco_json = {'images': images,
                  'annotations': annotations,
                  'categories': categories}
-
+    logger.info(os.listdir(path_to_data))
     save_annotation_path = os.path.join(path_to_data, 'annotations', 'instances_' + name + '.json')
-    os.mkdir(os.path.join(path_to_data, 'annotations'))
+    if not os.path.exists(os.path.join(path_to_data, 'annotations')):
+        os.mkdir(os.path.join(path_to_data, 'annotations'))
+    logger.info(os.listdir(os.path.join(path_to_data, 'annotations')))
     with open(save_annotation_path, 'w') as outfile:
         json.dump(coco_json, outfile)
-    os.mkdir(os.path.join(path_to_data, 'images'))
+    if not os.path.exists(os.path.join(os.path.join(path_to_data, 'images'))):
+        os.mkdir(os.path.join(path_to_data, 'images'))
     os.mkdir(os.path.join(path_to_data, 'images', name))
     for img in os.listdir(os.path.join(path_to_data, 'items')):
-        os.rename(os.path.join(path_to_data, 'items', img), os.path.join(path_to_data, 'images', name, img))
-    os.rmdir(os.path.join(path_to_data, 'items'))
+        copyfile(os.path.join(path_to_data, 'items', img), os.path.join(path_to_data, 'images', name, img))
+
 
 if __name__ == '__main__':
     name = 'train'
-    path_to_data = '/Users/noam/tiny_mice_data'
+    path_to_data = '/Users/noam/data/tiny_mice_data'
     convert_dataloop_to_coco(path_to_data, name)
