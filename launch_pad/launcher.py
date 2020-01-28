@@ -4,7 +4,7 @@ import time
 import threading
 import logging
 import torch
-from local_plugin import LocalTrialConnector
+from dataloop_services.local_plugin import LocalTrialConnector
 from .thread_manager import ThreadManager
 from zoo.convert2Yolo import convert
 from main_pred import pred_run
@@ -24,11 +24,6 @@ class Launcher:
         self.dataset_name = optimal_model.data['dataset_name']
         self.package_name = 'trainer' if self.ongoing_trials is None else 'trial'
 
-        if self.optimal_model.name == 'yolov3':
-            if self.optimal_model.data['annotation_type'] == 'coco':
-                self._convert_coco_to_yolo_format()
-                self.optimal_model.data['annotation_type'] = 'yolo'
-
         if self.remote:
             self.dataset_obj = get_dataset_obj()
             self.dataset_id = self.dataset_obj.id
@@ -36,6 +31,12 @@ class Launcher:
             self._push_and_deploy_package(package_name=self.package_name)
         else:
             self.local_trial_connector = LocalTrialConnector(self.package_name)
+
+        # TODO: dont convert here
+        if self.optimal_model.name == 'yolov3':
+            if self.optimal_model.data['annotation_type'] == 'coco':
+                self._convert_coco_to_yolo_format()
+                self.optimal_model.data['annotation_type'] = 'yolo'
 
     def predict(self, checkpoint_path):
         pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
@@ -212,7 +213,7 @@ class Launcher:
 
         inputs = [dataset_input, hp_value_input, model_specs_input]
         function = dl.PackageFunction(name='run', inputs=inputs, outputs=[], description='')
-        module = dl.PackageModule(entry_point='service_executor.py', name='service_executor', functions=[function],
+        module = dl.PackageModule(entry_point='dataloop_services/service_executor.py', name='service_executor', functions=[function],
                                   init_inputs=input_to_init)
 
         package = self.project.packages.push(
