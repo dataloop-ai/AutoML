@@ -53,9 +53,9 @@ class Launcher:
                     logger.info('overwriting tenorboards runs . . .')
                     os.rmdir(path_to_tensorboard_dir)
                 # download artifacts, should contain checkpoint and tensorboard logs
-                for artifact in self.project.artifacts.list(package_name=self.package_name,
-                                                            execution_id=execution_obj.id):
-                    artifact.download(local_path=os.getcwd())
+                self.project.artifacts.download(package_name=self.package_name,
+                                                            execution_id=execution_obj.id,
+                                                            local_path=os.getcwd())
             except Exception as e:
                 print(e)
 
