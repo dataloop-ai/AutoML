@@ -5,6 +5,9 @@ import json
 import dtlpy as dl
 from importlib import import_module
 from plugin_utils import maybe_download_data
+from spec import ConfigSpec, OptModel
+from spec import ModelsSpec
+from zazu import ZaZu
 logger = logging.getLogger(__name__)
 
 
@@ -16,33 +19,62 @@ class ServiceRunner(dl.BaseServiceRunner):
 
     def __init__(self, package_name):
         self.package_name = package_name
-        self.path_to_best_checkpoint = 'checkpoint.pt'
-        self.path_to_metrics = 'metrics.json'
-        self.path_to_tensorboard_dir = 'runs'
+        self.this_path = os.getcwd()
+        self.configs_path = os.path.join(self.this_path, 'configs.json')
         logger.info(self.package_name + ' initialized')
 
-    def search(self, dataset, model_specs, hp_values, configs=None, progress=None):
-        configs_path = os.path.join(this_path, 'configs.json')
-        configs = ConfigSpec(configs_path)
+    def search(self, progress=None):
+
+        configs = ConfigSpec(self.configs_path)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
         zazu.find_best_model()
         zazu.hp_search()
-    def train(self):
-        configs_path = os.path.join(this_path, 'configs.json')
-        configs = ConfigSpec(configs_path)
+
+        save_info = {
+            'package_name': self.package_name,
+            'execution_id': progress.execution.id
+        }
+
+        project_name = opt_model.dataloop['project']
+        project = dl.projects.get(project_name=project_name)
+
+        paths = [zazu.path_to_most_suitable_model, zazu.path_to_best_trial, zazu.path_to_best_checkpoint]
+        for path in paths:
+            project.artifacts.upload(filepath=path,
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
+
+
+    def train(self, progress=None):
+        configs = ConfigSpec(self.configs_path)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
         zazu.train_new_model()
-    def predict():
-        configs_path = os.path.join(this_path, 'configs.json')
-        configs = ConfigSpec(configs_path)
+
+        save_info = {
+            'package_name': self.package_name,
+            'execution_id': progress.execution.id
+        }
+
+        project_name = opt_model.dataloop['project']
+        project = dl.projects.get(project_name=project_name)
+
+        paths = [zazu.path_to_most_suitable_model, zazu.path_to_best_trial, zazu.path_to_best_checkpoint]
+        for path in paths:
+            project.artifacts.upload(filepath=path,
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
+
+    def predict(self, progress=None):
+        configs = ConfigSpec(self.configs_path)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
         zazu.run_inference()
+
 
 if __name__ == "__main__":
     import dtlpy as dl

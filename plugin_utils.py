@@ -7,10 +7,8 @@ logger = logging.getLogger(__name__)
 data_format = 'dataloop'
 
 
-def get_dataset_obj():
+def get_dataset_obj(dataloop_configs):
     import dtlpy as dl
-    with open("dataloop_configs.json") as f:
-        dataloop_configs = json.load(f)
     project_name = dataloop_configs['project']
     dataset_name = dataloop_configs['dataset']
     project = dl.projects.get(project_name=project_name)

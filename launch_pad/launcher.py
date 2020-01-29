@@ -25,7 +25,7 @@ class Launcher:
         self.package_name = 'trainer' if self.ongoing_trials is None else 'trial'
 
         if self.remote:
-            self.dataset_obj = get_dataset_obj()
+            self.dataset_obj = get_dataset_obj(optimal_model.dataloop)
             self.dataset_id = self.dataset_obj.id
             self.project = self.dataset_obj.project
             self._push_and_deploy_package(package_name=self.package_name)
@@ -54,8 +54,8 @@ class Launcher:
                     os.rmdir(path_to_tensorboard_dir)
                 # download artifacts, should contain checkpoint and tensorboard logs
                 self.project.artifacts.download(package_name=self.package_name,
-                                                            execution_id=execution_obj.id,
-                                                            local_path=os.getcwd())
+                                                execution_id=execution_obj.id,
+                                                local_path=os.getcwd())
             except Exception as e:
                 print(e)
 
@@ -188,8 +188,8 @@ class Launcher:
                     os.rmdir(path_to_tensorboard_dir)
                 # download artifacts, should contain metrics and tensorboard runs
                 self.project.artifacts.download(package_name=self.package_name,
-                                                            execution_id=execution_obj.id,
-                                                            local_path=os.getcwd())
+                                                execution_id=execution_obj.id,
+                                                local_path=os.getcwd())
 
                 with open(metrics_path, 'r') as fp:
                     metrics = json.load(fp)
@@ -214,7 +214,8 @@ class Launcher:
 
         inputs = [dataset_input, hp_value_input, model_specs_input]
         function = dl.PackageFunction(name='run', inputs=inputs, outputs=[], description='')
-        module = dl.PackageModule(entry_point='dataloop_services/service_executor.py', name='service_executor', functions=[function],
+        module = dl.PackageModule(entry_point='dataloop_services/service_executor.py', name='service_executor',
+                                  functions=[function],
                                   init_inputs=init_specs_input)
 
         package = self.project.packages.push(
