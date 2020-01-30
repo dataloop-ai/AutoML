@@ -65,7 +65,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
-            logger.info('finished uploading metrics and logs')
+            logger.info('finished uploading checkpoint and logs')
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
@@ -85,7 +85,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
-            logger.info('finished uploading checkpoint and logs')
+            logger.info('finished uploading metrics and logs')
 
         logger.info('FINISHED SESSION')
 
