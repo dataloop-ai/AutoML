@@ -60,7 +60,6 @@ class Launcher:
             except Exception as e:
                 print(e)
 
-            self.service.delete()
         else:
             checkpoint = self._launch_local_best_trial(best_trial)
             if os.path.exists(save_checkpoint_location):
@@ -74,7 +73,7 @@ class Launcher:
         if self.ongoing_trials.num_trials > 0:
             if self.remote:
                 self._launch_remote_trials()
-                self.service.delete()
+
             else:
                 self._launch_local_trials()
 

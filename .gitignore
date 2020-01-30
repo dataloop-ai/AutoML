@@ -309,7 +309,5 @@ pip-selfcheck.json
 ### dataloop ###
 .dataloop/
 **/.dataloop/**
-best_trial.json
 token.txt
-model.txt
 checkpoint.pt

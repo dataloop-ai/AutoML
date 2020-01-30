@@ -14,8 +14,9 @@ class ServiceRunner(dl.BaseServiceRunner):
 
     """
 
-    def __init__(self, package_name):
+    def __init__(self, package_name, service_name):
         self.package_name = package_name
+        self.service_name = service_name
         self.path_to_best_checkpoint = 'checkpoint.pt'
         self.path_to_metrics = 'metrics.json'
         self.path_to_tensorboard_dir = 'runs'
@@ -33,7 +34,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         # start tune
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
 
-        final = 1 if self.package_name == 'trainer' else 0
+        final = 1 if self.service_name == 'trainer' else 0
         devices = {'gpu_index': 0}
 
         adapter = cls(devices, model_specs, hp_values, final)
@@ -64,6 +65,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
+            logger.info('finished uploading metrics and logs')
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
@@ -83,6 +85,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
+            logger.info('finished uploading checkpoint and logs')
 
         logger.info('FINISHED SESSION')
 

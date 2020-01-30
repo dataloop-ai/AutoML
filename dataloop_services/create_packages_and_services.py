@@ -7,7 +7,9 @@ logger = logging.getLogger(__name__)
 
 def deploy_model(package, service_name):
     input_to_init = {
-        'package_name': package.name
+        'package_name': package.name,
+        'service_name': service_name
+
     }
 
     logger.info('deploying package . . .')
@@ -59,7 +61,8 @@ def push_package(project):
     dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
     hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
     model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
-    init_specs_input = dl.FunctionIO(type='Json', name='service_name')
+    package_name_input = dl.FunctionIO(type='Json', name='package_name')
+    service_name_input = dl.FunctionIO(type='Json', name='service_name')
 
     model_inputs = [dataset_input, hp_value_input, model_specs_input]
     zazu_inputs = []
@@ -67,13 +70,15 @@ def push_package(project):
     train_function = dl.PackageFunction(name='train', inputs=zazu_inputs, outputs=[], description='')
     search_function = dl.PackageFunction(name='search', inputs=zazu_inputs, outputs=[], description='')
 
-    models_module = dl.PackageModule(entry_point='dataloop_services/service_executor.py', name='service_executor',
+    models_module = dl.PackageModule(entry_point='dataloop_services/service_executor.py',
+                                     name='models_module',
                                      functions=[model_function],
-                                     init_inputs=init_specs_input)
+                                     init_inputs=[package_name_input, service_name_input])
 
-    zazu_module = dl.PackageModule(entry_point='dataloop_services/zazu_module.py', name='zazu_module',
+    zazu_module = dl.PackageModule(entry_point='dataloop_services/zazu_module.py',
+                                   name='zazu_module',
                                    functions=[train_function, search_function],
-                                   init_inputs=init_specs_input)
+                                   init_inputs=package_name_input)
 
     package_obj = project.packages.push(
         package_name='zazuml',
