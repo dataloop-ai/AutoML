@@ -2,13 +2,13 @@ import os
 import json
 import logging
 from dataloop_converter import convert_dataloop_to_coco
+import dtlpy as dl
 
 logger = logging.getLogger(__name__)
 data_format = 'dataloop'
 
 
 def get_dataset_obj(dataloop_configs):
-    import dtlpy as dl
     project_name = dataloop_configs['project']
     dataset_name = dataloop_configs['dataset']
     project = dl.projects.get(project_name=project_name)

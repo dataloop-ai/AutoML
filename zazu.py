@@ -3,12 +3,14 @@ from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
-from plugin_utils import maybe_download_data, get_dataset_obj
+from plugin_utils import maybe_download_data, get_dataloop_project
+from dataloop_services import push_and_deploy_package
 import argparse
 import os
 import torch
 import json
 import logging
+import dtlpy as dl
 
 logger = logging.getLogger('Zazu')
 
@@ -98,20 +100,14 @@ class ZaZu:
         gun.predict(self.path_to_best_checkpoint)
 
 
-def dataloop_login(token_path):
-    import dtlpy as dl
-    if not os.path.exists(token_path):
-        raise Exception('''must have a token in ''' + token_path)
-    with open(token_path, "r") as f:
-        token = f.read().strip()
+def deploy_package_and_service(name, dataloop):
     try:
-        dl.login_token(token)
-    except Exception as e:
-        new_token = input("token timed out, enter new token: ")
-        os.remove(token_path)
-        with open(token_path, "w") as f:
-            f.write(new_token)
-    dl.setenv('dev')
+        dl.setenv('dev')
+    except:
+        dl.login()
+        dl.setenv('dev')
+    project = dl.projects.get(project_name=dataloop['project'])
+    push_and_deploy_package(project=project, package_name=name)
 
 
 if __name__ == '__main__':
@@ -121,8 +117,7 @@ if __name__ == '__main__':
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
-    if args.remote:
-        dataloop_login(token_path='token.txt')
+
     this_path = path = os.getcwd()
     configs_path = os.path.join(this_path, 'configs.json')
     configs = ConfigSpec(configs_path)
@@ -130,9 +125,13 @@ if __name__ == '__main__':
     opt_model.add_child_spec(configs, 'configs')
     zazu = ZaZu(opt_model, remote=args.remote)
     if args.search:
+        if args.remote:
+            deploy_package_and_service(name='trial', dataloop=opt_model.dataloop)
         zazu.find_best_model()
         zazu.hp_search()
     if args.train:
+        if args.remote:
+            deploy_package_and_service(name='trainer', dataloop=opt_model.dataloop)
         zazu.train_new_model()
     if args.predict:
         zazu.run_inference()

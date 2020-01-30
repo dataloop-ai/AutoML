@@ -20,12 +20,11 @@ class ServiceRunner(dl.BaseServiceRunner):
     def __init__(self, package_name):
         self.package_name = package_name
         self.this_path = os.getcwd()
-        self.configs_path = os.path.join(self.this_path, 'configs.json')
         logger.info(self.package_name + ' initialized')
 
     def search(self, progress=None):
-
-        configs = ConfigSpec(self.configs_path)
+        configs_path = os.path.join(self.this_path, 'configs.json')
+        configs = ConfigSpec(configs_path)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
@@ -48,7 +47,8 @@ class ServiceRunner(dl.BaseServiceRunner):
 
 
     def train(self, progress=None):
-        configs = ConfigSpec(self.configs_path)
+        configs_path = os.path.join(self.this_path, 'configs.json')
+        configs = ConfigSpec(configs_path)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
@@ -69,7 +69,8 @@ class ServiceRunner(dl.BaseServiceRunner):
                                      execution_id=save_info['execution_id'])
 
     def predict(self, progress=None):
-        configs = ConfigSpec(self.configs_path)
+        configs_path = os.path.join(self.this_path, 'configs.json')
+        configs = ConfigSpec(configs_path)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
@@ -77,8 +78,49 @@ class ServiceRunner(dl.BaseServiceRunner):
 
 
 if __name__ == "__main__":
-    import dtlpy as dl
-    zazu_service = dl.services.get('Zazu')
-    zazu_service.invoke(execution_input=[dl.FunctionIO('Dataset', value='IPM'),
-                                         dl.FunctionIO('Json', value='running config')],
-                        function_name='search')
+
+    logger.info('dtlpy version:', dl.__version__)
+    try:
+        dl.setenv('dev')
+    except:
+        dl.login()
+        dl.setenv('dev')
+    project = dl.projects.get('buffs_project')
+    package_name = 'zazuml'
+
+    init_specs_input = dl.FunctionIO(type='Json', name='package_name')
+    input_to_init = {
+        'package_name': package_name
+    }
+
+    inputs = []
+    train_function = dl.PackageFunction(name='train', inputs=inputs, outputs=[], description='')
+    search_function = dl.PackageFunction(name='search', inputs=inputs, outputs=[], description='')
+    module = dl.PackageModule(entry_point='dataloop_services/zazu_module.py', name='zazu_module',
+                              functions=[train_function, search_function],
+                              init_inputs=init_specs_input)
+
+    package = project.packages.push(
+        package_name=package_name,
+        src_path=os.path.dirname(os.getcwd()),
+        modules=[module])
+
+    logger.info('deploying package . . .')
+    service = package.services.deploy(service_name=package.name,
+                                           module_name='zazu_module',
+                                           agent_versions={
+                                               'dtlpy': '1.9.7',
+                                               'runner': '1.9.7.latest',
+                                               'proxy': '1.9.7.latest',
+                                               'verify': True
+                                           },
+                                           package=package,
+                                           runtime={'gpu': False,
+                                                    'numReplicas': 1,
+                                                    'concurrency': 2,
+                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
+                                                    },
+                                           init_input=input_to_init)
+
+    zazu_service = dl.services.get('zazuml')
+    zazu_service.execute(function_name='search')
