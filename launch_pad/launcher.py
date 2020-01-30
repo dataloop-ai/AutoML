@@ -22,14 +22,16 @@ class Launcher:
         self.num_available_devices = torch.cuda.device_count()
         self.home_path = optimal_model.data['home_path']
         self.dataset_name = optimal_model.data['dataset_name']
-        self.package_name = 'trainer' if self.ongoing_trials is None else 'trial'
-
+        self.service_name = 'trainer' if self.ongoing_trials is None else 'trial'
+        self.package_name = 'zazuml'
         if self.remote:
             dataset_obj = get_dataset_obj(optimal_model.dataloop)
             self.dataset_id = dataset_obj.id
             self.project = dataset_obj.project
+            logger.info('service: ' + self.service_name)
+            self.service = self.project.services.get(service_name=self.service_name)
         else:
-            self.local_trial_connector = LocalTrialConnector(self.package_name)
+            self.local_trial_connector = LocalTrialConnector(self.service_name)
 
         # TODO: dont convert here
         if self.optimal_model.name == 'yolov3':
@@ -75,44 +77,6 @@ class Launcher:
                 self.service.delete()
             else:
                 self._launch_local_trials()
-
-    def push_and_deploy_package(self, project, package_name):
-        logger.info('dtlpy version:', dl.__version__)
-        dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
-        hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
-        model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
-        init_specs_input = dl.FunctionIO(type='Json', name='package_name')
-        input_to_init = {
-            'package_name': package_name
-        }
-
-        inputs = [dataset_input, hp_value_input, model_specs_input]
-        function = dl.PackageFunction(name='run', inputs=inputs, outputs=[], description='')
-        module = dl.PackageModule(entry_point='dataloop_services/service_executor.py', name='service_executor',
-                                  functions=[function],
-                                  init_inputs=init_specs_input)
-
-        package = project.packages.push(
-            package_name=package_name,
-            src_path=os.getcwd(),
-            modules=[module])
-
-        logger.info('deploying package . . .')
-        self.service = package.services.deploy(service_name=package.name,
-                                               module_name='service_executor',
-                                               agent_versions={
-                                                   'dtlpy': '1.9.7',
-                                                   'runner': '1.9.7.latest',
-                                                   'proxy': '1.9.7.latest',
-                                                   'verify': True
-                                               },
-                                               package=package,
-                                               runtime={'gpu': True,
-                                                        'numReplicas': 1,
-                                                        'concurrency': 2,
-                                                        'runnerImage': 'buffalonoam/zazu-image:0.3'
-                                                        },
-                                               init_input=input_to_init)
 
     def _launch_local_best_trial(self, best_trial):
         model_specs = self.optimal_model.unwrap()

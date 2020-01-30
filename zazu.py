@@ -3,8 +3,8 @@ from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
-from plugin_utils import maybe_download_data, get_dataloop_project
-from dataloop_services import push_and_deploy_package
+
+from dataloop_services import deploy_model, deploy_zazu, push_package, update_service
 import argparse
 import os
 import torch
@@ -27,7 +27,7 @@ class ZaZu:
 
     def find_best_model(self):
         closest_model = find_model(self.opt_model, self.models)
-        logger.info('closest model to your preferences is: ', closest_model)
+        logger.info(str(closest_model))
 
         if os.path.exists(self.path_to_most_suitable_model):
             logger.info('overwriting model.txt . . .')
@@ -100,19 +100,19 @@ class ZaZu:
         gun.predict(self.path_to_best_checkpoint)
 
 
-def deploy_package_and_service(name, dataloop):
+def maybe_login():
     try:
         dl.setenv('dev')
     except:
         dl.login()
         dl.setenv('dev')
-    project = dl.projects.get(project_name=dataloop['project'])
-    push_and_deploy_package(project=project, package_name=name)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--remote", action='store_true', default=False)
+    parser.add_argument("--deploy", action='store_true', default=False)
+    parser.add_argument("--update", action='store_true', default=False)
     parser.add_argument("--search", action='store_true', default=False)
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
@@ -123,15 +123,43 @@ if __name__ == '__main__':
     configs = ConfigSpec(configs_path)
     opt_model = OptModel()
     opt_model.add_child_spec(configs, 'configs')
-    zazu = ZaZu(opt_model, remote=args.remote)
-    if args.search:
-        if args.remote:
-            deploy_package_and_service(name='trial', dataloop=opt_model.dataloop)
-        zazu.find_best_model()
-        zazu.hp_search()
-    if args.train:
-        if args.remote:
-            deploy_package_and_service(name='trainer', dataloop=opt_model.dataloop)
-        zazu.train_new_model()
-    if args.predict:
-        zazu.run_inference()
+
+    if args.deploy:
+        maybe_login()
+        project = dl.projects.get(project_name=opt_model.dataloop['project'])
+        package_obj = push_package(project)
+        try:
+            trial_service = deploy_model(package=package_obj, service_name='trial')
+            trainer_service = deploy_model(package=package_obj, service_name='trainer')
+            zazu_service = deploy_zazu(package=package_obj)
+        except:
+            trial_service.delete()
+            trainer_service.delete()
+            zazu_service.delete()
+
+    if args.update:
+        maybe_login()
+        project = dl.projects.get(project_name=opt_model.dataloop['project'])
+        update_service(project, 'trial')
+        update_service(project, 'trainer')
+        update_service(project, 'zazu')
+
+    if args.remote:
+        maybe_login()
+        zazu_service = dl.services.get('zazu')
+        if args.search:
+            zazu_service.execute(function_name='search')
+        if args.train:
+            zazu_service.execute(function_name='train')
+        if args.predict:
+            zazu_service.execute(function_name='predict')
+
+    else:
+        zazu = ZaZu(opt_model, remote=args.remote)
+        if args.search:
+            zazu.find_best_model()
+            zazu.hp_search()
+        if args.train:
+            zazu.train_new_model()
+        if args.predict:
+            zazu.run_inference()

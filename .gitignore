@@ -301,9 +301,11 @@ env.bak/
 venv.bak/
 pip-selfcheck.json
 
+.git
 ### h5 ###
 *.h5
-
+*.pt
+*.pth
 ### dataloop ###
 .dataloop/
 **/.dataloop/**
