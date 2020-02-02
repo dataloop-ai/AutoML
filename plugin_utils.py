@@ -39,8 +39,7 @@ def maybe_download_data(dataset_obj):
                 os.rename(os.path.join(path_to_dataset, 'json', 'items', j), os.path.join(path_to_dataset, 'json', j))
             os.rmdir(os.path.join(path_to_dataset, 'json', 'items'))
 
-            convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train')
-            convert_dataloop_to_coco(path_to_data=path_to_dataset, name='val')
+            convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=True)
 
     else:
         name = dataset_obj.directory_tree.dir_names[-2].strip('/')
