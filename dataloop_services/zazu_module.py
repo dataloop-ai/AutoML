@@ -22,9 +22,9 @@ class ServiceRunner(dl.BaseServiceRunner):
         self.this_path = os.getcwd()
         logger.info(self.package_name + ' initialized')
 
-    def search(self, progress=None):
-        configs_path = os.path.join(self.this_path, 'configs.json')
-        configs = ConfigSpec(configs_path)
+    def search(self, configs, progress=None):
+
+        configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
@@ -45,10 +45,9 @@ class ServiceRunner(dl.BaseServiceRunner):
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
 
+    def train(self, configs, progress=None):
 
-    def train(self, progress=None):
-        configs_path = os.path.join(self.this_path, 'configs.json')
-        configs = ConfigSpec(configs_path)
+        configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
@@ -68,9 +67,9 @@ class ServiceRunner(dl.BaseServiceRunner):
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
 
-    def predict(self, progress=None):
-        configs_path = os.path.join(self.this_path, 'configs.json')
-        configs = ConfigSpec(configs_path)
+    def predict(self, configs, progress=None):
+
+        configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)

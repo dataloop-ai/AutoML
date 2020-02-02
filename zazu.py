@@ -108,6 +108,10 @@ def maybe_login():
         dl.setenv('dev')
 
 
+def maybe_do_deployment_stuff():
+    pass
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--remote", action='store_true', default=False)
@@ -118,15 +122,13 @@ if __name__ == '__main__':
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
 
-    this_path = path = os.getcwd()
-    configs_path = os.path.join(this_path, 'configs.json')
-    configs = ConfigSpec(configs_path)
-    opt_model = OptModel()
-    opt_model.add_child_spec(configs, 'configs')
 
+
+    with open('global_configs.json', 'r') as fp:
+        global_project_name = json.load(fp)
     if args.deploy:
         maybe_login()
-        project = dl.projects.get(project_name=opt_model.dataloop['project'])
+        project = dl.projects.get(project_name=global_project_name)
         package_obj = push_package(project)
         try:
             trial_service = deploy_model(package=package_obj, service_name='trial')
@@ -139,22 +141,32 @@ if __name__ == '__main__':
 
     if args.update:
         maybe_login()
-        project = dl.projects.get(project_name=opt_model.dataloop['project'])
+        project = dl.projects.get(project_name=global_project_name)
         update_service(project, 'trial')
         update_service(project, 'trainer')
         update_service(project, 'zazu')
 
     if args.remote:
         maybe_login()
+
+        with open('configs.json', 'r') as fp:
+            configs = json.load(fp)
+        configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
+        inputs = [configs_input]
         zazu_service = dl.services.get('zazu')
         if args.search:
-            zazu_service.execute(function_name='search')
+            zazu_service.execute(function_name='search', execution_input=inputs)
         if args.train:
-            zazu_service.execute(function_name='train')
+            zazu_service.execute(function_name='train', execution_input=inputs)
         if args.predict:
-            zazu_service.execute(function_name='predict')
+            zazu_service.execute(function_name='predict', execution_input=inputs)
 
     else:
+        this_path = path = os.getcwd()
+        configs_path = os.path.join(this_path, 'configs.json')
+        configs = ConfigSpec(configs_path)
+        opt_model = OptModel()
+        opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=args.remote)
         if args.search:
             zazu.find_best_model()
