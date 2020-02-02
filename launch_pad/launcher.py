@@ -27,7 +27,9 @@ class Launcher:
         if self.remote:
             dataset_obj = get_dataset_obj(optimal_model.dataloop)
             self.dataset_id = dataset_obj.id
-            self.project = dataset_obj.project
+            with open('global_configs.json', 'r') as fp:
+                global_project_name = json.load(fp)['project']
+            self.project = dl.projects.get(project_name=global_project_name)
             logger.info('service: ' + self.service_name)
             self.service = self.project.services.get(service_name=self.service_name)
         else:

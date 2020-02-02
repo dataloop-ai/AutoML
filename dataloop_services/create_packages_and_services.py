@@ -61,11 +61,15 @@ def push_package(project):
     dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
     hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
     model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
+
     package_name_input = dl.FunctionIO(type='Json', name='package_name')
     service_name_input = dl.FunctionIO(type='Json', name='service_name')
 
+    configs_input = dl.FunctionIO(type='Json', name='configs')
+
     model_inputs = [dataset_input, hp_value_input, model_specs_input]
-    zazu_inputs = []
+    zazu_inputs = [configs_input]
+
     model_function = dl.PackageFunction(name='run', inputs=model_inputs, outputs=[], description='')
     train_function = dl.PackageFunction(name='train', inputs=zazu_inputs, outputs=[], description='')
     search_function = dl.PackageFunction(name='search', inputs=zazu_inputs, outputs=[], description='')

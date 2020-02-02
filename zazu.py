@@ -109,24 +109,9 @@ def maybe_login():
 
 
 def maybe_do_deployment_stuff():
-    pass
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--remote", action='store_true', default=False)
-    parser.add_argument("--deploy", action='store_true', default=False)
-    parser.add_argument("--update", action='store_true', default=False)
-    parser.add_argument("--search", action='store_true', default=False)
-    parser.add_argument("--train", action='store_true', default=False)
-    parser.add_argument("--predict", action='store_true', default=False)
-    args = parser.parse_args()
-
-
-
-    with open('global_configs.json', 'r') as fp:
-        global_project_name = json.load(fp)
     if args.deploy:
+        with open('global_configs.json', 'r') as fp:
+            global_project_name = json.load(fp)['project']
         maybe_login()
         project = dl.projects.get(project_name=global_project_name)
         package_obj = push_package(project)
@@ -140,11 +125,26 @@ if __name__ == '__main__':
             zazu_service.delete()
 
     if args.update:
+        with open('global_configs.json', 'r') as fp:
+            global_project_name = json.load(fp)
         maybe_login()
         project = dl.projects.get(project_name=global_project_name)
         update_service(project, 'trial')
         update_service(project, 'trainer')
         update_service(project, 'zazu')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--remote", action='store_true', default=False)
+    parser.add_argument("--deploy", action='store_true', default=False)
+    parser.add_argument("--update", action='store_true', default=False)
+    parser.add_argument("--search", action='store_true', default=False)
+    parser.add_argument("--train", action='store_true', default=False)
+    parser.add_argument("--predict", action='store_true', default=False)
+    args = parser.parse_args()
+
+    maybe_do_deployment_stuff()
 
     if args.remote:
         maybe_login()
