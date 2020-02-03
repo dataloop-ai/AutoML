@@ -56,7 +56,7 @@ ZazuML's *REMOTE* feature is designed so that you can run search, train and pred
 It's easy to implement into your python script or run in your terminal. Read up about running [ZazuML remotely](DOCS/REMOTEZAZU.md).
 
 
-Now that you've got the gist of it, 
+Now that you've got the gist of it,  
 feel free to read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
 
 ## TO DO

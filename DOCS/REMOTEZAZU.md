@@ -1,4 +1,4 @@
-# *RUNNING ZAZUML REMOTELY VIA OUR DATALOOP CLOUD SERVICE*
+# *Running ZazuML remotely via our Dataloop cloud service*
 
 ## *Run in TERMINAL*
 
