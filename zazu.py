@@ -110,6 +110,11 @@ def maybe_login():
 
 def maybe_do_deployment_stuff():
     if args.deploy:
+        try:
+            dl.packages.get('zazuml').delete()
+        except:
+            pass
+
         with open('global_configs.json', 'r') as fp:
             global_project_name = json.load(fp)['project']
         maybe_login()
