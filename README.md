@@ -76,4 +76,4 @@ WhatsApp: +972524226459
 
 ## Refrences
 
-Some of the code was influenced by [keras-tuner](https://github.com/keras-team/keras-tuner)
+Some of the code was inspired by [keras-tuner](https://github.com/keras-team/keras-tuner)
