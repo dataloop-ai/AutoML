@@ -5,7 +5,7 @@ This is an open-source AutoML project for object detection. Currently this proje
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a dataset, the output is a trained 
 model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
-| *Models* | *Hyper-Parameter Optimization Algorithms* |
+| *Models* | *hyper-parameter optimization Algorithms* |
 | :----:         |     :----:      |
 |  <ul><li>Retinanet</li><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | 
 
