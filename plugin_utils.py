@@ -30,6 +30,8 @@ def maybe_download_data(dataset_obj):
 
         if os.path.exists(path_to_dataset):
             logger.info(dataset_name + ' already exists, no need to download')
+            if not os.path.exists(os.path.join(path_to_dataset,'annotations')):
+                convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=True)
         else:
             os.mkdir(path_to_dataset)
             dataset_obj.items.download(local_path=path_to_dataset, to_items_folder=False)
@@ -40,7 +42,7 @@ def maybe_download_data(dataset_obj):
             os.rmdir(os.path.join(path_to_dataset, 'json', 'items'))
             toy_dataset = False
             if not toy_dataset:
-                convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=False)
+                convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=True)
             else:
                 convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=False)
                 convert_dataloop_to_coco(path_to_data=path_to_dataset, name='val', split_val=False)
