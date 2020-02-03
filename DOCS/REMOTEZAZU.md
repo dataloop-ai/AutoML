@@ -1,21 +1,21 @@
-## *RUNNING ZAZUML REMOTELY VIA OUR DATALOOP CLOUD SERVICE*
+# *RUNNING ZAZUML REMOTELY VIA OUR DATALOOP CLOUD SERVICE*
 
-## Run in TERMINAL
+## *Run in TERMINAL*
 
-### *Model & Hyper-Parameter Search*
+### *model & hyper-parameter search*
 ```
 python zazu.py --search --remote
 ```
-### *Train*
+### *train*
 ```
 python zazu.py --train --remote
 ```
-### *Predict*
+### *predict*
 ```
 python zazu.py --predict --remote
 ```
 
-## Run in PYTHON
+## *Run in PYTHON*
 ```
 import dtlpy as dl
 

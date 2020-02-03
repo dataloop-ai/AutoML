@@ -38,11 +38,11 @@ git clone https://github.com/dataloop-ai/tiny_coco.git
 cd ../ZazuML
 ```
 
-### *Begin model & hyper-parameter search*
+### *model & hyper-parameter search*
 ```
 python zazu.py --search
 ```
-### *Begin training*
+### *train*
 ```
 python zazu.py --train
 ```
