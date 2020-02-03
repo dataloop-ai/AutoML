@@ -1,19 +1,21 @@
 ## *RUNNING ZAZUML REMOTELY VIA OUR DATALOOP CLOUD SERVICE*
 
-### *Model & Hyper-Parameter Search*
+## Run in TERMINAL
+
+### Model & Hyper-Parameter Search
 ```
 python zazu.py --search --remote
 ```
-### *Train*
+### Train
 ```
 python zazu.py --train --remote
 ```
-### *Predict*
+### Predict
 ```
 python zazu.py --predict --remote
 ```
 
-## Run ***ZazuML*** via our python SDK
+## Run in PYTHON
 ```
 import dtlpy as dl
 
@@ -41,3 +43,5 @@ zazu_service.execute(function_name='train', execution_input=inputs)
 # Predict
 zazu_service.execute(function_name='predict', execution_input=inputs)
 ```
+
+Check out more details [@Dataloop AI](https://dataloop.ai/)!
