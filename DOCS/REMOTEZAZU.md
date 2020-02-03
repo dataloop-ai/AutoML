@@ -2,15 +2,15 @@
 
 ## Run in TERMINAL
 
-### Model & Hyper-Parameter Search
+### **Model & Hyper-Parameter Search**
 ```
 python zazu.py --search --remote
 ```
-### Train
+### **Train**
 ```
 python zazu.py --train --remote
 ```
-### Predict
+### **Predict**
 ```
 python zazu.py --predict --remote
 ```

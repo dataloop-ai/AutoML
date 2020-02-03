@@ -17,20 +17,20 @@ To learn more, take a look [Under The Hood of ZazuML](DOCS/UNDERTHEHOOD.md)
 
 First thing to do is . . .  
 
-### *pull & run the Docker Image*
+### **pull & run the Docker Image**
 ```
 docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVICES=0 buffalonoam/zazu-image:0.3 bash
 ```
 Be sure to update the nvidia-devices flag!
 
-### *clone the repo*
+### **clone the repo**
 ```
 git clone https://github.com/dataloop-ai/ZazuML.git
 cd ZazuML
 git clone https://github.com/dataloop-ai/zoo.git
 ```
 
-### *download tiny coco dataset*
+### **download tiny coco dataset**
 ```
 mkdir ../data
 cd ../data
@@ -38,20 +38,20 @@ git clone https://github.com/dataloop-ai/tiny_coco.git
 cd ../ZazuML
 ```
 
-### *Begin model & hyper-parameter search*
+### **Begin model & hyper-parameter search**
 ```
 python zazu.py --search
 ```
-### *Begin training*
+### **Begin training**
 ```
 python zazu.py --train
 ```
-### *predict*
+### **predict**
 ```
 python zazu.py --predict
 ```
 
-## LAUNCH ***ZAZUML*** ON YOU LAPTOP
+## **LAUNCH *ZAZUML* ON YOU LAPTOP**
 ZazuML's *REMOTE* feature is designed so that you can run search, train and predict anywhere. No GPU's or complex Cloud APIs.
 It's easy to implement into your python script or run in your terminal. Read up about running [ZazuML remotely](DOCS/REMOTEZAZU.md).
 
