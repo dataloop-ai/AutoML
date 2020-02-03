@@ -1,7 +1,7 @@
 ![Logo](./images/ZazuML.jpeg)
 <br/><br/>   
 
-This is an open-source AutoML project for instance detection. Currently this project contains a model finder, hyper-parameter tuner, 
+This is an open-source AutoML project for object detection. Currently this project contains a model finder, hyper-parameter tuner, 
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a dataset, the output is a trained 
 model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
@@ -14,7 +14,7 @@ debug, and tune your own model. Either way, you shouldn't be focusing your effor
 a whole world out there for you to explore, give your hand at trajectory prediction or action recognition and let *ZazuML*
 free you up from the boring stuff.
 
-To learn more, take a look [Under The Hood of ZazuML](./UNDERTHEHOOD.md)
+To learn more, take a look [Under The Hood of ZazuML](DOCS/UNDERTHEHOOD.md)
 
 ## Getting started
 
@@ -22,7 +22,7 @@ First thing to do is . . .
 
 ### *pull & run the Docker Image*
 ```
-docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVICES=0 buffalonoam/zazu-image:0.2 bash
+docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVICES=0 buffalonoam/zazu-image:0.3 bash
 ```
 Be sure to update the nvidia-devices flag!
 
@@ -54,16 +54,16 @@ python zazu.py --train
 python zazu.py --predict
 ```
 
-### *Launch search on Kubernetes via our Dataloop engine* (this feature is not ready yet)
-```
-python zazu.py --search --remote
-```
+## LAUNCH DATALOOP ON YOU LAPTOP
+with an account [@Dataloop AI](https://dataloop.ai/) you can now run ZazuML on your computer
+or as a script via Dataloop's python SDK. Read more about [running ZazuML remotely](DOCS/REMOTEZAZU.md).
 
-Now that you've got the gist of it, feel free to read up on [Configuring ZazuML](./CONFIGURINGZAZU.md)
+
+Now that you've got the gist of it, feel free to read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
 
 ## TO DO
 
-- Implement HyperBand instead of random search
+- Implement HyperBand into Zazu
 - Improve search space
 - NAS to replace some of the HP search
 - Intelligent Losses to replace some of the HP search
