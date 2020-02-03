@@ -51,12 +51,13 @@ python zazu.py --train
 python zazu.py --predict
 ```
 
-## *LAUNCH **ZAZUML** ON YOU LAPTOP*
+## *Launch Remote ZazuML*
 ZazuML's *REMOTE* feature is designed so that you can run search, train and predict anywhere. No GPU's or complex Cloud APIs.
 It's easy to implement into your python script or run in your terminal. Read up about running [ZazuML remotely](DOCS/REMOTEZAZU.md).
 
 
-Now that you've got the gist of it, feel free to read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
+Now that you've got the gist of it, 
+feel free to read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
 
 ## TO DO
 
