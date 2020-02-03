@@ -7,10 +7,7 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
 
 | *Models* | *Hyper-Parameter Optimization Algorithms* |
 | :----:         |     :----:      |
-|  Retinanet   | Random Search     | 
-|  YoloV3     | HyperBand       | 
-
-
+|  <ul><li>Retinanet</li><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | 
 
 
 ## *Why ZazuML?*
