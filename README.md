@@ -55,8 +55,8 @@ python zazu.py --predict
 ```
 
 ## LAUNCH DATALOOP ON YOU LAPTOP
-with an account [@Dataloop AI](https://dataloop.ai/) you can now run ZazuML on your computer
-or as a script via Dataloop's python SDK. Read more about [running ZazuML remotely](DOCS/REMOTEZAZU.md).
+With a [@Dataloop AI](https://dataloop.ai/) account you can now run ZazuML on your computer
+or as a script via Dataloop's python SDK. Read up about running [ZazuML remotely](DOCS/REMOTEZAZU.md).
 
 
 Now that you've got the gist of it, feel free to read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
