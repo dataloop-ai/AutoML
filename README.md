@@ -64,14 +64,14 @@ It's easy to implement into your python script or run in your terminal. Read up 
 Now that you've got the gist of it,  
 feel free to read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
 
-## TO DO
+## *TO DO*
 
-- Implement HyperBand into Zazu
-- Improve search space
+- Finish implementing HyperBand
+- Increase search space
 - NAS to replace some of the HP search
 - Intelligent Losses to replace some of the HP search
 
-## Contact
+## *Contact*
 
 If you're interested in becoming a collaborator or just have some questions, feel free to contact me at:
 
@@ -79,6 +79,6 @@ WeChat: BuffaloNoam
 Line: buffalonoam   
 WhatsApp: +972524226459   
 
-## Refrences
+## *Refrences*
 
 Some of the code was inspired by [keras-tuner](https://github.com/keras-team/keras-tuner)
