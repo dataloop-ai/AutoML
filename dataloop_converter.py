@@ -55,7 +55,7 @@ def convert_dataloop_to_coco(path_to_data, name='train', split_val=False, split_
     np_labels = np.array(labels)
     class_list = np.unique(np_labels)
 
-    label_to_id = {name: i for i, name in enumerate(class_list)}
+    label_to_id = {name: i for i, name in enumerate(class_list) if name is not "done"}
     categories = [{'id': i, 'name': name} for name, i in label_to_id.items()]
 
     # compute annotations
