@@ -11,7 +11,7 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
 | :----:         |     :----:      |
 |  <ul><li>Retinanet</li><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | 
   
-### *It's designed to be EASY to use*
+### *It's designed to be EASY to use!*
 
 ![](./images/running_zazu_search2.gif)  
 
