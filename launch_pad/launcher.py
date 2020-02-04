@@ -4,13 +4,14 @@ import time
 import threading
 import logging
 import torch
-from local_plugin import LocalTrialConnector
+from dataloop_services import LocalTrialConnector
 from .thread_manager import ThreadManager
 from zoo.convert2Yolo import convert
 from main_pred import pred_run
-from plugin_utils import get_dataset_obj
+from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
-
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('launcher')
 
 
@@ -22,20 +23,24 @@ class Launcher:
         self.num_available_devices = torch.cuda.device_count()
         self.home_path = optimal_model.data['home_path']
         self.dataset_name = optimal_model.data['dataset_name']
-        self.package_name = 'trainer' if self.ongoing_trials is None else 'trial'
+        self.service_name = 'trainer' if self.ongoing_trials is None else 'trial'
+        self.package_name = 'zazuml'
+        if self.remote:
+            dataset_obj = get_dataset_obj(optimal_model.dataloop)
+            self.dataset_id = dataset_obj.id
+            with open('global_configs.json', 'r') as fp:
+                global_project_name = json.load(fp)['project']
+            self.project = dl.projects.get(project_name=global_project_name)
+            logger.info('service: ' + self.service_name)
+            self.service = self.project.services.get(service_name=self.service_name)
+        else:
+            self.local_trial_connector = LocalTrialConnector(self.service_name)
 
+        # TODO: dont convert here
         if self.optimal_model.name == 'yolov3':
             if self.optimal_model.data['annotation_type'] == 'coco':
                 self._convert_coco_to_yolo_format()
                 self.optimal_model.data['annotation_type'] = 'yolo'
-
-        if self.remote:
-            self.dataset_obj = get_dataset_obj()
-            self.dataset_id = self.dataset_obj.id
-            self.project = self.dataset_obj.project
-            self._push_and_deploy_package(package_name=self.package_name)
-        else:
-            self.local_trial_connector = LocalTrialConnector(self.package_name)
 
     def predict(self, checkpoint_path):
         pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
@@ -52,13 +57,12 @@ class Launcher:
                     logger.info('overwriting tenorboards runs . . .')
                     os.rmdir(path_to_tensorboard_dir)
                 # download artifacts, should contain checkpoint and tensorboard logs
-                for artifact in self.project.artifacts.list(package_name=self.package_name,
-                                                            execution_id=execution_obj.id):
-                    artifact.download(local_path=os.getcwd())
+                self.project.artifacts.download(package_name=self.package_name,
+                                                execution_id=execution_obj.id,
+                                                local_path=os.getcwd())
             except Exception as e:
                 print(e)
 
-            self.service.delete()
         else:
             checkpoint = self._launch_local_best_trial(best_trial)
             if os.path.exists(save_checkpoint_location):
@@ -72,7 +76,7 @@ class Launcher:
         if self.ongoing_trials.num_trials > 0:
             if self.remote:
                 self._launch_remote_trials()
-                self.service.delete()
+
             else:
                 self._launch_local_trials()
 
@@ -180,15 +184,15 @@ class Launcher:
                         raise Exception("plugin execution failed")
 
                 if os.path.exists(metrics_path):
-                    logger.info('overwriting checkpoint.pt . . .')
+                    logger.info('overwriting metrics.json . . .')
                     os.remove(metrics_path)
                 if os.path.exists(path_to_tensorboard_dir):
                     logger.info('overwriting tenorboards runs . . .')
                     os.rmdir(path_to_tensorboard_dir)
                 # download artifacts, should contain metrics and tensorboard runs
-                for artifact in self.project.artifacts.list(package_name=self.package_name,
-                                                            execution_id=execution_obj.id):
-                    artifact.download(local_path=os.getcwd())
+                self.project.artifacts.download(package_name=self.package_name,
+                                                execution_id=execution_obj.id,
+                                                local_path=os.getcwd())
 
                 with open(metrics_path, 'r') as fp:
                     metrics = json.load(fp)
@@ -201,36 +205,11 @@ class Launcher:
         results_dict[id_hash] = metrics
         logger.info('finshed thread: ' + thread_name)
 
-    def _push_and_deploy_package(self, package_name):
-        logger.info('dtlpy version:', dl.__version__)
-        dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
-        hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
-        model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
-
-        inputs = [dataset_input, hp_value_input, model_specs_input]
-        function = dl.PackageFunction(name='run', inputs=inputs, outputs=[], description='')
-        module = dl.PackageModule(entry_point='service_executor.py', name='service_executor', functions=[function],
-                                  init_inputs={'package_name': package_name})
-
-        package = self.project.packages.push(
-            package_name=package_name,
-            src_path=os.getcwd(),
-            modules=[module])
-
-        logger.info('deploying package . . .')
-        self.service = package.services.deploy(service_name=package.name,
-                                               module_name='service_executor',
-                                               package=package,
-                                               runtime={'gpu': True,
-                                                        'numReplicas': 1,
-                                                        'concurrency': 2,
-                                                        'runnerImage': 'buffalonoam/zazu-image:0.2'
-                                                        })
 
     def _run_remote_execution(self, inputs):
         logger.info('running new execution . . .')
 
-        execution_obj = self.service.invoke(execution_input=inputs, function_name='run')
+        execution_obj = self.service.execute(execution_input=inputs, function_name='run')
         return execution_obj
 
     def _run_demo_execution(self, inputs):

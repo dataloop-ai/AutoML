@@ -7,13 +7,13 @@ from importlib import import_module
 
 class LocalTrialConnector():
 
-    def __init__(self, plugin_name):
-        self.plugin_name = plugin_name
+    def __init__(self, service_name):
+        self.service_name = service_name
 
     def run(self, devices, model_specs, hp_values):
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
 
-        final = 1 if self.plugin_name == 'trainer' else 0
+        final = 1 if self.service_name == 'trainer' else 0
         adapter = cls(devices, model_specs, hp_values, final)
         if hasattr(adapter, 'reformat'):
             adapter.reformat()

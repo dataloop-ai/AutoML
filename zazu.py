@@ -3,13 +3,16 @@ from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
-from plugin_utils import maybe_download_data, get_dataset_obj
+
+from dataloop_services import deploy_model, deploy_zazu, push_package, update_service
 import argparse
 import os
 import torch
 import json
 import logging
-
+import dtlpy as dl
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('Zazu')
 
 
@@ -25,7 +28,7 @@ class ZaZu:
 
     def find_best_model(self):
         closest_model = find_model(self.opt_model, self.models)
-        logger.info('closest model to your preferences is: ', closest_model)
+        logger.info(str(closest_model))
 
         if os.path.exists(self.path_to_most_suitable_model):
             logger.info('overwriting model.txt . . .')
@@ -98,41 +101,83 @@ class ZaZu:
         gun.predict(self.path_to_best_checkpoint)
 
 
-def dataloop_login(token_path):
-    import dtlpy as dl
-    if not os.path.exists(token_path):
-        raise Exception('''must have a token in ''' + token_path)
-    with open(token_path, "r") as f:
-        token = f.read().strip()
+def maybe_login():
     try:
-        dl.login_token(token)
-    except Exception as e:
-        new_token = input("token timed out, enter new token: ")
-        os.remove(token_path)
-        with open(token_path, "w") as f:
-            f.write(new_token)
-    dl.setenv('dev')
+        dl.setenv('dev')
+    except:
+        dl.login()
+        dl.setenv('dev')
+
+
+def maybe_do_deployment_stuff():
+    if args.deploy:
+        try:
+            dl.packages.get('zazuml').delete()
+        except:
+            pass
+
+        with open('global_configs.json', 'r') as fp:
+            global_project_name = json.load(fp)['project']
+        maybe_login()
+        project = dl.projects.get(project_name=global_project_name)
+        package_obj = push_package(project)
+        try:
+            trial_service = deploy_model(package=package_obj, service_name='trial')
+            trainer_service = deploy_model(package=package_obj, service_name='trainer')
+            zazu_service = deploy_zazu(package=package_obj)
+        except:
+            trial_service.delete()
+            trainer_service.delete()
+            zazu_service.delete()
+
+    if args.update:
+        with open('global_configs.json', 'r') as fp:
+            global_project_name = json.load(fp)
+        maybe_login()
+        project = dl.projects.get(project_name=global_project_name)
+        update_service(project, 'trial')
+        update_service(project, 'trainer')
+        update_service(project, 'zazu')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--remote", action='store_true', default=False)
+    parser.add_argument("--deploy", action='store_true', default=False)
+    parser.add_argument("--update", action='store_true', default=False)
     parser.add_argument("--search", action='store_true', default=False)
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
+
+    maybe_do_deployment_stuff()
+
     if args.remote:
-        dataloop_login(token_path='token.txt')
-    this_path = path = os.getcwd()
-    configs_path = os.path.join(this_path, 'configs.json')
-    configs = ConfigSpec(configs_path)
-    opt_model = OptModel()
-    opt_model.add_child_spec(configs, 'configs')
-    zazu = ZaZu(opt_model, remote=args.remote)
-    if args.search:
-        zazu.find_best_model()
-        zazu.hp_search()
-    if args.train:
-        zazu.train_new_model()
-    if args.predict:
-        zazu.run_inference()
+        maybe_login()
+
+        with open('configs.json', 'r') as fp:
+            configs = json.load(fp)
+        configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
+        inputs = [configs_input]
+        zazu_service = dl.services.get('zazu')
+        if args.search:
+            zazu_service.execute(function_name='search', execution_input=inputs)
+        if args.train:
+            zazu_service.execute(function_name='train', execution_input=inputs)
+        if args.predict:
+            zazu_service.execute(function_name='predict', execution_input=inputs)
+
+    else:
+        this_path = path = os.getcwd()
+        configs_path = os.path.join(this_path, 'configs.json')
+        configs = ConfigSpec(configs_path)
+        opt_model = OptModel()
+        opt_model.add_child_spec(configs, 'configs')
+        zazu = ZaZu(opt_model, remote=args.remote)
+        if args.search:
+            zazu.find_best_model()
+            zazu.hp_search()
+        if args.train:
+            zazu.train_new_model()
+        if args.predict:
+            zazu.run_inference()

@@ -11,5 +11,9 @@
     "home_path": "../data/tiny_coco",
     "annotation_type": "coco",
     "dataset_name": "2017"
+  },
+  "dataloop": {
+    "project": "buffs_project",
+    "dataset": "tiny_mice_data"
   }
 }
