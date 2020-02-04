@@ -28,6 +28,14 @@ class OptModel(Spec):
         return None
 
     @property
+    def dataloop(self):
+        for dic in self.spec_data.values():
+            if 'dataloop' in dic:
+                return dic['dataloop']
+
+        return None
+
+    @property
     def max_trials(self):
         for dic in self.spec_data.values():
             if 'max_trials' in dic:

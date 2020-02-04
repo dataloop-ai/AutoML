@@ -301,13 +301,13 @@ env.bak/
 venv.bak/
 pip-selfcheck.json
 
+.git
 ### h5 ###
 *.h5
-
+*.pt
+*.pth
 ### dataloop ###
 .dataloop/
 **/.dataloop/**
-best_trial.json
 token.txt
-model.txt
 checkpoint.pt
