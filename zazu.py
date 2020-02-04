@@ -12,7 +12,7 @@ import json
 import logging
 import dtlpy as dl
 import sys
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('Zazu')
 
 

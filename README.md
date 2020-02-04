@@ -8,7 +8,8 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
 | *models* | *hyper-parameter optimization algorithms* |
 | :----:         |     :----:      |
 |  <ul><li>Retinanet</li><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | 
-
+  
+![](./images/running_zazu_search.mov)  
 
 ## *Why ZazuML?*
 You might be building an ML pipeline to avoid model performance degeneration, or maybe you're just too lazy to download, 
