@@ -11,7 +11,7 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
   
 ### *How easy is it?*
 
-![](./images/running_zazu_search.gif)  
+![](./images/running_zazu_search2.gif)  
 
 ## *Why ZazuML?*
 You might be building an ML pipeline to avoid model performance degeneration, or maybe you're just too lazy to download, 
