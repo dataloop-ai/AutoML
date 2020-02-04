@@ -11,7 +11,8 @@ import torch
 import json
 import logging
 import dtlpy as dl
-
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger('Zazu')
 
 

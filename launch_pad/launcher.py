@@ -8,9 +8,10 @@ from dataloop_services import LocalTrialConnector
 from .thread_manager import ThreadManager
 from zoo.convert2Yolo import convert
 from main_pred import pred_run
-from plugin_utils import get_dataset_obj
+from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
-
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger('launcher')
 
 

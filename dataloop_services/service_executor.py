@@ -4,7 +4,7 @@ import torch
 import json
 import dtlpy as dl
 from importlib import import_module
-from plugin_utils import maybe_download_data
+from dataloop_services.plugin_utils import maybe_download_data
 logger = logging.getLogger(__name__)
 
 

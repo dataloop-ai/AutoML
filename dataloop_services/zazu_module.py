@@ -1,12 +1,7 @@
 import logging
 import os
-import torch
-import json
 import dtlpy as dl
-from importlib import import_module
-from plugin_utils import maybe_download_data
 from spec import ConfigSpec, OptModel
-from spec import ModelsSpec
 from zazu import ZaZu
 logger = logging.getLogger(__name__)
 
