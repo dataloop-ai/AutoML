@@ -1,7 +1,7 @@
 ![Logo](./images/ZazuML.jpeg)
 <br/><br/>   
 
-This is an open-source AutoML project for object detection. Currently this project contains a model finder, hyper-parameter tuner, 
+This is an easy open-source AutoML project for object detection. Currently this project contains a model finder, hyper-parameter tuner, 
 and trial manager all wrapped up in one synchronous end to end program. The input to this program is a dataset, the output is a trained 
 model with auto-optimized hyper parameters, ready to run inference, simple as that.
 
@@ -11,7 +11,7 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
 | :----:         |     :----:      |
 |  <ul><li>Retinanet</li><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | 
   
-### *How easy is it?*
+### *It's designed to be EASY*
 
 ![](./images/running_zazu_search2.gif)  
 
