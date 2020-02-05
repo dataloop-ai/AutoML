@@ -11,7 +11,7 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
 | :----:         |     :----:      |
 |  <ul><li>Retinanet</li><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand (coming soon)</li></ul>     | 
   
-### *It's designed to be EASY to use!*
+### *Super EASY to use!*
 
 ![](./images/running_zazu_search2.gif)  
 
@@ -21,53 +21,16 @@ debug, and tune your own model. Either way, you shouldn't be focusing your effor
 a whole world out there for you to explore, give your hand at trajectory prediction or action recognition and let *ZazuML*
 free you up from the boring stuff.
 
-To learn more, take a look [Under The Hood of ZazuML](DOCS/UNDERTHEHOOD.md)
-
-## Getting started
-
-First thing to do is . . .  
-
-### *pull & run the Docker Image*
-```
-docker run --rm -it --init  --runtime=nvidia  --ipc=host  -e NVIDIA_VISIBLE_DEVICES=0 buffalonoam/zazu-image:0.3 bash
-```
-Be sure to update the nvidia-devices flag!
-
-### *clone the repo*
-```
-git clone https://github.com/dataloop-ai/ZazuML.git
-cd ZazuML
-git clone https://github.com/dataloop-ai/zoo.git
-```
-
-### *download tiny coco dataset*
-```
-mkdir ../data
-cd ../data
-git clone https://github.com/dataloop-ai/tiny_coco.git
-cd ../ZazuML
-```
-
-### *model & hyper-parameter search*
-```
-python zazu.py --search
-```
-### *train*
-```
-python zazu.py --train
-```
-### *predict*
-```
-python zazu.py --predict
-```
-
 ## *Launch Remote ZazuML*
 ZazuML's *REMOTE* feature is designed so that you can run search, train and predict anywhere. No GPU's or complex Cloud APIs.
-It's easy to implement into your python script or run in your terminal. Read up about running [ZazuML remotely](DOCS/REMOTEZAZU.md).
+It's easy to implement into your python script or run in your terminal.
 
 
-Now that you've got the gist of it,  
-feel free to read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
+- Get started with [Quick Start](DOCS/GETTINGSTARTED.md)
+- read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
+- Launch [ZazuML remotely](DOCS/REMOTEZAZU.md)
+- Take a look [Under The Hood](DOCS/UNDERTHEHOOD.md)
+
 
 ## *TO DO*
 
