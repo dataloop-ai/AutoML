@@ -12,8 +12,7 @@ import json
 import logging
 import dtlpy as dl
 import sys
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logger = logging.getLogger('Zazu')
+
 
 
 class ZaZu:
@@ -149,6 +148,14 @@ if __name__ == '__main__':
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    fileHandler = logging.FileHandler('logger.conf')
+    logger.addHandler(fileHandler)
+
+    consoleHandler = logging.StreamHandler()
+    logger.addHandler(consoleHandler)
 
     maybe_do_deployment_stuff()
 
