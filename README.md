@@ -21,7 +21,7 @@ debug, and tune your own model. Either way, you shouldn't be focusing your effor
 a whole world out there for you to explore, give your hand at trajectory prediction or action recognition and let *ZazuML*
 free you up from the boring stuff.
 
-## *Launch Remote ZazuML*
+## *Launch Remotely*
 ZazuML's *REMOTE* feature is designed so that you can run search, train and predict anywhere. No GPU's or complex Cloud APIs.
 It's easy to implement into your python script or run in your terminal.
 
