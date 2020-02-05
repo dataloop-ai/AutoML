@@ -25,8 +25,9 @@ free you up from the boring stuff.
 ZazuML's *REMOTE* feature is designed so that you can run search, train and predict anywhere. No GPU's or complex Cloud APIs.
 It's easy to implement into your python script or run in your terminal.
 
-![](./images/zazu_remote_search.gif)  
-
+![](./images/zazu_remote_search.gif)
+  
+![](./images/zazu_via_sdk.gif)
 
 - Get started with [Quick Start](DOCS/GETTINGSTARTED.md)
 - read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
