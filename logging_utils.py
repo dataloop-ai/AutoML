@@ -16,8 +16,3 @@ def init_logging(module_name, filename='logger.conf'):
     return logger
 
 
-def reinit_logger(logger, filename):
-    if os.path.exists(filename):
-        os.remove(filename)
-    fileHandler = logging.FileHandler(filename)
-    return logger.addHandler(fileHandler)

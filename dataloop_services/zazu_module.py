@@ -1,10 +1,13 @@
 import logging
 import os
+import sys
 import dtlpy as dl
 from spec import ConfigSpec, OptModel
 from zazu import ZaZu
-from logging_utils import init_logging, reinit_logger
+from logging_utils import init_logging
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class ServiceRunner(dl.BaseServiceRunner):
     """
@@ -15,11 +18,9 @@ class ServiceRunner(dl.BaseServiceRunner):
     def __init__(self, package_name):
         self.package_name = package_name
         self.this_path = os.getcwd()
-        self.logger = init_logging(__name__)
-        self.logger.info(self.package_name + ' initialized')
+        logger.info(self.package_name + ' initialized')
 
     def search(self, configs, progress=None):
-        self.logger = reinit_logger(self.logger, filename='search_logs.conf')
 
         configs = ConfigSpec(configs)
         opt_model = OptModel()
@@ -43,7 +44,6 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def train(self, configs, progress=None):
-        self.logger = reinit_logger(self.logger, filename='train_logs.conf')
 
         configs = ConfigSpec(configs)
         opt_model = OptModel()
@@ -66,7 +66,6 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def predict(self, configs, progress=None):
-        self.logger = reinit_logger(self.logger, filename='pred_logs.conf')
 
         configs = ConfigSpec(configs)
         opt_model = OptModel()

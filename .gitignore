@@ -311,3 +311,4 @@ pip-selfcheck.json
 **/.dataloop/**
 token.txt
 checkpoint.pt
+logger.conf

@@ -5,7 +5,7 @@ import json
 import dtlpy as dl
 from importlib import import_module
 from dataloop_services.plugin_utils import maybe_download_data
-from logging_utils import init_logging, reinit_logger
+from logging_utils import init_logging
 
 
 class ServiceRunner(dl.BaseServiceRunner):
@@ -21,12 +21,11 @@ class ServiceRunner(dl.BaseServiceRunner):
         self.path_to_metrics = 'metrics.json'
         self.path_to_tensorboard_dir = 'runs'
         self.path_to_logs = 'execution_logs.conf'
-        self.logger = init_logging(__name__)
+        self.logger = init_logging(__name__, filename=self.path_to_logs)
         self.logger.info(self.package_name + ' initialized')
 
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
-        self.logger = reinit_logger(self.logger, filename=self.path_to_logs)
         maybe_download_data(dataset)
 
         # get project
@@ -88,7 +87,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             project.artifacts.upload(filepath=self.path_to_logs,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
-            
+
             project.artifacts.upload(filepath=self.path_to_metrics,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
