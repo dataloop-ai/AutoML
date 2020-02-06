@@ -3,7 +3,7 @@ from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
-
+from logging_utils import init_logging
 from dataloop_services import deploy_model, deploy_zazu, push_package, update_service
 import argparse
 import os
@@ -148,14 +148,8 @@ if __name__ == '__main__':
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    logger = logging.getLogger(__name__)
 
-    fileHandler = logging.FileHandler('logger.conf')
-    logger.addHandler(fileHandler)
-
-    consoleHandler = logging.StreamHandler()
-    logger.addHandler(consoleHandler)
+    logger = init_logging(__name__)
 
     maybe_do_deployment_stuff()
 

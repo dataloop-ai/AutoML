@@ -3,7 +3,7 @@ import os
 import dtlpy as dl
 from spec import ConfigSpec, OptModel
 from zazu import ZaZu
-logger = logging.getLogger(__name__)
+from logging_utils import init_logging, reinit_logger
 
 
 class ServiceRunner(dl.BaseServiceRunner):
@@ -15,9 +15,11 @@ class ServiceRunner(dl.BaseServiceRunner):
     def __init__(self, package_name):
         self.package_name = package_name
         self.this_path = os.getcwd()
-        logger.info(self.package_name + ' initialized')
+        self.logger = init_logging(__name__)
+        self.logger.info(self.package_name + ' initialized')
 
     def search(self, configs, progress=None):
+        self.logger = reinit_logger(self.logger, filename='search_logs.conf')
 
         configs = ConfigSpec(configs)
         opt_model = OptModel()
@@ -41,6 +43,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def train(self, configs, progress=None):
+        self.logger = reinit_logger(self.logger, filename='train_logs.conf')
 
         configs = ConfigSpec(configs)
         opt_model = OptModel()
@@ -63,6 +66,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def predict(self, configs, progress=None):
+        self.logger = reinit_logger(self.logger, filename='pred_logs.conf')
 
         configs = ConfigSpec(configs)
         opt_model = OptModel()

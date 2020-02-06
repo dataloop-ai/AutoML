@@ -1,7 +1,6 @@
 import os
-import json
 import logging
-from dataloop_converter import convert_dataloop_to_coco
+from dataloop_services.dataloop_converter import convert_dataloop_to_coco
 import dtlpy as dl
 
 logger = logging.getLogger(__name__)
