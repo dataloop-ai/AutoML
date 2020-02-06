@@ -13,6 +13,8 @@ import logging
 import dtlpy as dl
 import sys
 
+logger = logging.getLogger(__name__)
+
 
 
 class ZaZu:
