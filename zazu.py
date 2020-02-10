@@ -3,7 +3,7 @@ from launch_pad import Launcher
 from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
-
+from logging_utils import init_logging, logginger
 from dataloop_services import deploy_model, deploy_zazu, push_package, update_service
 import argparse
 import os
@@ -12,8 +12,9 @@ import json
 import logging
 import dtlpy as dl
 import sys
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logger = logging.getLogger('Zazu')
+
+logger = logginger(__name__)
+
 
 
 class ZaZu:
@@ -61,7 +62,7 @@ class ZaZu:
             tuner.search_hp()
 
         best_trial = tuner.get_best_trial()
-        logger.info('best trial: ', best_trial)
+        logger.info('best trial: ', json.dumps(best_trial))
         if os.path.exists(self.path_to_best_trial):
             logger.info('overwriting best_trial.json . . .')
             os.remove(self.path_to_best_trial)
@@ -150,6 +151,8 @@ if __name__ == '__main__':
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
 
+
+
     maybe_do_deployment_stuff()
 
     if args.remote:
@@ -168,6 +171,7 @@ if __name__ == '__main__':
             zazu_service.execute(function_name='predict', execution_input=inputs)
 
     else:
+        logger = init_logging(__name__)
         this_path = path = os.getcwd()
         configs_path = os.path.join(this_path, 'configs.json')
         configs = ConfigSpec(configs_path)

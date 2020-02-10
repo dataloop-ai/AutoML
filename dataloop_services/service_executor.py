@@ -5,7 +5,7 @@ import json
 import dtlpy as dl
 from importlib import import_module
 from dataloop_services.plugin_utils import maybe_download_data
-logger = logging.getLogger(__name__)
+from logging_utils import init_logging
 
 
 class ServiceRunner(dl.BaseServiceRunner):
@@ -20,10 +20,12 @@ class ServiceRunner(dl.BaseServiceRunner):
         self.path_to_best_checkpoint = 'checkpoint.pt'
         self.path_to_metrics = 'metrics.json'
         self.path_to_tensorboard_dir = 'runs'
-        logger.info(self.package_name + ' initialized')
+        self.path_to_logs = 'logger.conf'
+        self.logger = init_logging(__name__, filename=self.path_to_logs)
+        self.logger.info(self.package_name + ' initialized')
+
 
     def run(self, dataset, model_specs, hp_values, configs=None, progress=None):
-
         maybe_download_data(dataset)
 
         # get project
@@ -46,9 +48,9 @@ class ServiceRunner(dl.BaseServiceRunner):
             adapter.preprocess()
         if hasattr(adapter, 'build'):
             adapter.build()
-        logger.info('commencing training . . . ')
+        self.logger.info('commencing training . . . ')
         adapter.train()
-        logger.info('training finished')
+        self.logger.info('training finished')
         save_info = {
             'package_name': self.package_name,
             'execution_id': progress.execution.id
@@ -57,7 +59,11 @@ class ServiceRunner(dl.BaseServiceRunner):
             checkpoint = adapter.get_checkpoint()
             self._save_checkpoint(checkpoint)
             # upload checkpoint as artifact
-            logger.info('uploading checkpoint to dataloop')
+            self.logger.info('uploading checkpoint to dataloop')
+            project.artifacts.upload(filepath=self.path_to_logs,
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
+
             project.artifacts.upload(filepath=self.path_to_best_checkpoint,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
@@ -65,7 +71,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
-            logger.info('finished uploading checkpoint and logs')
+            self.logger.info('finished uploading checkpoint and logs')
         else:
             metrics = adapter.get_metrics()
             if type(metrics) is not dict:
@@ -77,7 +83,11 @@ class ServiceRunner(dl.BaseServiceRunner):
 
             self._save_metrics(metrics)
             # upload metrics as artifact
-            logger.info('uploading metrics to dataloop')
+            self.logger.info('uploading metrics to dataloop')
+            project.artifacts.upload(filepath=self.path_to_logs,
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
+
             project.artifacts.upload(filepath=self.path_to_metrics,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
@@ -85,14 +95,14 @@ class ServiceRunner(dl.BaseServiceRunner):
             project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])
-            logger.info('finished uploading metrics and logs')
+            self.logger.info('finished uploading metrics and logs')
 
-        logger.info('FINISHED SESSION')
+        self.logger.info('FINISHED SESSION')
 
     def _save_metrics(self, metrics):
         # save trial
         if os.path.exists(self.path_to_metrics):
-            logger.info('overwriting checkpoint.pt . . .')
+            self.logger.info('overwriting checkpoint.pt . . .')
             try:
                 os.remove(self.path_to_metrics)
             except IsADirectoryError:
@@ -103,7 +113,7 @@ class ServiceRunner(dl.BaseServiceRunner):
     def _save_checkpoint(self, checkpoint):
         # save checkpoint
         if os.path.exists(self.path_to_best_checkpoint):
-            logger.info('overwriting checkpoint.pt . . .')
+            self.logger.info('overwriting checkpoint.pt . . .')
             try:
                 os.remove(self.path_to_best_checkpoint)
             except IsADirectoryError:
