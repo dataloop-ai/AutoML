@@ -7,6 +7,8 @@ def init_logging(module_name, filename='logger.conf'):
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     logger = logging.getLogger(module_name)
 
+    if os.path.exists(filename):
+        os.remove(filename)
     fileHandler = logging.FileHandler(filename)
     logger.addHandler(fileHandler)
 
