@@ -4,10 +4,9 @@ import sys
 import dtlpy as dl
 from spec import ConfigSpec, OptModel
 from zazu import ZaZu
-from logging_utils import init_logging
+from logging_utils import logginger, init_logging
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = init_logging(__name__)
 
 class ServiceRunner(dl.BaseServiceRunner):
     """

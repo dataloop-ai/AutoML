@@ -1,6 +1,6 @@
 import dtlpy as dl
 import logging
-
+from logging_utils import logginger
 logger = logging.getLogger(name=__name__)
 from importlib import import_module
 
@@ -9,6 +9,7 @@ class LocalTrialConnector():
 
     def __init__(self, service_name):
         self.service_name = service_name
+        self.logger = logginger(__name__)
 
     def run(self, devices, model_specs, hp_values):
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
@@ -23,8 +24,9 @@ class LocalTrialConnector():
             adapter.preprocess()
         if hasattr(adapter, 'build'):
             adapter.build()
+        self.logger.info('commencing training . . . ')
         adapter.train()
-
+        self.logger.info('training finished')
         if final:
             return adapter.get_checkpoint()
         else:

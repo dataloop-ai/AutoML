@@ -10,8 +10,9 @@ from zoo.convert2Yolo import convert
 from main_pred import pred_run
 from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
+from logging_utils import logginger
 
-logger = logging.getLogger(__name__)
+logger = logginger(__name__)
 
 
 class Launcher:
