@@ -13,7 +13,6 @@ class HyperBand(Oracle):
         # degress of aggressiveness.
         self.min_epochs = 1
         self.factor = factor
-        self._max_collisions = 20
         self._current_iteration = 0
         self.hyperband_iterations = 1
         self.s_max = int(math.log(max_epochs, factor))
@@ -25,8 +24,7 @@ class HyperBand(Oracle):
         self._reset_bracket_if_finished()
 
         if self._bracket:
-            values = self._get_trial(trial_id)
-            return {'status': 'RUNNING', 'values': values}
+            return self._get_trial(trial_id)
         # This is reached if no trials from current brackets can be run.
 
         # Max sweeps has been reached, no more brackets should be created.
@@ -38,8 +36,8 @@ class HyperBand(Oracle):
         else:
             self._increment_bracket_num()
             self._start_new_bracket()
-            values = self._get_trial(trial_id)
-            return {'status': 'RUNNING', 'values': values}
+            return self._get_trial(trial_id)
+
 
     def _get_trial(self, trial_id):
         bracket_num = self._bracket['bracket_num']
@@ -59,19 +57,19 @@ class HyperBand(Oracle):
                 # If more trials from the last round are ready than will be
                 # thrown out, we can select the best to run for the next round.
                 already_selected = [info['past_id'] for info in round_info]
-                candidates = [self.trials[info['id']]
+                candidates = [info['id']
                               for info in past_round_info
                               if info['id'] not in already_selected]
-                candidates = [t for t in candidates if t.status == 'COMPLETED']
+                # candidates = [t for t in candidates if t.status == 'COMPLETED']
                 if len(candidates) > past_size - size:
                     sorted_candidates = sorted(
                         candidates,
-                        key=lambda t: t.score,
-                        reverse=self.objective.direction == 'max')
-                    best_trial = sorted_candidates[0]
+                        key=lambda i: self.trials[i]['metrics']['val_accuracy'],
+                        reverse=True)
+                    best_trial_id = sorted_candidates[0]
 
-                    values = best_trial.hyperparameters.values.copy()
-                    values['tuner/trial_id'] = best_trial.trial_id
+                    values = self.trials[best_trial_id]['hp_values']
+                    values['tuner/trial_id'] = best_trial_id
                     values['tuner/epochs'] = self._get_epochs(
                         bracket_num, round_num)
                     values['tuner/initial_epoch'] = self._get_epochs(
@@ -79,9 +77,9 @@ class HyperBand(Oracle):
                     values['tuner/bracket'] = self._current_bracket_num
                     values['tuner/round'] = round_num
 
-                    round_info.append({'past_id': best_trial.trial_id,
+                    round_info.append({'past_id': best_trial_id,
                                        'id': trial_id})
-                    return values
+                    return {'status': 'RUNNING', 'values': values}
 
 
     def _start_new_bracket(self):

@@ -12,6 +12,7 @@ class Oracle:
         self._tried_so_far = set()
         self.max_trials = max_trials
         self.are_metrics = False
+        self._max_collisions = 20
 
     def create_trial(self):
         trial_id = generate_trial_id()
@@ -37,6 +38,7 @@ class Oracle:
             self.trials[trial_id]['metrics'] = trial['metrics']
 
     def _populate_space(self, _):
+        collisions = 0
         while 1:
             # Generate a set of random values.
             values = {}
@@ -45,6 +47,9 @@ class Oracle:
 
             values_hash = self._compute_values_hash(values)
             if values_hash in self._tried_so_far:
+                collisions += 1
+                if collisions > self._max_collisions:
+                    return None
                 continue
             self._tried_so_far.add(values_hash)
             break
