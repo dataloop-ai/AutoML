@@ -1,5 +1,6 @@
 from .spec_base import Spec
 import os
+import dtlpy as dl
 
 class OptModel(Spec):
 
@@ -33,7 +34,21 @@ class OptModel(Spec):
     def dataloop(self):
         for dic in self.spec_data.values():
             if 'dataloop' in dic:
+                try:
+                    dic['dataloop']['project']
+                    dic['dataloop']['dataset']
+                except:
+                    project_id = dic['dataloop']['project_id']
+                    dataset_id = dic['dataloop']['dataset_id']
+                    project = dl.projects.get(project_id=project_id)
+                    dataset = project.datasets.get(dataset_id=dataset_id)
+                    project_name = project.name
+                    dataset_name = dataset.name
+                    dic['dataloop']['project'] = project_name
+                    dic['dataloop']['dataset'] = dataset_name
                 return dic['dataloop']
+
+
 
         return None
 

@@ -8,10 +8,16 @@ data_format = 'dataloop'
 
 
 def get_dataset_obj(dataloop_configs):
-    project_name = dataloop_configs['project']
-    dataset_name = dataloop_configs['dataset']
-    project = dl.projects.get(project_name=project_name)
-    dataset_obj = project.datasets.get(dataset_name)
+    try:
+        project_id = dataloop_configs['project_id']
+        dataset_id = dataloop_configs['dataset_id']
+        project = dl.projects.get(project_id=project_id)
+        dataset_obj = project.datasets.get(dataset_id=dataset_id)
+    except:
+        project_name = dataloop_configs['project']
+        dataset_name = dataloop_configs['dataset']
+        project = dl.projects.get(project_name=project_name)
+        dataset_obj = project.datasets.get(dataset_name)
     return dataset_obj
 
 

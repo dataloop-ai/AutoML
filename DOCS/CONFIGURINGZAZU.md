@@ -8,9 +8,9 @@ The next thing to do is edit the configs.json file
   "model_priority_space": [10, 0, 0],
   "task": "detection",
   "data": {
-    "home_path": "/home/noam/data/coco",
+    "home_path": "../data/tiny_coco",
     "annotation_type": "coco",
-    "dataset_name": "2017"
+    "dataset_name": ""
   }
 }
 ```
