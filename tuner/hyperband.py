@@ -13,8 +13,6 @@ class HyperBand(Oracle):
         # degress of aggressiveness.
         self.min_epochs = 1
         self.factor = factor
-        self._current_iteration = 0
-        self.hyperband_iterations = 1
         self.s_max = int(math.log(max_epochs, factor))
         # Start with most aggressively halving bracket.
         self._current_bracket_num = self.s_max
@@ -28,8 +26,7 @@ class HyperBand(Oracle):
         # This is reached if no trials from current brackets can be run.
 
         # Max sweeps has been reached, no more brackets should be created.
-        elif (self._current_bracket_num == 0 and
-                self._current_iteration + 1 == self.hyperband_iterations):
+        elif self._current_bracket_num == 0:
             self._increment_bracket_num()
             return {'status': 'STOPPED'}
         # Create a new bracket.
@@ -107,7 +104,6 @@ class HyperBand(Oracle):
         self._current_bracket_num -= 1
         if self._current_bracket_num < 0:
             self._current_bracket_num = self.s_max
-            self._current_iteration += 1
 
     def _random_trial(self, trial_id, bracket):
         bracket_num = bracket['bracket_num']
