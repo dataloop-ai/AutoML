@@ -1,5 +1,5 @@
 from .spec_base import Spec
-
+import os
 
 class OptModel(Spec):
 
@@ -22,10 +22,12 @@ class OptModel(Spec):
     @property
     def data(self):
         for dic in self.spec_data.values():
-            if 'data' in dic:
+            if self.dataloop:
+                return {'home_path': os.path.join('..', 'data', self.dataloop['dataset']), 'annotation_type': 'coco', 'dataset_name': ''}
+            elif 'data' in dic:
                 return dic['data']
-
-        return None
+            else:
+                return None
 
     @property
     def dataloop(self):

@@ -10,7 +10,7 @@
   "data": {
     "home_path": "../data/tiny_coco",
     "annotation_type": "coco",
-    "dataset_name": "2017"
+    "dataset_name": ""
   },
   "dataloop": {
     "project": "buffs_project",

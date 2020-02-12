@@ -1,5 +1,23 @@
 # *Running ZazuML remotely via our Dataloop cloud service*
 
+### *Set Configs*
+```
+{
+  "max_trials": 1,
+  "max_instances_at_once": 1,
+  "model_priority_space": [
+    10,
+    0,
+    0
+  ],
+  "task": "detection",
+  "dataloop": {
+    "project": "buffs_project",
+    "dataset": "tiny_mice_data"
+  }
+}
+```
+
 ## *Run in TERMINAL*
 
 ### *model & hyper-parameter search*
