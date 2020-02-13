@@ -28,7 +28,10 @@ class Launcher:
         if self.remote:
             dataset_obj = get_dataset_obj(optimal_model.dataloop)
             self.dataset_id = dataset_obj.id
-            self.query = optimal_model.dataloop['query']
+            try:
+                self.query = optimal_model.dataloop['query']
+            except:
+                self.query = dl.Filters().prepare()['filter']
             with open('global_configs.json', 'r') as fp:
                 global_project_name = json.load(fp)['project']
             self.project = dl.projects.get(project_name=global_project_name)
