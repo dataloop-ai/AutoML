@@ -59,6 +59,7 @@ def deploy_zazu(package):
 
 def push_package(project):
     dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
+    query_input = dl.FunctionIO(type='Json', name='query')
     hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
     model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
 
@@ -67,7 +68,7 @@ def push_package(project):
 
     configs_input = dl.FunctionIO(type='Json', name='configs')
 
-    model_inputs = [dataset_input, hp_value_input, model_specs_input]
+    model_inputs = [dataset_input, query_input, hp_value_input, model_specs_input]
     zazu_inputs = [configs_input]
 
     model_function = dl.PackageFunction(name='run', inputs=model_inputs, outputs=[], description='')
