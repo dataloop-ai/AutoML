@@ -21,8 +21,10 @@ def get_dataset_obj(dataloop_configs):
     return dataset_obj
 
 
-def maybe_download_data(dataset_obj):
+def maybe_download_data(dataset_obj, query):
     # check if data is downloaded if not then download
+    filters = dl.Filters()
+    filters.custom_filter = query
 
     parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     path_to_put_data = os.path.join(parent_dir, 'data')
@@ -39,8 +41,8 @@ def maybe_download_data(dataset_obj):
                 convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=True)
         else:
             os.mkdir(path_to_dataset)
-            dataset_obj.items.download(local_path=path_to_dataset, to_items_folder=False)
-            dataset_obj.download_annotations(local_path=path_to_dataset)
+            dataset_obj.items.download(local_path=path_to_dataset, to_items_folder=False, filters=filters)
+            dataset_obj.download_annotations(local_path=path_to_dataset, filters=filters)
             # move annotations out of item folder becuz this feature doesnt exist in download annotations method
             for j in os.listdir(os.path.join(path_to_dataset, 'json', 'items')):
                 os.rename(os.path.join(path_to_dataset, 'json', 'items', j), os.path.join(path_to_dataset, 'json', j))

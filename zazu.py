@@ -120,12 +120,12 @@ def maybe_do_deployment_stuff():
         with open('global_configs.json', 'r') as fp:
             global_project_name = json.load(fp)['project']
         maybe_login()
-        project = dl.projects.get(project_name=global_project_name)
-        package_obj = push_package(project)
+        global_project = dl.projects.get(project_name=global_project_name)
+        global_package_obj = push_package(global_project)
         try:
-            trial_service = deploy_model(package=package_obj, service_name='trial')
-            trainer_service = deploy_model(package=package_obj, service_name='trainer')
-            zazu_service = deploy_zazu(package=package_obj)
+            trial_service = deploy_model(package=global_package_obj, service_name='trial')
+            trainer_service = deploy_model(package=global_package_obj, service_name='trainer')
+            zazu_service = deploy_zazu(package=global_package_obj)
         except:
             trial_service.delete()
             trainer_service.delete()
@@ -135,10 +135,10 @@ def maybe_do_deployment_stuff():
         with open('global_configs.json', 'r') as fp:
             global_project_name = json.load(fp)
         maybe_login()
-        project = dl.projects.get(project_name=global_project_name)
-        update_service(project, 'trial')
-        update_service(project, 'trainer')
-        update_service(project, 'zazu')
+        global_project = dl.projects.get(project_name=global_project_name)
+        update_service(global_project, 'trial')
+        update_service(global_project, 'trainer')
+        update_service(global_project, 'zazu')
 
 
 if __name__ == '__main__':
