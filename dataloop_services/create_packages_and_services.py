@@ -16,9 +16,9 @@ def deploy_model(package, service_name):
     service_obj = package.services.deploy(service_name=service_name,
                                           module_name='models_module',
                                           agent_versions={
-                                              'dtlpy': '1.9.7',
-                                              'runner': '1.9.7.latest',
-                                              'proxy': '1.9.7.latest',
+                                              'dtlpy': '1.9.9',
+                                              'runner': '1.9.9.latest',
+                                              'proxy': '1.9.9.latest',
                                               'verify': True
                                           },
                                           package=package,
@@ -41,9 +41,9 @@ def deploy_zazu(package):
     service_obj = package.services.deploy(service_name='zazu',
                                           module_name='zazu_module',
                                           agent_versions={
-                                              'dtlpy': '1.9.7',
-                                              'runner': '1.9.7.latest',
-                                              'proxy': '1.9.7.latest',
+                                              'dtlpy': '1.9.9',
+                                              'runner': '1.9.9.latest',
+                                              'proxy': '1.9.9.latest',
                                               'verify': True
                                           },
                                           package=package,
