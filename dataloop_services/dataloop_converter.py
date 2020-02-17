@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def convert_dataloop_to_coco(path_to_data, name='train', split_val=False, split_percentage=0.005):
+def convert_dataloop_to_coco(path_to_data, name='train', split_val=False, split_percentage=0.05):
     logger.info('converting dataloop data to coco')
     path_to_dataloop_images_dir = os.path.join(path_to_data, 'items')
     path_to_dataloop_annotations_dir = os.path.join(path_to_data, 'json')

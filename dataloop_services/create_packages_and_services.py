@@ -15,12 +15,6 @@ def deploy_model(package, service_name):
     logger.info('deploying package . . .')
     service_obj = package.services.deploy(service_name=service_name,
                                           module_name='models_module',
-                                          agent_versions={
-                                              'dtlpy': '1.9.9',
-                                              'runner': '1.9.9.latest',
-                                              'proxy': '1.9.9.latest',
-                                              'verify': True
-                                          },
                                           package=package,
                                           runtime={'gpu': True,
                                                    'numReplicas': 1,
@@ -40,12 +34,6 @@ def deploy_zazu(package):
     logger.info('deploying package . . .')
     service_obj = package.services.deploy(service_name='zazu',
                                           module_name='zazu_module',
-                                          agent_versions={
-                                              'dtlpy': '1.9.9',
-                                              'runner': '1.9.9.latest',
-                                              'proxy': '1.9.9.latest',
-                                              'verify': True
-                                          },
                                           package=package,
                                           runtime={'gpu': False,
                                                    'numReplicas': 1,
