@@ -7,7 +7,8 @@ class Tuner:
 
     def __init__(self, optimal_model, ongoing_trials):
 
-        self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=10)
+        self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=10) #TODO make max epochs, switch to next line
+        # self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=optimal_model.training_configs['epochs'])
         self.ongoing_trials = ongoing_trials
         self.max_instances_at_once = optimal_model.max_instances_at_once
 
