@@ -100,29 +100,30 @@ def convert_dataloop_to_coco(path_to_data, name='train', split_val=False, split_
         coco_val_json = {'images': images_val,
                          'annotations': annotations_val,
                          'categories': categories}
-    logger.info(os.listdir(path_to_data))
-    save_annotation_path = os.path.join(path_to_data, 'annotations', 'instances_' + name + '.json')
+    path_to_new_data = os.path.dirname(path_to_data)
+    logger.info(os.listdir(path_to_new_data))
+    save_annotation_path = os.path.join(path_to_new_data, 'annotations', 'instances_' + name + '.json')
     if split_val:
-        save_annotation_val_path = os.path.join(path_to_data, 'annotations', 'instances_' + 'val' + '.json')
-    if not os.path.exists(os.path.join(path_to_data, 'annotations')):
-        os.mkdir(os.path.join(path_to_data, 'annotations'))
-    logger.info(os.listdir(os.path.join(path_to_data, 'annotations')))
+        save_annotation_val_path = os.path.join(path_to_new_data, 'annotations', 'instances_' + 'val' + '.json')
+    if not os.path.exists(os.path.join(path_to_new_data, 'annotations')):
+        os.mkdir(os.path.join(path_to_new_data, 'annotations'))
+    logger.info(os.listdir(os.path.join(path_to_new_data, 'annotations')))
     with open(save_annotation_path, 'w') as outfile:
         json.dump(coco_json, outfile)
     if split_val:
         with open(save_annotation_val_path, 'w') as outfile:
             json.dump(coco_val_json, outfile)
-    if not os.path.exists(os.path.join(os.path.join(path_to_data, 'images'))):
-        os.mkdir(os.path.join(path_to_data, 'images'))
-    os.mkdir(os.path.join(path_to_data, 'images', name))
+    if not os.path.exists(os.path.join(os.path.join(path_to_new_data, 'images'))):
+        os.mkdir(os.path.join(path_to_new_data, 'images'))
+    os.mkdir(os.path.join(path_to_new_data, 'images', name))
     if split_val:
-        os.mkdir(os.path.join(path_to_data, 'images', 'val'))
-    for img in os.listdir(os.path.join(path_to_data, 'items')):
+        os.mkdir(os.path.join(path_to_new_data, 'images', 'val'))
+    for img in os.listdir(os.path.join(path_to_new_data, 'items')):
         if split_val:
             if img in val_filenames:
-                copyfile(os.path.join(path_to_data, 'items', img), os.path.join(path_to_data, 'images', 'val', img))
+                copyfile(os.path.join(path_to_new_data, 'items', img), os.path.join(path_to_new_data, 'images', 'val', img))
                 continue
-        copyfile(os.path.join(path_to_data, 'items', img), os.path.join(path_to_data, 'images', name, img))
+        copyfile(os.path.join(path_to_new_data, 'items', img), os.path.join(path_to_new_data, 'images', name, img))
 
 
 if __name__ == '__main__':
