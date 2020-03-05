@@ -118,12 +118,12 @@ def convert_dataloop_to_coco(path_to_data, name='train', split_val=False, split_
     os.mkdir(os.path.join(path_to_new_data, 'images', name))
     if split_val:
         os.mkdir(os.path.join(path_to_new_data, 'images', 'val'))
-    for img in os.listdir(os.path.join(path_to_new_data, 'items')):
+    for img in os.listdir(os.path.join(path_to_data, 'items')):
         if split_val:
             if img in val_filenames:
                 copyfile(os.path.join(path_to_new_data, 'items', img), os.path.join(path_to_new_data, 'images', 'val', img))
                 continue
-        copyfile(os.path.join(path_to_new_data, 'items', img), os.path.join(path_to_new_data, 'images', name, img))
+        copyfile(os.path.join(path_to_data, 'items', img), os.path.join(path_to_new_data, 'images', name, img))
 
 
 if __name__ == '__main__':

@@ -35,10 +35,7 @@ def download_and_organize(path_to_dataset, dataset_obj, filters=None):
 
     images_folder = os.path.join(path_to_dataset, 'items')
     json_folder = os.path.join(path_to_dataset, 'json')
-    if not os.path.exists(images_folder):
-        os.mkdir(images_folder)
-    if not os.path.exists(json_folder):
-        os.mkdir(json_folder)
+
     # move to imgs and annotations to fixed format
     for path, su1bdirs, files in os.walk(images_folder):
         for name in files:
@@ -50,7 +47,10 @@ def download_and_organize(path_to_dataset, dataset_obj, filters=None):
             json_path = os.path.join(path.replace(images_folder, json_folder), filename + '.json')
             new_json_path = os.path.join(json_folder, filename + '.json')
             os.rename(img_path, new_img_path)
-            os.rename(json_path, new_json_path)
+            try:
+                os.rename(json_path, new_json_path)
+            except:
+                pass
     # delete dirs leave images and jsons
     for stuff in os.listdir(images_folder):
         im_path = os.path.join(images_folder, stuff)
