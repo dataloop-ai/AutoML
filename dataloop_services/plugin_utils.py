@@ -51,12 +51,16 @@ def download_and_organize(path_to_dataset, dataset_obj, filters):
         if os.path.isdir(js_path):
             shutil.rmtree(js_path, ignore_errors=True)
 
-def maybe_download_data(dataset_obj, query):
+def maybe_download_data(dataset_obj, train_query, val_query):
     # check if data is downloaded if not then download
-    filters = dl.Filters()
-    filters.custom_filter = query
-    logger.info('query: ' + str(query))
-    logger.info('filters: ' + str(filters.prepare()))
+    train_filters = dl.Filters()
+    train_filters.custom_filter = train_query
+    val_filters = dl.Filters()
+    val_filters.custom_filter = val_query
+    logger.info('train query: ' + str(train_query))
+    logger.info('filters: ' + str(train_filters.prepare()))
+    logger.info('val query: ' + str(val_query))
+    logger.info('filters: ' + str(val_filters.prepare()))
 
     parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     path_to_put_data = os.path.join(parent_dir, 'data')
@@ -74,8 +78,8 @@ def maybe_download_data(dataset_obj, query):
                 convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=False)
                 convert_dataloop_to_coco(path_to_data=path_to_val_dataset, name='val', split_val=False)
         else:
-            download_and_organize(path_to_dataset, dataset_obj, filters)
-            download_and_organize(path_to_val_dataset, dataset_obj, filters)
+            download_and_organize(path_to_dataset, dataset_obj, train_filters)
+            download_and_organize(path_to_val_dataset, dataset_obj, val_filters)
 
             convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=False)
             convert_dataloop_to_coco(path_to_data=path_to_val_dataset, name='val', split_val=False)

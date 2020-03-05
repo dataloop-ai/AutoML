@@ -29,9 +29,15 @@ class Launcher:
             dataset_obj = get_dataset_obj(optimal_model.dataloop)
             self.dataset_id = dataset_obj.id
             try:
-                self.query = optimal_model.dataloop['query']
+                self.train_query = optimal_model.dataloop['train_query']
             except:
-                self.query = dl.Filters().prepare()['filter']
+                self.train_query = dl.Filters().prepare()['filter']
+
+            try:
+                self.val_query = optimal_model.dataloop['val_query']
+            except:
+                self.val_query = dl.Filters().prepare()['filter']
+
             with open('global_configs.json', 'r') as fp:
                 global_project_name = json.load(fp)['project']
             self.project = dl.projects.get(project_name=global_project_name)
@@ -97,10 +103,11 @@ class Launcher:
     def _launch_remote_best_trial(self, best_trial):
         model_specs = self.optimal_model.unwrap()
         dataset_input = dl.FunctionIO(type='Dataset', name='dataset', value={"dataset_id": self.dataset_id})
-        query_input = dl.FunctionIO(type='Json', name='query', value=self.query)
+        train_query_input = dl.FunctionIO(type='Json', name='train_query', value=self.train_query)
+        val_query_input = dl.FunctionIO(type='Json', name='val_query', value=self.val_query)
         hp_value_input = dl.FunctionIO(type='Json', name='hp_values', value=best_trial['hp_values'])
         model_specs_input = dl.FunctionIO(type='Json', name='model_specs', value=model_specs)
-        inputs = [dataset_input, query_input, hp_value_input, model_specs_input]
+        inputs = [dataset_input, train_query_input, val_query_input, hp_value_input, model_specs_input]
 
         execution_obj = self._run_remote_execution(inputs)
         while execution_obj.latest_status['status'] != 'success':
@@ -138,10 +145,11 @@ class Launcher:
         logger.info('launching new set of trials')
         for trial_id, trial in self.ongoing_trials.trials.items():
             dataset_input = dl.FunctionIO(type='Dataset', name='dataset', value={"dataset_id": self.dataset_id})
-            query_input = dl.FunctionIO(type='Json', name='query', value=self.query)
+            train_query_input = dl.FunctionIO(type='Json', name='train_query', value=self.train_query)
+            val_query_input = dl.FunctionIO(type='Json', name='val_query', value=self.val_query)
             hp_value_input = dl.FunctionIO(type='Json', name='hp_values', value=trial['hp_values'])
             model_specs_input = dl.FunctionIO(type='Json', name='model_specs', value=model_specs)
-            inputs = [dataset_input, query_input, hp_value_input, model_specs_input]
+            inputs = [dataset_input, train_query_input, val_query_input, hp_value_input, model_specs_input]
 
             threads.new_thread(target=self._collect_metrics,
                                inputs=inputs,

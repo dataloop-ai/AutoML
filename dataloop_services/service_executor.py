@@ -25,8 +25,8 @@ class ServiceRunner(dl.BaseServiceRunner):
         self.logger.info(self.package_name + ' initialized')
 
 
-    def run(self, dataset, query, model_specs, hp_values, configs=None, progress=None):
-        maybe_download_data(dataset, query)
+    def run(self, dataset, train_query, val_query, model_specs, hp_values, configs=None, progress=None):
+        maybe_download_data(dataset, train_query, val_query)
 
         # get project
         # project = dataset.project
