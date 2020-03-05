@@ -22,13 +22,23 @@ def get_dataset_obj(dataloop_configs):
     return dataset_obj
 
 
-def download_and_organize(path_to_dataset, dataset_obj, filters):
+def download_and_organize(path_to_dataset, dataset_obj, filters=None):
+    if filters is None:
+        query = dl.Filters().prepare()['filter']
+        filters = dl.Filters()
+        filters.custom_filter = query
+
+
     os.mkdir(path_to_dataset)
     dataset_obj.items.download(local_path=path_to_dataset, filters=filters)
     dataset_obj.download_annotations(local_path=path_to_dataset, filters=filters)
 
     images_folder = os.path.join(path_to_dataset, 'items')
     json_folder = os.path.join(path_to_dataset, 'json')
+    if not os.path.exists(images_folder):
+        os.mkdir(images_folder)
+    if not os.path.exists(json_folder):
+        os.mkdir(json_folder)
     # move to imgs and annotations to fixed format
     for path, su1bdirs, files in os.walk(images_folder):
         for name in files:
