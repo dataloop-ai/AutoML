@@ -39,7 +39,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         final = 1 if self.service_name == 'trainer' else 0
         devices = {'gpu_index': 0}
 
-        adapter = cls(devices, model_specs, hp_values, final)
+        adapter = cls(devices, model_specs, hp_values)
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
         if hasattr(adapter, 'data_loader'):
