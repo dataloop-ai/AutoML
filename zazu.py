@@ -4,7 +4,7 @@ from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
 from logging_utils import init_logging, logginger
-from dataloop_services import deploy_model, deploy_zazu, push_package, update_service
+from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj
 import argparse
 import os
 import torch
@@ -163,12 +163,16 @@ if __name__ == '__main__':
         configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
         inputs = [configs_input]
         zazu_service = dl.services.get('zazu')
+        #get project id for billing bla bla bla
+        dataset_obj = get_dataset_obj(configs['dataloop'])
+        id = dataset_obj.project.id
+
         if args.search:
-            zazu_service.execute(function_name='search', execution_input=inputs)
+            zazu_service.execute(function_name='search', execution_input=inputs, project_id=id)
         if args.train:
-            zazu_service.execute(function_name='train', execution_input=inputs)
+            zazu_service.execute(function_name='train', execution_input=inputs, project_id=id)
         if args.predict:
-            zazu_service.execute(function_name='predict', execution_input=inputs)
+            zazu_service.execute(function_name='predict', execution_input=inputs, project_id=id)
 
     else:
         logger = init_logging(__name__)
