@@ -15,7 +15,7 @@
   "dataloop": {
     "project": "buffs_project",
     "dataset": "rodent_data",
-    "train_query": "{'resource': 'items', 'sort': {}, 'page': 0, 'pageSize': 1000, 'filter': {'$and': [{'dir': '/dir*'}, {'hidden': False}, {'type': 'file'}]}}",
-    "val_query": "{'resource': 'items', 'sort': {}, 'page': 0, 'pageSize': 1000, 'filter': {'$and': [{'dir': '/val_set'}, {'hidden': False}, {'type': 'file'}]}}"
+    "train_query": {"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/dir*"}, {"hidden": false}, {"type": "file"}]}},
+    "val_query": {"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/val_set"}, {"hidden": false}, {"type": "file"}]}}
   }
 }

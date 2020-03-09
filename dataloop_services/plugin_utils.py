@@ -28,7 +28,7 @@ def download_and_organize(path_to_dataset, dataset_obj, filters=None):
         filters = dl.Filters()
         filters.custom_filter = query
 
-
+    os.mkdir(os.path.dirname(path_to_dataset))
     os.mkdir(path_to_dataset)
     dataset_obj.items.download(local_path=path_to_dataset, filters=filters)
     dataset_obj.download_annotations(local_path=path_to_dataset, filters=filters)

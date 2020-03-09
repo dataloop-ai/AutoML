@@ -20,7 +20,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         logger.info(self.package_name + ' initialized')
 
     def search(self, configs, progress=None):
-
+        dl.verbose.logging_level = 'info'
         configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
@@ -43,7 +43,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def train(self, configs, progress=None):
-
+        dl.verbose.logging_level = 'info'
         configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
@@ -65,7 +65,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def predict(self, configs, progress=None):
-
+        dl.verbose.logging_level = 'warning'
         configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
