@@ -9,8 +9,8 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
 
 | *models* | *hyper-parameter optimization algorithms* |
 | :----:         |     :----:      |
-|  <ul><li>Retinanet</li><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand (coming soon)</li></ul>     | 
-  
+|  <ul><li>Retinanet</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | 
+|  <ul><li>YoloV3</li></ul>    | <ul><li>Random Search</li></ul>     | 
 ### *Super EASY to use!*
 
 ![](./images/running_zazu_search2.gif)  
