@@ -15,6 +15,7 @@ class ServiceRunner(dl.BaseServiceRunner):
     """
 
     def __init__(self, package_name, service_name):
+        logging.getLogger('dtlpy').setLevel(logging.WARN)
         self.package_name = package_name
         self.service_name = service_name
         self.path_to_best_checkpoint = 'checkpoint.pt'

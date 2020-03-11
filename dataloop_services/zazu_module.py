@@ -15,12 +15,13 @@ class ServiceRunner(dl.BaseServiceRunner):
     """
 
     def __init__(self, package_name):
+        logging.getLogger('dtlpy').setLevel(logging.WARN)
         self.package_name = package_name
         self.this_path = os.getcwd()
         logger.info(self.package_name + ' initialized')
 
     def search(self, configs, progress=None):
-        dl.verbose.disable_progress_bar = True
+
         configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
@@ -43,7 +44,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def train(self, configs, progress=None):
-        dl.verbose.disable_progress_bar = True
+
         configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
@@ -65,7 +66,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         #                              execution_id=save_info['execution_id'])
 
     def predict(self, configs, progress=None):
-        dl.verbose.disable_progress_bar = True
+
         configs = ConfigSpec(configs)
         opt_model = OptModel()
         opt_model.add_child_spec(configs, 'configs')
