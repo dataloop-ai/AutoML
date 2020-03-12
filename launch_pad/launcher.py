@@ -11,6 +11,7 @@ from main_pred import pred_run
 from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
 from logging_utils import logginger
+from copy import deepcopy
 
 logger = logginger(__name__)
 
@@ -34,9 +35,15 @@ class Launcher:
                 self.train_query = dl.Filters().prepare()['filter']
 
             try:
-                self.val_query = optimal_model.dataloop['val_query']
+                # TODO: TRAIN QUERY IS STILL BEING COPPIED
+                self.val_query = deepcopy(self.train_query)
+                self.val_query['filter']['$and'][0]['dir'] = optimal_model.dataloop['test_dir']
             except:
-                self.val_query = dl.Filters().prepare()['filter']
+                try:
+                    self.val_query = optimal_model.dataloop['val_query']
+                except:
+                    self.val_query = dl.Filters().prepare()['filter']
+
 
             with open('global_configs.json', 'r') as fp:
                 global_project_name = json.load(fp)['project']

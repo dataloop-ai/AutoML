@@ -28,7 +28,7 @@ def download_and_organize(path_to_dataset, dataset_obj, filters=None):
         filters = dl.Filters()
         filters.custom_filter = query
 
-    if not os.path.exists(path_to_dataset):
+    if not os.path.exists(os.path.dirname(path_to_dataset)):
         os.mkdir(os.path.dirname(path_to_dataset))
     os.mkdir(path_to_dataset)
     dataset_obj.items.download(local_path=path_to_dataset, filters=filters)
@@ -36,7 +36,8 @@ def download_and_organize(path_to_dataset, dataset_obj, filters=None):
 
     images_folder = os.path.join(path_to_dataset, 'items')
     json_folder = os.path.join(path_to_dataset, 'json')
-
+    logger.info('downloaded ' + str(len(os.listdir(images_folder))) + ' to ' + images_folder)
+    logger.info('downloaded ' + str(len(os.listdir(json_folder))) + ' to ' + json_folder)
     # move to imgs and annotations to fixed format
     for path, su1bdirs, files in os.walk(images_folder):
         for name in files:
