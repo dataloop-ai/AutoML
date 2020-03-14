@@ -62,7 +62,7 @@ class ZaZu:
             tuner.search_hp()
 
         best_trial = tuner.get_best_trial()
-        logger.info('best trial: ', json.dumps(best_trial))
+        logger.info('best trial: ' + str(best_trial))
         if os.path.exists(self.path_to_best_trial):
             logger.info('overwriting best_trial.json . . .')
             os.remove(self.path_to_best_trial)

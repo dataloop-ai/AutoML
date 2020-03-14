@@ -231,7 +231,7 @@ class Launcher:
         logger.info('running new execution . . .')
 
         execution_obj = self.service.execute(execution_input=inputs, function_name='run')
-        logger.info('executing: '+ execution_obj.id)
+        logger.info('executing: ' + execution_obj.id)
         return execution_obj
 
     def _run_demo_execution(self, inputs):
