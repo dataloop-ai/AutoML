@@ -30,4 +30,4 @@ class Tuner:
         df = pd.DataFrame(self.oracle.trials)
         temp_df = df.loc['metrics'].dropna()
         best_trial_id = temp_df.apply(lambda x: x['val_accuracy']).idxmax()
-        return self.oracle.trials[best_trial_id]
+        return self.oracle.trials[best_trial_id], self.oracle.trials
