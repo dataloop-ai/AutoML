@@ -130,6 +130,7 @@ class Launcher:
         logger.info('launching new set of trials')
         device = 0
         for trial_id, trial in self.ongoing_trials.trials.items():
+            logger.info('launching trial_' + trial_id + ': ' + str(trial))
             inputs = {
                 'devices': {'gpu_index': device},
                 'hp_values': trial['hp_values'],
@@ -225,7 +226,7 @@ class Launcher:
             metrics = self._run_demo_execution(inputs)
 
         results_dict[id_hash] = metrics
-        logger.info('finshed thread: ' + thread_name)
+        logger.info('finished thread: ' + thread_name)
 
 
     def _run_remote_execution(self, inputs):
