@@ -211,6 +211,7 @@ class Launcher:
                     logger.info('overwriting tenorboards runs . . .')
                     os.rmdir(path_to_tensorboard_dir)
                 # download artifacts, should contain metrics and tensorboard runs
+                # TODO: download many different metrics then should have id hash as well..
                 self.project.artifacts.download(package_name=self.package_name,
                                                 execution_id=execution_obj.id,
                                                 local_path=os.getcwd())
