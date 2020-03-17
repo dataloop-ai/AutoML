@@ -23,6 +23,7 @@ class ZaZu:
         self.opt_model = opt_model
         self.path_to_most_suitable_model = 'model.txt'
         self.path_to_best_trial = 'best_trial.json'
+        self.path_to_trials = 'trials.json'
         self.path_to_best_checkpoint = 'checkpoint.pt'
         models_spec_path = 'models.json'
         self.models = ModelsSpec(models_spec_path)
@@ -61,8 +62,14 @@ class ZaZu:
             # starting next set of trials
             tuner.search_hp()
 
-        best_trial = tuner.get_best_trial()
+        best_trial, trials = tuner.get_best_trial()
         logger.info('best trial: ' + str(best_trial))
+        if os.path.exists(self.path_to_trials):
+            logger.info('overwriting trials.json . . .')
+            os.remove(self.path_to_best_trial)
+        with open(self.path_to_trials, 'w') as fp:
+            json.dump(trials, fp)
+            logger.info('results saved to trials.json')
         if os.path.exists(self.path_to_best_trial):
             logger.info('overwriting best_trial.json . . .')
             os.remove(self.path_to_best_trial)
