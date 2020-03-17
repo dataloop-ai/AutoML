@@ -37,7 +37,7 @@ class Oracle:
         for trial_id, trial in ongoing_trials.items():
             self.trials[trial_id]['metrics'] = trial['metrics']
 
-    def _populate_space(self, _):
+    def _populate_space(self, trial_id):
         collisions = 0
         while 1:
             # Generate a set of random values.
@@ -52,6 +52,7 @@ class Oracle:
                     return None
                 continue
             self._tried_so_far.add(values_hash)
+            values['tuner/new_trial_id'] = trial_id
             break
         return {'status': 'RUNNING',
                 'values': values}

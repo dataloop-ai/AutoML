@@ -66,8 +66,8 @@ class HyperBand(Oracle):
                     best_trial_id = sorted_candidates[0]
 
                     values = self.trials[best_trial_id]['hp_values']
-                    values['tuner/past_trial_id'] = best_trial_id
                     values['tuner/new_trial_id'] = trial_id
+                    values['tuner/past_trial_id'] = best_trial_id
                     values['tuner/epochs'] = self._get_epochs(
                         bracket_num, round_num)
                     values['tuner/initial_epoch'] = self._get_epochs(
@@ -112,7 +112,6 @@ class HyperBand(Oracle):
         values = super()._populate_space(trial_id)['values']
         if values:
             values['tuner/past_trial_id'] = None
-            values['tuner/new_trial_id'] = trial_id
             values['tuner/epochs'] = self._get_epochs(bracket_num, 0)
             values['tuner/initial_epoch'] = 0
             values['tuner/bracket'] = self._current_bracket_num
