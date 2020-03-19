@@ -30,11 +30,11 @@ class LocalTrialConnector():
         if final:
             return adapter.get_checkpoint()
         else:
-            metrics = adapter.get_metrics()
-            if type(metrics) is not dict:
+            metrics_and_checkpoint_dict = adapter.get_metrics_and_checkpoint()
+            if type(metrics_and_checkpoint_dict) is not dict:
                 raise Exception('adapter, get_metrics method must return dict object')
-            if type(metrics['val_accuracy']) is not float:
+            if type(metrics_and_checkpoint_dict['metrics']['val_accuracy']) is not float:
                 raise Exception(
                     'adapter, get_metrics method must return dict with only python floats. '
                     'Not numpy floats or any other objects like that')
-            return metrics
+            return metrics_and_checkpoint_dict

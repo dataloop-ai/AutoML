@@ -144,8 +144,8 @@ class Launcher:
 
         threads.wait()
         ongoing_trials_results = threads.results
-        for trial_id, metrics in ongoing_trials_results.items():
-            self.ongoing_trials.update_metrics(trial_id, metrics)
+        for trial_id, metrics_and_checkpoint_dict in ongoing_trials_results.items():
+            self.ongoing_trials.update_metrics(trial_id, metrics_and_checkpoint_dict)
 
     def _launch_remote_trials(self):
         threads = ThreadManager()
@@ -165,8 +165,8 @@ class Launcher:
 
         threads.wait()
         ongoing_trials_results = threads.results
-        for trial_id, metrics in ongoing_trials_results.items():
-            self.ongoing_trials.update_metrics(trial_id, metrics)
+        for trial_id, metrics_and_checkpoint in ongoing_trials_results.items():
+            self.ongoing_trials.update_metrics(trial_id, metrics_and_checkpoint)
 
     def _convert_coco_to_yolo_format(self):
         conversion_config_val = {
@@ -190,7 +190,7 @@ class Launcher:
         convert(conversion_config_val)
         convert(conversion_config_train)
 
-    def _collect_metrics(self, inputs, id_hash, results_dict):
+    def _collect_metrics(self, inputs, trial_id, results_dict):
         thread_name = threading.currentThread().getName()
         logger.info('starting thread: ' + thread_name)
         if self.remote:
@@ -223,9 +223,9 @@ class Launcher:
             except Exception as e:
                 print('The thread ' + thread_name + ' had an exception: \n', e)
         else:
-            metrics = self._run_demo_execution(inputs)
+            metrics_and_checkpoint_dict = self._run_demo_execution(inputs)
 
-        results_dict[id_hash] = metrics
+        results_dict[trial_id] = metrics_and_checkpoint_dict
         logger.info('finished thread: ' + thread_name)
 
 

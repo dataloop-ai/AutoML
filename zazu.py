@@ -16,7 +16,6 @@ import sys
 logger = logginger(__name__)
 
 
-
 class ZaZu:
     def __init__(self, opt_model, remote=False):
         self.remote = remote
@@ -62,14 +61,22 @@ class ZaZu:
             # starting next set of trials
             tuner.search_hp()
 
-        best_trial, trials = tuner.get_best_trial()
-        logger.info('best trial: ' + str(best_trial))
-        if os.path.exists(self.path_to_trials):
-            logger.info('overwriting trials.json . . .')
-            os.remove(self.path_to_best_trial)
-        with open(self.path_to_trials, 'w') as fp:
-            json.dump(trials, fp)
-            logger.info('results saved to trials.json')
+        trials = tuner.get_trials()
+        sorted_trial_ids = tuner.get_sorted_trial_ids()
+
+        string1 = self.path_to_best_checkpoint.split('.')[0]
+        for i in range(len(sorted_trial_ids)):
+            save_checkpoint_location = string1 + str(i) + '.pt'
+            if os.path.exists(save_checkpoint_location):
+                logger.info('overwriting checkpoint . . .')
+                os.remove(save_checkpoint_location)
+            logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
+            torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
+
+        logger.info('best trial: ' + str(trials[sorted_trial_ids[0]]['hp_values']) + '\nbest value: ' + str(
+            trials[sorted_trial_ids[0]]['metrics']))
+
+        best_trial = trials[sorted_trial_ids[0]]['hp_values']
         if os.path.exists(self.path_to_best_trial):
             logger.info('overwriting best_trial.json . . .')
             os.remove(self.path_to_best_trial)
@@ -158,8 +165,6 @@ if __name__ == '__main__':
     parser.add_argument("--predict", action='store_true', default=False)
     args = parser.parse_args()
 
-
-
     maybe_do_deployment_stuff()
 
     if args.remote:
@@ -170,7 +175,7 @@ if __name__ == '__main__':
         configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
         inputs = [configs_input]
         zazu_service = dl.services.get('zazu')
-        #get project id for billing bla bla bla
+        # get project id for billing bla bla bla
         dataset_obj = get_dataset_obj(configs['dataloop'])
         id = dataset_obj.project.id
 

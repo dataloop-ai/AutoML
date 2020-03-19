@@ -26,8 +26,6 @@ class Tuner:
     def get_trials(self):
         return self.oracle.trials
 
-    def get_best_trial(self):
-        df = pd.DataFrame(self.oracle.trials)
-        temp_df = df.loc['metrics'].dropna()
-        best_trial_id = temp_df.apply(lambda x: x['val_accuracy']).idxmax()
-        return self.oracle.trials[best_trial_id], self.oracle.trials
+    def get_sorted_trial_ids(self):
+        sorted_trial_ids = sorted(self.oracle.trials.keys(), key=lambda x: self.oracle.trials[x]['metrics']['val_accuracy'], reverse=True)
+        return sorted_trial_ids
