@@ -113,7 +113,8 @@ class ZaZu:
             self.update_optimal_model()
 
         gun = Launcher(self.opt_model)
-        gun.predict(self.path_to_best_checkpoint)
+        path_to_first_checkpoint = self.path_to_best_checkpoint.split('.')[0] + str(0) + '.pt'
+        gun.predict(path_to_first_checkpoint)
 
 
 def maybe_login():
