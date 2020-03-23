@@ -1,5 +1,5 @@
 {
-  "max_trials": 1,
+  "max_trials": 4,
   "max_instances_at_once": 1,
   "model_priority_space": [
     10,
@@ -7,9 +7,11 @@
     0
   ],
   "task": "detection",
+  "epochs": 10,
+  "search_method": "random",
   "data": {
-    "home_path": "../data/tiny_coco",
+    "home_path": "../data/rodent_data",
     "annotation_type": "coco",
-    "dataset_name": "2017"
+    "dataset_name": ""
   }
 }
