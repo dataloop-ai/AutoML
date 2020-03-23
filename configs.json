@@ -1,5 +1,5 @@
 {
-  "max_trials": 1,
+  "max_trials": 4,
   "max_instances_at_once": 1,
   "model_priority_space": [
     10,
@@ -7,6 +7,8 @@
     0
   ],
   "task": "detection",
+  "epochs": 10,
+  "search_method": "random",
   "data": {
     "home_path": "../data/rodent_data",
     "annotation_type": "coco",
@@ -18,5 +20,6 @@
     "train_query": {"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/dir*"}, {"hidden": false}, {"type": "file"}]}},
     "val_query": {"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/val_*"}, {"hidden": false}, {"type": "file"}]}},
     "test_dir": "/val_*"
+
   }
 }

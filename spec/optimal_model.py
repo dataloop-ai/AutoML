@@ -61,6 +61,22 @@ class OptModel(Spec):
         return None
 
     @property
+    def epochs(self):
+        for dic in self.spec_data.values():
+            if 'epochs' in dic:
+                return dic['epochs']
+
+        return None
+
+    @property
+    def search_method(self):
+        for dic in self.spec_data.values():
+            if 'search_method' in dic:
+                return dic['search_method']
+
+        return None
+
+    @property
     def max_instances_at_once(self):
         for dic in self.spec_data.values():
             if 'max_instances_at_once' in dic:

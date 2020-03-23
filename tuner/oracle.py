@@ -6,19 +6,20 @@ import pandas as pd
 
 class Oracle:
 
-    def __init__(self, space, max_trials):
+    def __init__(self, space, max_trials=None):
         self.space = space
         self.trials = {}
         self._tried_so_far = set()
         self.max_trials = max_trials
         self.are_metrics = False
+        self._max_collisions = 20
 
     def create_trial(self):
         trial_id = generate_trial_id()
         if self.are_metrics:
             df = pd.DataFrame(self.trials)
             temp_df = df.loc['metrics'].dropna().apply(lambda x: x['val_accuracy'])
-        if len(self.trials) >= self.max_trials:
+        if self.max_trials is not None and len(self.trials) >= self.max_trials:
             status = 'STOPPED'
             values = None
         elif self.are_metrics and temp_df.max() > 0.998:
@@ -38,6 +39,8 @@ class Oracle:
             self.trials[trial_id]['checkpoint'] = trial['checkpoint']
 
     def _populate_space(self, trial_id):
+
+        collisions = 0
         while 1:
             # Generate a set of random values.
             values = {}
@@ -46,6 +49,9 @@ class Oracle:
 
             values_hash = self._compute_values_hash(values)
             if values_hash in self._tried_so_far:
+                collisions += 1
+                if collisions > self._max_collisions:
+                    return None
                 continue
             self._tried_so_far.add(values_hash)
             values['tuner/new_trial_id'] = trial_id
