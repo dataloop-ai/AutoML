@@ -6,7 +6,8 @@ import pandas as pd
 
 class Oracle:
 
-    def __init__(self, space, max_trials=None):
+    def __init__(self, space, max_epochs, max_trials=None):
+        self.max_epochs = max_epochs
         self.space = space
         self.trials = {}
         self._tried_so_far = set()
@@ -55,6 +56,8 @@ class Oracle:
                 continue
             self._tried_so_far.add(values_hash)
             values['tuner/new_trial_id'] = trial_id
+            values['tuner/epochs'] = self.max_epochs
+            values['tuner/initial_epoch'] = 0
             break
         return {'status': 'RUNNING',
                 'values': values}

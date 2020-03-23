@@ -111,6 +111,7 @@ class HyperBand(Oracle):
         rounds = bracket['rounds']
         values = super()._populate_space(trial_id)['values']
         if values:
+            values['tuner/new_trial_id'] = trial_id
             values['tuner/past_trial_id'] = None
             values['tuner/epochs'] = self._get_epochs(bracket_num, 0)
             values['tuner/initial_epoch'] = 0
