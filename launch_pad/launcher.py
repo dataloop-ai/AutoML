@@ -4,10 +4,9 @@ import time
 import threading
 import logging
 import torch
-from dataloop_services import LocalTrialConnector
+from dataloop_services import LocalTrialConnector, LocalPredConnector
 from .thread_manager import ThreadManager
 from zoo.convert2Yolo import convert
-from main_pred import pred_run
 from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
 from logging_utils import logginger
@@ -60,7 +59,12 @@ class Launcher:
                 self.optimal_model.data['annotation_type'] = 'yolo'
 
     def predict(self, checkpoint_path):
-        pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
+        self.local_pred_detector = LocalPredConnector()
+        model_specs = self.optimal_model.unwrap()
+        inputs = {'checkpoint_path': checkpoint_path,
+                  'model_specs': model_specs}
+
+        self._run_pred_demo_execution(inputs)
 
     def eval(self):
         pass
@@ -108,7 +112,7 @@ class Launcher:
             'model_specs': model_specs,
         }
 
-        return self._run_demo_execution(inputs)
+        return self._run_trial_demo_execution(inputs)
 
     def _launch_remote_best_trial(self, best_trial):
         model_specs = self.optimal_model.unwrap()
@@ -226,7 +230,7 @@ class Launcher:
             except Exception as e:
                 print('The thread ' + thread_name + ' had an exception: \n', e)
         else:
-            metrics_and_checkpoint_dict = self._run_demo_execution(inputs)
+            metrics_and_checkpoint_dict = self._run_trial_demo_execution(inputs)
 
         results_dict[trial_id] = metrics_and_checkpoint_dict
         logger.info('finished thread: ' + thread_name)
@@ -239,5 +243,8 @@ class Launcher:
         logger.info('executing: ' + execution_obj.id)
         return execution_obj
 
-    def _run_demo_execution(self, inputs):
+    def _run_trial_demo_execution(self, inputs):
         return self.local_trial_connector.run(inputs['devices'], inputs['model_specs'], inputs['hp_values'])
+
+    def _run_pred_demo_execution(self, inputs):
+        return self.local_pred_detector.run(inputs['checkpoint_path'], inputs['model_specs'])

@@ -81,24 +81,3 @@ class ServiceRunner(dl.BaseServiceRunner):
         self.logger.info('finished uploading metrics and logs')
 
         self.logger.info('FINISHED SESSION')
-
-    def _save_metrics(self, metrics):
-        # save trial
-        if os.path.exists(self.path_to_metrics):
-            self.logger.info('overwriting checkpoint.pt . . .')
-            try:
-                os.remove(self.path_to_metrics)
-            except IsADirectoryError:
-                os.rmdir(self.path_to_metrics)
-        with open(self.path_to_metrics, 'w') as fp:
-            json.dump(metrics, fp)
-
-    def _save_checkpoint(self, checkpoint):
-        # save checkpoint
-        if os.path.exists(self.path_to_best_checkpoint):
-            self.logger.info('overwriting checkpoint.pt . . .')
-            try:
-                os.remove(self.path_to_best_checkpoint)
-            except IsADirectoryError:
-                os.rmdir(self.path_to_best_checkpoint)
-        torch.save(checkpoint, self.path_to_best_checkpoint)
