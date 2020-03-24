@@ -64,7 +64,7 @@ def push_package(project):
     train_function = dl.PackageFunction(name='train', inputs=zazu_inputs, outputs=[], description='')
     search_function = dl.PackageFunction(name='search', inputs=zazu_inputs, outputs=[], description='')
 
-    models_module = dl.PackageModule(entry_point='dataloop_services/service_executor.py',
+    models_module = dl.PackageModule(entry_point='dataloop_services/trial_module.py',
                                      name='models_module',
                                      functions=[model_function],
                                      init_inputs=[package_name_input, service_name_input])

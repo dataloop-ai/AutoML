@@ -14,8 +14,8 @@ class LocalTrialConnector():
     def run(self, devices, model_specs, hp_values):
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
 
-        final = 1 if self.service_name == 'trainer' else 0
-        adapter = cls(devices, model_specs, hp_values)
+        adapter = cls()
+        adapter.trial_init(devices, model_specs, hp_values)
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
         if hasattr(adapter, 'data_loader'):
@@ -27,14 +27,12 @@ class LocalTrialConnector():
         self.logger.info('commencing training . . . ')
         adapter.train()
         self.logger.info('training finished')
-        if final:
-            return adapter.get_checkpoint()
-        else:
-            metrics_and_checkpoint_dict = adapter.get_metrics_and_checkpoint()
-            if type(metrics_and_checkpoint_dict) is not dict:
-                raise Exception('adapter, get_metrics method must return dict object')
-            if type(metrics_and_checkpoint_dict['metrics']['val_accuracy']) is not float:
-                raise Exception(
-                    'adapter, get_metrics method must return dict with only python floats. '
-                    'Not numpy floats or any other objects like that')
-            return metrics_and_checkpoint_dict
+
+        metrics_and_checkpoint_dict = adapter.get_best_metrics_and_checkpoint()
+        if type(metrics_and_checkpoint_dict) is not dict:
+            raise Exception('adapter, get_best_metrics method must return dict object')
+        if type(metrics_and_checkpoint_dict['metrics']['val_accuracy']) is not float:
+            raise Exception(
+                'adapter, get_best_metrics method must return dict with only python floats. '
+                'Not numpy floats or any other objects like that')
+        return metrics_and_checkpoint_dict

@@ -7,7 +7,7 @@ class HyperBand(Oracle):
                  space,
                  max_epochs,
                  factor=3):
-        super().__init__(space)
+        super().__init__(space=space, max_epochs=max_epochs)
         self.max_epochs = max_epochs
         # Minimum epochs before successive halving, Hyperband sweeps through varying
         # degress of aggressiveness.

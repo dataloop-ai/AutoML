@@ -62,6 +62,9 @@ class Launcher:
     def predict(self, checkpoint_path):
         pred_run(checkpoint_path, self.optimal_model.name, self.home_path)
 
+    def eval(self):
+        pass
+
     def train_and_save_best_trial(self, best_trial, save_checkpoint_location):
         if self.remote:
             try:
