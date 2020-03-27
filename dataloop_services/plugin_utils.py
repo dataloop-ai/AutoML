@@ -63,6 +63,35 @@ def download_and_organize(path_to_dataset, dataset_obj, filters=None):
         if os.path.isdir(js_path):
             shutil.rmtree(js_path, ignore_errors=True)
 
+def download_and_organize_pred_data(path_to_dataset, dataset_obj, filters=None):
+    if filters is None:
+        query = dl.Filters().prepare()['filter']
+        filters = dl.Filters()
+        filters.custom_filter = query
+
+    if not os.path.exists(os.path.dirname(path_to_dataset)):
+        os.mkdir(os.path.dirname(path_to_dataset))
+    os.mkdir(path_to_dataset)
+    dataset_obj.items.download(local_path=path_to_dataset, filters=filters)
+
+    images_folder = os.path.join(path_to_dataset, 'items')
+    logger.info('downloaded ' + str(len(os.listdir(images_folder))) + ' to ' + images_folder)
+    # move to imgs and annotations to fixed format
+    for path, su1bdirs, files in os.walk(images_folder):
+        for name in files:
+            filename, ext = os.path.splitext(name)
+            if ext.lower() not in ['.jpg', '.jpeg', '.png']:
+                continue
+            img_path = os.path.join(path, name)
+            new_img_path = os.path.join(path_to_dataset, name)
+            os.rename(img_path, new_img_path)
+    # delete dirs leave images and jsons
+    for stuff in os.listdir(images_folder):
+        im_path = os.path.join(images_folder, stuff)
+        if os.path.isdir(im_path):
+            shutil.rmtree(im_path, ignore_errors=True)
+
+
 def maybe_download_data(dataset_obj, train_query, val_query):
     # check if data is downloaded if not then download
     train_filters = dl.Filters()
@@ -86,7 +115,7 @@ def maybe_download_data(dataset_obj, train_query, val_query):
 
         if os.path.exists(path_to_dataset):
             logger.info(dataset_name + ' already exists, no need to download')
-            if not os.path.exists(os.path.join(path_to_dataset, 'annotations')):
+            if not os.path.exists(os.path.join(os.path.dirname(path_to_dataset), 'annotations')):
                 convert_dataloop_to_coco(path_to_data=path_to_dataset, name='train', split_val=False)
                 convert_dataloop_to_coco(path_to_data=path_to_val_dataset, name='val', split_val=False)
         else:
@@ -97,6 +126,39 @@ def maybe_download_data(dataset_obj, train_query, val_query):
             convert_dataloop_to_coco(path_to_data=path_to_val_dataset, name='val', split_val=False)
 
 
+    else:
+        name = dataset_obj.directory_tree.dir_names[-2].strip('/')
+        if os.path.exists(os.path.join(path_to_put_data, name)):
+            logger.info(name + ' already exists, no need to download')
+        else:
+            dataset_obj.items.download(local_path=path_to_put_data, to_items_folder=False)
+
+        logger.info('downloaded dataset to ' + path_to_put_data)
+
+def maybe_download_pred_data(dataset_obj, val_query):
+    # check if data is downloaded if not then download
+
+    val_filters = dl.Filters()
+    val_filters.custom_filter = val_query
+
+    logger.info('val query: ' + str(val_query))
+    logger.info('filters: ' + str(val_filters.prepare()))
+
+    parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    path_to_put_data = os.path.join(parent_dir, 'data')
+    if not os.path.exists(path_to_put_data):
+        os.mkdir(path_to_put_data)
+
+    if data_format == 'dataloop':
+        dataset_name = dataset_obj.name
+        path_to_pred_dataset = os.path.join(path_to_put_data, dataset_name, 'predict_on')
+        # download d.names
+        dataset_obj.items.get('/d.names').download(local_path=os.path.join(path_to_put_data, dataset_name))
+
+        if os.path.exists(path_to_pred_dataset):
+            logger.info(dataset_name + ' already exists, no need to download')
+        else:
+            download_and_organize_pred_data(path_to_pred_dataset, dataset_obj, val_filters)
     else:
         name = dataset_obj.directory_tree.dir_names[-2].strip('/')
         if os.path.exists(os.path.join(path_to_put_data, name)):

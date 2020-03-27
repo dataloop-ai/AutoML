@@ -4,7 +4,7 @@ from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
 from logging_utils import init_logging, logginger
-from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj
+from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict
 import argparse
 import os
 import torch
@@ -112,7 +112,7 @@ class ZaZu:
             logger.info("no 'update_optimal_model' method, checking for model.txt file . . . ")
             self.update_optimal_model()
 
-        gun = Launcher(self.opt_model)
+        gun = Launcher(self.opt_model, remote=self.remote)
         path_to_first_checkpoint = self.path_to_best_checkpoint.split('.')[0] + str(0) + '.pt'
         gun.predict(path_to_first_checkpoint)
 
@@ -138,12 +138,12 @@ def maybe_do_deployment_stuff():
         global_project = dl.projects.get(project_name=global_project_name)
         global_package_obj = push_package(global_project)
         try:
-            trial_service = deploy_model(package=global_package_obj, service_name='trial')
-            trainer_service = deploy_model(package=global_package_obj, service_name='trainer')
+            predict_service = deploy_predict(package=global_package_obj)
+            trial_service = deploy_model(package=global_package_obj)
             zazu_service = deploy_zazu(package=global_package_obj)
         except:
+            predict_service.delete()
             trial_service.delete()
-            trainer_service.delete()
             zazu_service.delete()
 
     if args.update:

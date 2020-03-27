@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import glob
 import dtlpy as dl
 from spec import ConfigSpec, OptModel
 from zazu import ZaZu
@@ -28,42 +29,23 @@ class ServiceRunner(dl.BaseServiceRunner):
         zazu = ZaZu(opt_model, remote=True)
         zazu.find_best_model()
         zazu.hp_search()
+        checkpoint_paths_list = glob.glob('*checkpoint*.pt')
+        save_info = {
+            'package_name': self.package_name,
+            'execution_id': progress.execution.id
+        }
 
-        # save_info = {
-        #     'package_name': self.package_name,
-        #     'execution_id': progress.execution.id
-        # }
-        #
-        # project_name = opt_model.dataloop['project']
-        # project = dl.projects.get(project_name=project_name)
-        #
-        # paths = [zazu.path_to_most_suitable_model, zazu.path_to_best_trial, zazu.path_to_best_checkpoint]
-        # for path in paths:
-        #     project.artifacts.upload(filepath=path,
-        #                              package_name=save_info['package_name'],
-        #                              execution_id=save_info['execution_id'])
+        project_name = opt_model.dataloop['project']
+        project = dl.projects.get(project_name=project_name)
 
-    def train(self, configs, progress=None):
 
-        configs = ConfigSpec(configs)
-        opt_model = OptModel()
-        opt_model.add_child_spec(configs, 'configs')
-        zazu = ZaZu(opt_model, remote=True)
-        zazu.train_new_model()
+        for checkpoint_path in checkpoint_paths_list:
+            project.artifacts.upload(filepath=checkpoint_path,
+                                     package_name=save_info['package_name'],
+                                     execution_id=save_info['execution_id'])
 
-        # save_info = {
-        #     'package_name': self.package_name,
-        #     'execution_id': progress.execution.id
-        # }
-        #
-        # project_name = opt_model.dataloop['project']
-        # project = dl.projects.get(project_name=project_name)
-        #
-        # paths = [zazu.path_to_most_suitable_model, zazu.path_to_best_trial, zazu.path_to_best_checkpoint]
-        # for path in paths:
-        #     project.artifacts.upload(filepath=path,
-        #                              package_name=save_info['package_name'],
-        #                              execution_id=save_info['execution_id'])
+        logger.info('finished uploading checkpoints')
+
 
     def predict(self, configs, progress=None):
 
