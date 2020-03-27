@@ -5,15 +5,31 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def deploy_model(package, service_name):
+def deploy_predict(package):
     input_to_init = {
         'package_name': package.name,
-        'service_name': service_name
-
     }
 
     logger.info('deploying package . . .')
-    service_obj = package.services.deploy(service_name=service_name,
+    service_obj = package.services.deploy(service_name='predict',
+                                          module_name='predict_module',
+                                          package=package,
+                                          runtime={'gpu': True,
+                                                   'numReplicas': 1,
+                                                   'concurrency': 2,
+                                                   'runnerImage': 'buffalonoam/zazu-image:0.3'
+                                                   },
+                                          init_input=input_to_init)
+
+    return service_obj
+
+def deploy_model(package):
+    input_to_init = {
+        'package_name': package.name,
+    }
+
+    logger.info('deploying package . . .')
+    service_obj = package.services.deploy(service_name='trial',
                                           module_name='models_module',
                                           package=package,
                                           runtime={'gpu': True,
@@ -51,33 +67,39 @@ def push_package(project):
     val_query_input = dl.FunctionIO(type='Json', name='val_query')
     hp_value_input = dl.FunctionIO(type='Json', name='hp_values')
     model_specs_input = dl.FunctionIO(type='Json', name='model_specs')
-
+    checkpoint_path_input = dl.FunctionIO(type='Json', name='checkpoint_path')
     package_name_input = dl.FunctionIO(type='Json', name='package_name')
-    service_name_input = dl.FunctionIO(type='Json', name='service_name')
 
     configs_input = dl.FunctionIO(type='Json', name='configs')
 
+    predict_inputs = [dataset_input, val_query_input, checkpoint_path_input, model_specs_input]
     model_inputs = [dataset_input, train_query_input, val_query_input, hp_value_input, model_specs_input]
     zazu_inputs = [configs_input]
 
+    predict_function = dl.PackageFunction(name='run', inputs=predict_inputs, outputs=[], description='')
     model_function = dl.PackageFunction(name='run', inputs=model_inputs, outputs=[], description='')
-    train_function = dl.PackageFunction(name='train', inputs=zazu_inputs, outputs=[], description='')
-    search_function = dl.PackageFunction(name='search', inputs=zazu_inputs, outputs=[], description='')
+    zazu_search_function = dl.PackageFunction(name='search', inputs=zazu_inputs, outputs=[], description='')
+    zazu_predict_function = dl.PackageFunction(name='predict', inputs=zazu_inputs, outputs=[], description='')
+
+    predict_module = dl.PackageModule(entry_point='dataloop_services/predict_module.py',
+                                     name='predict_module',
+                                     functions=[predict_function],
+                                     init_inputs=[package_name_input])
 
     models_module = dl.PackageModule(entry_point='dataloop_services/trial_module.py',
                                      name='models_module',
                                      functions=[model_function],
-                                     init_inputs=[package_name_input, service_name_input])
+                                     init_inputs=[package_name_input])
 
     zazu_module = dl.PackageModule(entry_point='dataloop_services/zazu_module.py',
                                    name='zazu_module',
-                                   functions=[train_function, search_function],
+                                   functions=[zazu_search_function, zazu_predict_function],
                                    init_inputs=package_name_input)
 
     package_obj = project.packages.push(
         package_name='zazuml',
         src_path=os.getcwd(),
-        modules=[models_module, zazu_module])
+        modules=[predict_module, models_module, zazu_module])
 
     return package_obj
 

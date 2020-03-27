@@ -7,8 +7,7 @@ from importlib import import_module
 
 class LocalTrialConnector():
 
-    def __init__(self, service_name):
-        self.service_name = service_name
+    def __init__(self):
         self.logger = logginger(__name__)
 
     def run(self, devices, model_specs, hp_values):
@@ -27,12 +26,9 @@ class LocalTrialConnector():
         self.logger.info('commencing training . . . ')
         adapter.train()
         self.logger.info('training finished')
-
-        metrics_and_checkpoint_dict = adapter.get_best_metrics_and_checkpoint()
-        if type(metrics_and_checkpoint_dict) is not dict:
-            raise Exception('adapter, get_best_metrics method must return dict object')
-        if type(metrics_and_checkpoint_dict['metrics']['val_accuracy']) is not float:
+        checkpoint = adapter.get_checkpoint()
+        if type(checkpoint['metrics']['val_accuracy']) is not float:
             raise Exception(
                 'adapter, get_best_metrics method must return dict with only python floats. '
                 'Not numpy floats or any other objects like that')
-        return metrics_and_checkpoint_dict
+        return checkpoint

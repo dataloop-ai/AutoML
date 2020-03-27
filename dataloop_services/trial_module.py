@@ -14,10 +14,9 @@ class ServiceRunner(dl.BaseServiceRunner):
 
     """
 
-    def __init__(self, package_name, service_name):
+    def __init__(self, package_name):
         logging.getLogger('dtlpy').setLevel(logging.WARN)
         self.package_name = package_name
-        self.service_name = service_name
         self.path_to_metrics = 'metrics.json'
         self.path_to_tensorboard_dir = 'runs'
         self.path_to_logs = 'logger.conf'
@@ -55,11 +54,8 @@ class ServiceRunner(dl.BaseServiceRunner):
             'package_name': self.package_name,
             'execution_id': progress.execution.id
         }
-
-        metrics_and_checkpoint_dict = adapter.get_best_metrics_and_checkpoint()
-        if type(metrics_and_checkpoint_dict) is not dict:
-            raise Exception('adapter, get_best_metrics method must return dict object')
-        if type(metrics_and_checkpoint_dict['metrics']['val_accuracy']) is not float:
+        checkpoint = adapter.get_checkpoint()
+        if type(checkpoint['metrics']['val_accuracy']) is not float:
             raise Exception(
                 'adapter, get_best_metrics method must return dict with only python floats. '
                 'Not numpy floats or any other objects like that')
@@ -71,13 +67,13 @@ class ServiceRunner(dl.BaseServiceRunner):
                                  execution_id=save_info['execution_id'])
 
         # this is the same as uplading metrics because the map is saved under checkpoint['metrics']['val_accuracy']
-        project.artifacts.upload(filepath=adapter.path_to_best_checkpoint,
+        project.artifacts.upload(filepath=adapter.checkpoint_path,
                                  package_name=save_info['package_name'],
                                  execution_id=save_info['execution_id'])
 
         project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                  package_name=save_info['package_name'],
                                  execution_id=save_info['execution_id'])
-        self.logger.info('finished uploading metrics and logs')
+        self.logger.info('finished uploading checkpoint and logs')
 
         self.logger.info('FINISHED SESSION')

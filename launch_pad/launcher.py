@@ -4,6 +4,7 @@ import time
 import threading
 import logging
 import torch
+import glob
 from dataloop_services import LocalTrialConnector, LocalPredConnector
 from .thread_manager import ThreadManager
 from zoo.convert2Yolo import convert
@@ -11,6 +12,7 @@ from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
 from logging_utils import logginger
 from copy import deepcopy
+
 
 logger = logginger(__name__)
 
@@ -23,7 +25,6 @@ class Launcher:
         self.num_available_devices = torch.cuda.device_count()
         self.home_path = optimal_model.data['home_path']
         self.dataset_name = optimal_model.data['dataset_name']
-        self.service_name = 'trainer' if self.ongoing_trials is None else 'trial'
         self.package_name = 'zazuml'
         if self.remote:
             dataset_obj = get_dataset_obj(optimal_model.dataloop)
@@ -43,14 +44,10 @@ class Launcher:
                 except:
                     self.val_query = dl.Filters().prepare()['filter']
 
-
             with open('global_configs.json', 'r') as fp:
                 global_project_name = json.load(fp)['project']
             self.project = dl.projects.get(project_name=global_project_name)
-            logger.info('service: ' + self.service_name)
-            self.service = self.project.services.get(service_name=self.service_name)
-        else:
-            self.local_trial_connector = LocalTrialConnector(self.service_name)
+
 
         # TODO: dont convert here
         if self.optimal_model.name == 'yolov3':
@@ -59,12 +56,47 @@ class Launcher:
                 self.optimal_model.data['annotation_type'] = 'yolo'
 
     def predict(self, checkpoint_path):
+        if self.remote:
+            self._launch_predict_remote(checkpoint_path)
+        else:
+            self._launch_predict_local(checkpoint_path)
+
+    def _launch_predict_local(self, checkpoint_path):
         self.local_pred_detector = LocalPredConnector()
         model_specs = self.optimal_model.unwrap()
         inputs = {'checkpoint_path': checkpoint_path,
                   'model_specs': model_specs}
 
         self._run_pred_demo_execution(inputs)
+
+    def _launch_predict_remote(self, checkpoint_path):
+        self.service = self.project.services.get(service_name='predict')
+        model_specs = self.optimal_model.unwrap()
+        dataset_input = dl.FunctionIO(type='Dataset', name='dataset', value={"dataset_id": self.dataset_id})
+        checkpoint_path_input = dl.FunctionIO(type='Json', name='checkpoint_path', value={"checkpoint_path": checkpoint_path})
+        val_query_input = dl.FunctionIO(type='Json', name='val_query', value=self.val_query)
+        model_specs_input = dl.FunctionIO(type='Json', name='model_specs', value=model_specs)
+        inputs = [dataset_input, val_query_input, checkpoint_path_input, model_specs_input]
+        logger.info('checkpoint is type: ' + str(type(checkpoint_path)))
+        try:
+            logger.info("trying to get execution object")
+            execution_obj = self._run_pred_remote_execution(inputs)
+            logger.info("got execution object")
+            # TODO: Turn execution_obj into metrics
+            while execution_obj.latest_status['status'] != 'success':
+                time.sleep(5)
+                execution_obj = dl.executions.get(execution_id=execution_obj.id)
+                if execution_obj.latest_status['status'] == 'failed':
+                    raise Exception("plugin execution failed")
+            logger.info("execution object status is successful")
+            # download artifacts, should contain dir with txt file annotations
+            # TODO: download many different metrics then should have id hash as well..
+            self.project.artifacts.download(package_name=self.package_name,
+                                            execution_id=execution_obj.id,
+                                            local_path=os.getcwd())
+
+        except Exception as e:
+            Exception(' had an exception: \n', repr(e))
 
     def eval(self):
         pass
@@ -123,7 +155,7 @@ class Launcher:
         model_specs_input = dl.FunctionIO(type='Json', name='model_specs', value=model_specs)
         inputs = [dataset_input, train_query_input, val_query_input, hp_value_input, model_specs_input]
 
-        execution_obj = self._run_remote_execution(inputs)
+        execution_obj = self._run_trial_remote_execution(inputs)
         while execution_obj.latest_status['status'] != 'success':
             time.sleep(5)
             execution_obj = dl.executions.get(execution_id=execution_obj.id)
@@ -132,6 +164,7 @@ class Launcher:
         return execution_obj
 
     def _launch_local_trials(self):
+        self.local_trial_connector = LocalTrialConnector()
         threads = ThreadManager()
         model_specs = self.optimal_model.unwrap()
         logger.info('launching new set of trials')
@@ -155,6 +188,7 @@ class Launcher:
             self.ongoing_trials.update_metrics(trial_id, metrics_and_checkpoint_dict)
 
     def _launch_remote_trials(self):
+        self.service = self.project.services.get(service_name='trial')
         threads = ThreadManager()
         model_specs = self.optimal_model.unwrap()
         logger.info('launching new set of trials')
@@ -202,19 +236,21 @@ class Launcher:
         logger.info('starting thread: ' + thread_name)
         if self.remote:
             try:
-                metrics_path = 'metrics.json'
+                checkpoint_path = 'best_' + trial_id + '.pt'
                 path_to_tensorboard_dir = 'runs'
-                execution_obj = self._run_remote_execution(inputs)
+                logger.info("trying to get execution objects")
+                execution_obj = self._run_trial_remote_execution(inputs)
+                logger.info("got execution objects")
                 # TODO: Turn execution_obj into metrics
                 while execution_obj.latest_status['status'] != 'success':
                     time.sleep(5)
                     execution_obj = dl.executions.get(execution_id=execution_obj.id)
                     if execution_obj.latest_status['status'] == 'failed':
                         raise Exception("plugin execution failed")
-
-                if os.path.exists(metrics_path):
-                    logger.info('overwriting metrics.json . . .')
-                    os.remove(metrics_path)
+                logger.info("execution object status is successful")
+                if os.path.exists(checkpoint_path):
+                    logger.info('overwriting checkpoint.pt . . .')
+                    os.remove(checkpoint_path)
                 if os.path.exists(path_to_tensorboard_dir):
                     logger.info('overwriting tenorboards runs . . .')
                     os.rmdir(path_to_tensorboard_dir)
@@ -223,20 +259,27 @@ class Launcher:
                 self.project.artifacts.download(package_name=self.package_name,
                                                 execution_id=execution_obj.id,
                                                 local_path=os.getcwd())
+                checkpoint = torch.load(checkpoint_path)
+                os.remove(checkpoint_path)
 
-                with open(metrics_path, 'r') as fp:
-                    metrics = json.load(fp)
-                os.remove(metrics_path)
             except Exception as e:
-                print('The thread ' + thread_name + ' had an exception: \n', e)
+                Exception('The thread ' + thread_name + ' had an exception: \n', repr(e))
         else:
-            metrics_and_checkpoint_dict = self._run_trial_demo_execution(inputs)
+            checkpoint = self._run_trial_demo_execution(inputs)
 
-        results_dict[trial_id] = metrics_and_checkpoint_dict
+        results_dict[trial_id] = {'metrics': checkpoint['metrics'],
+                'checkpoint': checkpoint}
         logger.info('finished thread: ' + thread_name)
 
 
-    def _run_remote_execution(self, inputs):
+    def _run_trial_remote_execution(self, inputs):
+        logger.info('running new execution . . .')
+
+        execution_obj = self.service.execute(execution_input=inputs, function_name='run')
+        logger.info('executing: ' + execution_obj.id)
+        return execution_obj
+
+    def _run_pred_remote_execution(self, inputs):
         logger.info('running new execution . . .')
 
         execution_obj = self.service.execute(execution_input=inputs, function_name='run')
