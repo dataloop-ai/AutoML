@@ -1,6 +1,7 @@
 import dtlpy as dl
 import logging
 import os
+import json
 from logging_utils import logginger
 logger = logging.getLogger(name=__name__)
 from importlib import import_module
@@ -29,6 +30,10 @@ class ServiceRunner(dl.BaseServiceRunner):
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
 
         home_path = model_specs['data']['home_path']
+
+        inputs_dict = {'checkpoint_path': checkpoint_path['checkpoint_path'], 'home_path': home_path}
+        with open('predict_configs.json', 'w') as fp:
+            json.dump(inputs_dict, fp)
 
         adapter = cls()
         output_path = adapter.predict(home_path=home_path, checkpoint_path=checkpoint_path['checkpoint_path'])

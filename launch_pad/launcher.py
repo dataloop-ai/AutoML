@@ -36,7 +36,10 @@ class Launcher:
 
             try:
                 # TODO: TRAIN QUERY IS STILL BEING COPPIED
-                self.val_query = deepcopy(self.train_query)
+                try:
+                    self.val_query = deepcopy(self.train_query)
+                except:
+                    self.val_query = dl.Filters().prepare()
                 self.val_query['filter']['$and'][0]['dir'] = optimal_model.dataloop['test_dir']
             except:
                 try:
@@ -231,7 +234,7 @@ class Launcher:
         convert(conversion_config_val)
         convert(conversion_config_train)
 
-    def _collect_metrics(self, inputs, trial_id, results_dict):
+    def _collect_metrics(self, inputs_dict, trial_id, results_dict):
         thread_name = threading.currentThread().getName()
         logger.info('starting thread: ' + thread_name)
         if self.remote:
@@ -239,7 +242,7 @@ class Launcher:
                 checkpoint_path = 'best_' + trial_id + '.pt'
                 path_to_tensorboard_dir = 'runs'
                 logger.info("trying to get execution objects")
-                execution_obj = self._run_trial_remote_execution(inputs)
+                execution_obj = self._run_trial_remote_execution(inputs_dict)
                 logger.info("got execution objects")
                 # TODO: Turn execution_obj into metrics
                 while execution_obj.latest_status['status'] != 'success':
@@ -265,7 +268,7 @@ class Launcher:
             except Exception as e:
                 Exception('The thread ' + thread_name + ' had an exception: \n', repr(e))
         else:
-            checkpoint = self._run_trial_demo_execution(inputs)
+            checkpoint = self._run_trial_demo_execution(inputs_dict)
 
         results_dict[trial_id] = {'metrics': checkpoint['metrics'],
                 'checkpoint': checkpoint}
@@ -286,8 +289,8 @@ class Launcher:
         logger.info('executing: ' + execution_obj.id)
         return execution_obj
 
-    def _run_trial_demo_execution(self, inputs):
-        return self.local_trial_connector.run(inputs['devices'], inputs['model_specs'], inputs['hp_values'])
+    def _run_trial_demo_execution(self, inputs_dict):
+        return self.local_trial_connector.run(inputs_dict)
 
     def _run_pred_demo_execution(self, inputs):
         return self.local_pred_detector.run(inputs['checkpoint_path'], inputs['model_specs'])
