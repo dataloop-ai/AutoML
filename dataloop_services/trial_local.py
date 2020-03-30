@@ -4,6 +4,7 @@ from logging_utils import logginger
 logger = logging.getLogger(name=__name__)
 from importlib import import_module
 import json
+import torch
 
 
 class LocalTrialConnector():
@@ -14,11 +15,10 @@ class LocalTrialConnector():
     def run(self, inputs_dict):
         model_name = inputs_dict['model_specs']['name']
         cls = getattr(import_module('.adapter', 'zoo.' + model_name), 'AdapterModel')
-        with open('trial_configs.json', 'w') as fp:
-            json.dump(inputs_dict, fp)
+        torch.save(inputs_dict, 'trial_checkpoint.pt')
         adapter = cls()
-        # adapter.trial_init(devices, model_specs, hp_values)
-        adapter.trial_init()
+        # adapter.load(devices, model_specs, hp_values)
+        adapter.load()
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
         if hasattr(adapter, 'data_loader'):

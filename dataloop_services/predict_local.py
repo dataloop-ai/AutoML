@@ -1,6 +1,7 @@
 import dtlpy as dl
 import logging
 import json
+import torch
 from logging_utils import logginger
 logger = logging.getLogger(name=__name__)
 from importlib import import_module
@@ -17,8 +18,7 @@ class LocalPredConnector():
         home_path = model_specs['data']['home_path']
 
         inputs_dict = {'checkpoint_path': checkpoint_path, 'home_path': home_path}
-        with open('predict_configs.json', 'w') as fp:
-            json.dump(inputs_dict, fp)
+        torch.save(inputs_dict, 'predict_checkpoint.pt')
 
         adapter = cls()
         adapter.predict()
