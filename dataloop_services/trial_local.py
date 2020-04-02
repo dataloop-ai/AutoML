@@ -15,7 +15,7 @@ class LocalTrialConnector():
     def run(self, inputs_dict):
         model_name = inputs_dict['model_specs']['name']
         cls = getattr(import_module('.adapter', 'zoo.' + model_name), 'AdapterModel')
-        torch.save(inputs_dict, 'trial_checkpoint.pt')
+        torch.save(inputs_dict, 'checkpoint.pt')
         adapter = cls()
         # adapter.load(devices, model_specs, hp_values)
         adapter.load()

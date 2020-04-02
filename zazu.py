@@ -117,7 +117,7 @@ class ZaZu:
     def one_time_inference(self, image_path, checkpoint_path):
         from zoo.retinanet import AdapterModel
         model = AdapterModel()
-        return model.predict_single_image(image_path, checkpoint_path)
+        return model.predict_single_image(checkpoint_path, image_path)
 
 
 def maybe_login():
