@@ -9,9 +9,7 @@ import argparse
 import os
 import torch
 import json
-import logging
 import dtlpy as dl
-import sys
 
 logger = logginger(__name__)
 
@@ -117,7 +115,7 @@ class ZaZu:
         gun.predict(path_to_first_checkpoint)
 
     def one_time_inference(self, image_path, checkpoint_path):
-        from zoo.retinanet.adapter import AdapterModel
+        from zoo.retinanet import AdapterModel
         model = AdapterModel()
         return model.predict_single_image(image_path, checkpoint_path)
 
