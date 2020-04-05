@@ -35,10 +35,11 @@ class ServiceRunner(dl.BaseServiceRunner):
         # start tune
         cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
 
-        devices = {'gpu_index': 0}
+        inputs_dict = {'devices': {'gpu_index': 0}, 'model_specs': model_specs, 'hp_values': hp_values}
+        torch.save(inputs_dict, 'trial_checkpoint.pt')
 
         adapter = cls()
-        adapter.trial_init(devices, model_specs, hp_values)
+        adapter.load()
         if hasattr(adapter, 'reformat'):
             adapter.reformat()
         if hasattr(adapter, 'data_loader'):

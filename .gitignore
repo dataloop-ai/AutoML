@@ -310,6 +310,6 @@ pip-selfcheck.json
 .dataloop/
 **/.dataloop/**
 token.txt
-checkpoint.pt
+checkpoint*.pt
 logger.conf
 

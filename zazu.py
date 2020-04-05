@@ -9,9 +9,7 @@ import argparse
 import os
 import torch
 import json
-import logging
 import dtlpy as dl
-import sys
 
 logger = logginger(__name__)
 
@@ -116,6 +114,11 @@ class ZaZu:
         path_to_first_checkpoint = self.path_to_best_checkpoint.split('.')[0] + str(0) + '.pt'
         gun.predict(path_to_first_checkpoint)
 
+    def one_time_inference(self, image_path, checkpoint_path):
+        from zoo.retinanet import AdapterModel
+        model = AdapterModel()
+        return model.predict_single_image(checkpoint_path, image_path)
+
 
 def maybe_login():
     try:
@@ -152,7 +155,6 @@ def maybe_do_deployment_stuff():
         maybe_login()
         global_project = dl.projects.get(project_name=global_project_name)
         update_service(global_project, 'trial')
-        update_service(global_project, 'trainer')
         update_service(global_project, 'zazu')
 
 
@@ -164,6 +166,7 @@ if __name__ == '__main__':
     parser.add_argument("--search", action='store_true', default=False)
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
+    parser.add_argument("--predict_once", action='store_true', default=False)
     args = parser.parse_args()
 
     maybe_do_deployment_stuff()
@@ -182,8 +185,6 @@ if __name__ == '__main__':
 
         if args.search:
             zazu_service.execute(function_name='search', execution_input=inputs, project_id=id)
-        if args.train:
-            zazu_service.execute(function_name='train', execution_input=inputs, project_id=id)
         if args.predict:
             zazu_service.execute(function_name='predict', execution_input=inputs, project_id=id)
 
@@ -202,3 +203,5 @@ if __name__ == '__main__':
             zazu.train_new_model()
         if args.predict:
             zazu.run_inference()
+        if args.predict_once:
+            zazu.one_time_inference('/home/noam/0120122798.jpg','checkpoint0.pt')
