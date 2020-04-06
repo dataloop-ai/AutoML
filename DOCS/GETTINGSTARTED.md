@@ -12,7 +12,7 @@ Be sure to update the nvidia-devices flag!
 ```
 git clone https://github.com/dataloop-ai/ZazuML.git
 cd ZazuML
-git clone https://github.com/dataloop-ai/zoo.git
+git clone https://github.com/dataloop-ai/ObjectDetNet.git
 ```
 
 ### *download tiny coco dataset*

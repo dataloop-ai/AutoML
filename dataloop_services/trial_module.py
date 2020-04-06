@@ -33,7 +33,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         project = dl.projects.get(project_id=dataset.projects[0])
 
         # start tune
-        cls = getattr(import_module('.adapter', 'zoo.' + model_specs['name']), 'AdapterModel')
+        cls = getattr(import_module('.adapter', 'ObjectDetNet.' + model_specs['name']), 'AdapterModel')
 
         inputs_dict = {'devices': {'gpu_index': 0}, 'model_specs': model_specs, 'hp_values': hp_values}
         torch.save(inputs_dict, 'trial_checkpoint.pt')
