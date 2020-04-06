@@ -27,10 +27,7 @@ cd ../ZazuML
 ```
 python zazu.py --search
 ```
-### *train*
-```
-python zazu.py --train
-```
+
 ### *predict*
 ```
 python zazu.py --predict
