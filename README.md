@@ -35,6 +35,7 @@ It's easy to implement into your python script or run in your terminal.
 - read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
 - Launch [ZazuML remotely](DOCS/REMOTEZAZU.md)
 - Take a look [Under The Hood](DOCS/UNDERTHEHOOD.md)
+- Customize by [adding your own models](DOCS/ADDINGMODELS.md)
 
 
 ## *TO DO*
