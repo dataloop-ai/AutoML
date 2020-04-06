@@ -33,7 +33,7 @@
       }
     ],
     "training_configs": {
-      "epochs": 20,
+      "tuner/epochs": 20,
       "depth": 152,
       "input_size": 608,
       "learning_rate": 1e-5,
@@ -67,7 +67,7 @@
       }
     ],
     "training_configs": {
-      "epochs": 272,
+      "tuner/epochs": 272,
       "batch_size": 16,
       "input_size": 320,
       "learning_rate": 2.61e-3,
