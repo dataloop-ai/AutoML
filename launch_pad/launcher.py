@@ -28,7 +28,9 @@ class Launcher:
         self.package_name = 'zazuml'
         if self.remote:
             dataset_obj = get_dataset_obj(optimal_model.dataloop)
+            self.project = dl.projects.get(project_id=dataset_obj.projects[0])
             self.dataset_id = dataset_obj.id
+
             try:
                 self.train_query = optimal_model.dataloop['train_query']
             except:
@@ -49,7 +51,7 @@ class Launcher:
 
             with open('global_configs.json', 'r') as fp:
                 global_project_name = json.load(fp)['project']
-            self.project = dl.projects.get(project_name=global_project_name)
+            self.global_project = dl.projects.get(project_name=global_project_name)
 
 
         # TODO: dont convert here
@@ -73,7 +75,7 @@ class Launcher:
         self._run_pred_demo_execution(inputs)
 
     def _launch_predict_remote(self, checkpoint_path):
-        self.service = self.project.services.get(service_name='predict')
+        self.service = self.global_project.services.get(service_name='predict')
         model_specs = self.optimal_model.unwrap()
         dataset_input = dl.FunctionIO(type='Dataset', name='dataset', value={"dataset_id": self.dataset_id})
         checkpoint_path_input = dl.FunctionIO(type='Json', name='checkpoint_path', value={"checkpoint_path": checkpoint_path})
@@ -191,7 +193,7 @@ class Launcher:
             self.ongoing_trials.update_metrics(trial_id, metrics_and_checkpoint_dict)
 
     def _launch_remote_trials(self):
-        self.service = self.project.services.get(service_name='trial')
+        self.service = self.global_project.services.get(service_name='trial')
         threads = ThreadManager()
         model_specs = self.optimal_model.unwrap()
         logger.info('launching new set of trials')
@@ -262,7 +264,11 @@ class Launcher:
                 self.project.artifacts.download(package_name=self.package_name,
                                                 execution_id=execution_obj.id,
                                                 local_path=os.getcwd())
-                checkpoint = torch.load(checkpoint_path)
+                logger.info('going to load ' + checkpoint_path + ' into checkpoint')
+                if torch.cuda.is_available():
+                    checkpoint = torch.load(checkpoint_path)
+                else:
+                    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
                 os.remove(checkpoint_path)
 
             except Exception as e:
