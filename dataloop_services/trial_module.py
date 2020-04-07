@@ -36,7 +36,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         cls = getattr(import_module('.adapter', 'ObjectDetNet.' + model_specs['name']), 'AdapterModel')
 
         inputs_dict = {'devices': {'gpu_index': 0}, 'model_specs': model_specs, 'hp_values': hp_values}
-        torch.save(inputs_dict, 'trial_checkpoint.pt')
+        torch.save(inputs_dict, 'checkpoint.pt')
 
         adapter = cls()
         adapter.load()

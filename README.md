@@ -40,7 +40,6 @@ It's easy to implement into your python script or run in your terminal.
 
 ## *TO DO*
 
-- Finish implementing HyperBand
 - Increase search space
 - NAS to replace some of the HP search
 - Intelligent Losses to replace some of the HP search
