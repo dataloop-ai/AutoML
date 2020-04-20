@@ -7,7 +7,7 @@ model with auto-optimized hyper parameters, ready to run inference, simple as th
 
 ### *Algorithms*
 
-| *models* | *hyper-parameter optimization algorithms* | *remote*
+| *models* | *hyper-parameter optimization algorithms* | *remote deployment*
 | :----:         |     :----:      |    :----:      |
 |  <ul><li>Retinanet</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | &#10003; |
 |  <ul><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | &#10003; |
