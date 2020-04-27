@@ -4,7 +4,8 @@ from tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
 from logging_utils import init_logging, logginger
-from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict
+from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict, \
+    deploy_zazu_timer
 import argparse
 import os
 import torch
@@ -120,34 +121,49 @@ class ZaZu:
         return model.predict_single_image(checkpoint_path, image_path)
 
 
-def maybe_login():
+def maybe_login(env):
     try:
-        dl.setenv('dev')
+        dl.setenv(env)
     except:
         dl.login()
-        dl.setenv('dev')
+        dl.setenv(env)
 
 
 def maybe_do_deployment_stuff():
     if args.deploy:
-        # try:
-        #     dl.packages.get('zazuml').delete()
-        # except:
-        #     pass
 
         with open('global_configs.json', 'r') as fp:
             global_project_name = json.load(fp)['project']
-        maybe_login()
+
         global_project = dl.projects.get(project_name=global_project_name)
         global_package_obj = push_package(global_project)
         try:
-            predict_service = deploy_predict(package=global_package_obj)
+            # predict_service = deploy_predict(package=global_package_obj)
             trial_service = deploy_model(package=global_package_obj)
             zazu_service = deploy_zazu(package=global_package_obj)
         except:
-            predict_service.delete()
+            # predict_service.delete()
             trial_service.delete()
             zazu_service.delete()
+
+    elif args.zazu_timer:
+        with open('global_configs.json', 'r') as fp:
+            global_project_name = json.load(fp)['project']
+
+        global_project = dl.projects.get(project_name=global_project_name)
+        global_package_obj = push_package(global_project)
+
+        with open('configs.json', 'r') as fp:
+            configs = json.load(fp)
+
+        configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
+        time_input = dl.FunctionIO(type='Json', name='time', value=3600)
+
+        deploy_zazu_timer(package=global_package_obj,
+                          configs=configs_input,
+                          time=time_input,
+                          test_dataset=test_dataset_input,
+                          query=query_input)
 
     if args.update:
         with open('global_configs.json', 'r') as fp:
@@ -167,15 +183,19 @@ if __name__ == '__main__':
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     parser.add_argument("--predict_once", action='store_true', default=False)
+    parser.add_argument("--zazu_timer", action='store_true', default=False)
     args = parser.parse_args()
 
+    with open('configs.json', 'r') as fp:
+        configs = json.load(fp)
+    try:
+        maybe_login(configs['dataloop']['setenv'])
+    except:
+        pass
     maybe_do_deployment_stuff()
 
     if args.remote:
-        maybe_login()
 
-        with open('configs.json', 'r') as fp:
-            configs = json.load(fp)
         configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
         inputs = [configs_input]
         zazu_service = dl.services.get('zazu')
@@ -204,4 +224,4 @@ if __name__ == '__main__':
         if args.predict:
             zazu.run_inference()
         if args.predict_once:
-            zazu.one_time_inference('/home/noam/0120122798.jpg','checkpoint0.pt')
+            zazu.one_time_inference('/home/noam/0120122798.jpg', 'checkpoint0.pt')

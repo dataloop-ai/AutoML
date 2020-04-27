@@ -38,8 +38,10 @@ class ServiceRunner(dl.BaseServiceRunner):
         project_name = opt_model.dataloop['project']
         project = dl.projects.get(project_name=project_name)
 
-
+        # model_name = opt_model.name
+        # model_obj = dl.models.get(model_name=model_name)
         for checkpoint_path in checkpoint_paths_list:
+            # model_obj.checkpoints.upload(checkpoint_name=checkpoint_path.split('.')[0], local_path=checkpoint_path)
             project.artifacts.upload(filepath=checkpoint_path,
                                      package_name=save_info['package_name'],
                                      execution_id=save_info['execution_id'])

@@ -153,7 +153,10 @@ def maybe_download_pred_data(dataset_obj, val_query):
         dataset_name = dataset_obj.name
         path_to_pred_dataset = os.path.join(path_to_put_data, dataset_name, 'predict_on')
         # download d.names
-        dataset_obj.items.get('/d.names').download(local_path=os.path.join(path_to_put_data, dataset_name))
+        try:
+            dataset_obj.items.get('/d.names').download(local_path=os.path.join(path_to_put_data, dataset_name))
+        except:
+            pass
 
         if os.path.exists(path_to_pred_dataset):
             logger.info(dataset_name + ' already exists, no need to download')

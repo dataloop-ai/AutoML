@@ -19,6 +19,7 @@ def deploy_predict(package):
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
+                                          execution_timeout=60 * 60 * 1e10,
                                           init_input=input_to_init)
 
     return service_obj
@@ -37,6 +38,7 @@ def deploy_model(package):
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
+                                          execution_timeout=60 * 60 * 1e10,
                                           init_input=input_to_init)
 
     return service_obj
@@ -56,10 +58,26 @@ def deploy_zazu(package):
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
+                                          execution_timeout=60 * 60 * 1e10,
                                           init_input=input_to_init)
 
     return service_obj
 
+def deploy_zazu_timer(package, configs, time):
+
+    logger.info('deploying package . . .')
+    service_obj = package.services.deploy(service_name='zazu',
+                                          module_name='zazu_module',
+                                          package=package,
+                                          runtime={'gpu': False,
+                                                   'numReplicas': 1,
+                                                   'concurrency': 2,
+                                                   'runnerImage': 'buffalonoam/zazu-image:0.3'
+                                                   },
+                                          execution_timeout=60*60*1e10,
+                                          init_input=[configs, time])
+
+    return service_obj
 
 def push_package(project):
     dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
@@ -71,6 +89,7 @@ def push_package(project):
     package_name_input = dl.FunctionIO(type='Json', name='package_name')
 
     configs_input = dl.FunctionIO(type='Json', name='configs')
+    time_input = dl.FunctionIO(type='Json', name='time')
 
     predict_inputs = [dataset_input, val_query_input, checkpoint_path_input, model_specs_input]
     model_inputs = [dataset_input, train_query_input, val_query_input, hp_value_input, model_specs_input]
@@ -80,6 +99,7 @@ def push_package(project):
     model_function = dl.PackageFunction(name='run', inputs=model_inputs, outputs=[], description='')
     zazu_search_function = dl.PackageFunction(name='search', inputs=zazu_inputs, outputs=[], description='')
     zazu_predict_function = dl.PackageFunction(name='predict', inputs=zazu_inputs, outputs=[], description='')
+    timer_update_function = dl.PackageFunction(name='update_time', inputs=time_input, outputs=[], description='')
 
     predict_module = dl.PackageModule(entry_point='dataloop_services/predict_module.py',
                                      name='predict_module',
@@ -96,10 +116,15 @@ def push_package(project):
                                    functions=[zazu_search_function, zazu_predict_function],
                                    init_inputs=package_name_input)
 
+    zazu_timer_module = dl.PackageModule(entry_point='dataloop_services/zazu_timer_module.py',
+                                         name='zazu_timer_module',
+                                         functions=[timer_update_function],
+                                         init_inputs=[configs_input, time_input])
+
     package_obj = project.packages.push(
         package_name='zazuml',
         src_path=os.getcwd(),
-        modules=[predict_module, models_module, zazu_module])
+        modules=[predict_module, models_module, zazu_module, zazu_timer_module])
 
     return package_obj
 
