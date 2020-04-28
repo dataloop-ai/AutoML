@@ -1,1 +1,1 @@
-from .plotmetriclib.plot_curve import precision_recall_plotter,
+from .plotmetriclib.plot_curve import precision_recall_compute

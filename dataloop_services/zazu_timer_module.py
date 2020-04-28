@@ -5,7 +5,7 @@ import torch
 import os
 from time import sleep
 from dataloop_services.plugin_utils import maybe_download_pred_data, download_and_organize
-from eval import precision_recall_plotter
+from eval import precision_recall_compute
 logger = logging.getLogger(__name__)
 
 
@@ -31,18 +31,13 @@ class ServiceRunner(dl.BaseServiceRunner):
 
         json_file_path = os.path.join(path_to_dataset, 'json')
 
-        self.plotter = precision_recall_plotter()
-        self.plotter.add_dataloop_local_annotations(json_file_path)
+        self.compute = precision_recall_compute()
+        self.compute.add_dataloop_local_annotations(json_file_path)
 
-        self.new_time = time
         self._circle(time)
 
-
-    def update_time(self, time, progress=None):
-        self.new_time = time
-
     def _circle(self, time_lapse):
-        while self.new_time == time_lapse:
+        while 1:
             logger.info("running new execution")
             execution_obj = self.service.execute(function_name='search', execution_input=[self.configs_input],
                                                  project_id='fcdd792b-5146-4c62-8b27-029564f1b74e')
@@ -65,19 +60,23 @@ class ServiceRunner(dl.BaseServiceRunner):
             model_obj = dl.models.get(model_name=model_name)
             adapter_temp = model_obj.build(local_path=os.getcwd())
             adapter_temp.load_inference(checkpoint_path=new_checkpoint_name)
-            adapter_temp.predict(output_dir='new_checkpoint')
-            self.plotter.add_path_detections() #TODO
+            output_path = adapter_temp.predict(output_dir='new_checkpoint')
+            self.compute.add_path_detections(output_path, model_name='new_checkpoint')
+            new_checkpoint_mAP = self.compute.get_metric(model_name='new_checkpoint')
 
             best_checkpoint = model_obj.checkpoints.get('checkpoint0')
             check0_path = best_checkpoint.download(local_path=os.getcwd())
             adapter = model_obj.build(local_path=os.getcwd())
             adapter.load_inference(checkpoint_path=check0_path)
-            adapter.predict(output_dir=best_checkpoint.name)
-            self.plotter.add_path_detections() #TODO
+            output_path = adapter.predict(output_dir=best_checkpoint.name)
+            self.compute.add_path_detections(output_path, model_name=best_checkpoint.name)
+            best_checkpoint_mAP = self.compute.get_metric(model_name=best_checkpoint.name)
 
-            if new_checkpoint['metrics']['val_accuracy'] > best_checkpoint['metrics']['val_accuracy']:
+            if new_checkpoint_mAP > best_checkpoint_mAP:
                 model_obj.checkpoints.upload(checkpoint_name='checkpoint0',
                                              local_path=new_checkpoint_name)
                 logger.info('switching with new checkpoint')
+
+            self.compute.save_plot_metrics()
 
             sleep(time_lapse)
