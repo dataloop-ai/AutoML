@@ -62,7 +62,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             adapter_temp.load_inference(checkpoint_path=new_checkpoint_name)
             output_path = adapter_temp.predict(output_dir='new_checkpoint')
             self.compute.add_path_detections(output_path, model_name='new_checkpoint')
-            new_checkpoint_mAP = self.compute.get_metric(model_name='new_checkpoint')
+            new_checkpoint_mAP = self.compute.get_metric(model_name='new_checkpoint', precision_to_recall_ratio=1.)
 
             best_checkpoint = model_obj.checkpoints.get('checkpoint0')
             check0_path = best_checkpoint.download(local_path=os.getcwd())
@@ -70,11 +70,12 @@ class ServiceRunner(dl.BaseServiceRunner):
             adapter.load_inference(checkpoint_path=check0_path)
             output_path = adapter.predict(output_dir=best_checkpoint.name)
             self.compute.add_path_detections(output_path, model_name=best_checkpoint.name)
-            best_checkpoint_mAP = self.compute.get_metric(model_name=best_checkpoint.name)
+            best_checkpoint_mAP = self.compute.get_metric(model_name=best_checkpoint.name, precision_to_recall_ratio=1.)
 
             if new_checkpoint_mAP > best_checkpoint_mAP:
                 model_obj.checkpoints.upload(checkpoint_name='checkpoint0',
                                              local_path=new_checkpoint_name)
+
                 logger.info('switching with new checkpoint')
 
             self.compute.save_plot_metrics()
