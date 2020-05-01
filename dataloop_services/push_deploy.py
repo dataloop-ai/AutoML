@@ -63,11 +63,11 @@ def deploy_zazu(package):
 
     return service_obj
 
-def deploy_zazu_timer(package, configs, time):
+def deploy_zazu_timer(package, init_inputs):
 
     logger.info('deploying package . . .')
-    service_obj = package.services.deploy(service_name='zazu',
-                                          module_name='zazu_module',
+    service_obj = package.services.deploy(service_name='timer',
+                                          module_name='zazu_timer_module',
                                           package=package,
                                           runtime={'gpu': False,
                                                    'numReplicas': 1,
@@ -75,7 +75,7 @@ def deploy_zazu_timer(package, configs, time):
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
                                           execution_timeout=60*60*1e10,
-                                          init_input=[configs, time])
+                                          init_input=init_inputs)
 
     return service_obj
 
@@ -90,6 +90,8 @@ def push_package(project):
 
     configs_input = dl.FunctionIO(type='Json', name='configs')
     time_input = dl.FunctionIO(type='Json', name='time')
+    test_dataset_input = dl.FunctionIO(type='Json', name='test_dataset_id')
+    query_input = dl.FunctionIO(type='Json', name='query')
 
     predict_inputs = [dataset_input, val_query_input, checkpoint_path_input, model_specs_input]
     model_inputs = [dataset_input, train_query_input, val_query_input, hp_value_input, model_specs_input]
@@ -119,7 +121,7 @@ def push_package(project):
     zazu_timer_module = dl.PackageModule(entry_point='dataloop_services/zazu_timer_module.py',
                                          name='zazu_timer_module',
                                          functions=[timer_update_function],
-                                         init_inputs=[configs_input, time_input])
+                                         init_inputs=[configs_input, time_input, test_dataset_input, query_input])
 
     package_obj = project.packages.push(
         package_name='zazuml',

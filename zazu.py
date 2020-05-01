@@ -156,14 +156,13 @@ def maybe_do_deployment_stuff():
         with open('configs.json', 'r') as fp:
             configs = json.load(fp)
 
-        configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
+        configs_input = dl.FunctionIO(type='Json', name='configs', value=json.dumps(configs))
         time_input = dl.FunctionIO(type='Json', name='time', value=3600)
-
+        test_dataset_input = dl.FunctionIO(type='Json', name='test_dataset_id', value='5eaae053b6a9a4d4baeb35bd')
+        query_input = dl.FunctionIO(type='Json', name='query', value=json.dumps({"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/items/val*"}, {"hidden": False}, {"type": "file"}]}}))
+        init_inputs = [configs_input, time_input, test_dataset_input, query_input]
         deploy_zazu_timer(package=global_package_obj,
-                          configs=configs_input,
-                          time=time_input,
-                          test_dataset=test_dataset_input,
-                          query=query_input)
+                          init_inputs=init_inputs)
 
     if args.update:
         with open('global_configs.json', 'r') as fp:

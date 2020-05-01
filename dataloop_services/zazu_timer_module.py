@@ -6,6 +6,7 @@ import os
 from time import sleep
 from dataloop_services.plugin_utils import maybe_download_pred_data, download_and_organize
 from eval import precision_recall_compute
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,14 +16,19 @@ class ServiceRunner(dl.BaseServiceRunner):
 
     """
 
-    def __init__(self, configs, time, test_dataset, query):
+    def __init__(self, configs, time, test_dataset_id, query):
+        dl.setenv('prod')
+        configs = json.loads(configs)
+        query = json.loads(query)
         self.configs_input = dl.FunctionIO(type='Json', name='configs', value=configs)
         self.service = dl.services.get('zazu')
         project_name = configs['dataloop']['project']
+        logger.info('project name is: ' + project_name)
         self.project = dl.projects.get(project_name)
-
+        test_dataset = self.project.datasets.get(dataset_id=test_dataset_id)
         maybe_download_pred_data(dataset_obj=test_dataset, val_query=query)
 
+        #add gt annotations
         filters = dl.Filters()
         filters.custom_filter = query
         dataset_name = test_dataset.name
@@ -64,6 +70,8 @@ class ServiceRunner(dl.BaseServiceRunner):
             self.compute.add_path_detections(output_path, model_name='new_checkpoint')
             new_checkpoint_mAP = self.compute.get_metric(model_name='new_checkpoint', precision_to_recall_ratio=1.)
 
+            new_checkpoint = model_obj.checkpoints.upload(checkpoint_name=new_checkpoint_name, local_path=new_checkpoint_name)
+
             best_checkpoint = model_obj.checkpoints.get('checkpoint0')
             check0_path = best_checkpoint.download(local_path=os.getcwd())
             adapter = model_obj.build(local_path=os.getcwd())
@@ -73,8 +81,10 @@ class ServiceRunner(dl.BaseServiceRunner):
             best_checkpoint_mAP = self.compute.get_metric(model_name=best_checkpoint.name, precision_to_recall_ratio=1.)
 
             if new_checkpoint_mAP > best_checkpoint_mAP:
-                model_obj.checkpoints.upload(checkpoint_name='checkpoint0',
-                                             local_path=new_checkpoint_name)
+                predict_service = dl.services.get('predict')
+                predict_service.input_params = {'model_id': model_obj.id,
+                                                'checkpoint_id': new_checkpoint.id}
+                predict_service.update()
 
                 logger.info('switching with new checkpoint')
 
