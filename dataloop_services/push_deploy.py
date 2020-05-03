@@ -19,6 +19,7 @@ def deploy_predict(package):
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
+                                          is_global=True,
                                           execution_timeout=60 * 60 * 1e10,
                                           init_input=input_to_init)
 
@@ -38,6 +39,7 @@ def deploy_model(package):
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
+                                          is_global=True,
                                           execution_timeout=60 * 60 * 1e10,
                                           init_input=input_to_init)
 
@@ -58,6 +60,7 @@ def deploy_zazu(package):
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
+                                          is_global=True,
                                           execution_timeout=60 * 60 * 1e10,
                                           init_input=input_to_init)
 
@@ -74,6 +77,7 @@ def deploy_zazu_timer(package, init_inputs):
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
+                                          is_global=True,
                                           execution_timeout=60*60*1e10,
                                           init_input=init_inputs)
 
