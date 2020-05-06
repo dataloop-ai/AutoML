@@ -1,10 +1,10 @@
 ![Logo](./images/ZazuML.jpeg)
 <br/><br/>   
 
-This is an easy open-source AutoML framework for object detection. Currently this project contains a model finder, hyper-parameter tuner, 
-and trial manager all wrapped up in one synchronous end to end program. The input to this program is a dataset, the output is a trained 
-model with auto-optimized hyper parameters, ready to run inference, simple as that.
-
+This is an easy open-source AutoML framework for object detection. Currently this project contains a 
+model & hyper-parameter tuner, trial manager and prediction trigger, already loaded with your top preforming 
+model-checkpoint. A working pipeline ready to be plugged in, simple as that.
+![](./images/zazuml_diagram.png)
 ### *Algorithms*
 
 | *models* | *hyper-parameter optimization algorithms* | *remote*
