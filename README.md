@@ -3,7 +3,7 @@
 
 This is an easy open-source AutoML framework for object detection. Currently this project contains a 
 model & hyper-parameter tuner, trial manager and prediction trigger, already loaded with your top preforming 
-model-checkpoint. A working pipeline ready to be plugged in, simple as that.
+model-checkpoint. A working pipeline ready to be plugged into your product, simple as that.
 ![](./images/zazuml_diagram.png)
 ### *Algorithms*
 
