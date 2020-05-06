@@ -55,11 +55,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             'package_name': self.package_name,
             'execution_id': progress.execution.id
         }
-        checkpoint = adapter.get_checkpoint()
-        if type(checkpoint['metrics']['val_accuracy']) is not float:
-            raise Exception(
-                'adapter, get_best_metrics method must return dict with only python floats. '
-                'Not numpy floats or any other objects like that')
+        checkpoint_path = adapter.save()
 
         # upload metrics as artifact
         self.logger.info('uploading metrics to dataloop')
@@ -68,13 +64,15 @@ class ServiceRunner(dl.BaseServiceRunner):
                                  execution_id=save_info['execution_id'])
 
         # this is the same as uplading metrics because the map is saved under checkpoint['metrics']['val_accuracy']
-        project.artifacts.upload(filepath=adapter.checkpoint_path,
+        project.artifacts.upload(filepath=checkpoint_path,
                                  package_name=save_info['package_name'],
                                  execution_id=save_info['execution_id'])
 
         project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                  package_name=save_info['package_name'],
                                  execution_id=save_info['execution_id'])
+
+        adapter.delete_stuff()
         self.logger.info('finished uploading checkpoint and logs')
 
         self.logger.info('FINISHED SESSION')

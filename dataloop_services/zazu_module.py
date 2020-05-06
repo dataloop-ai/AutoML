@@ -40,6 +40,7 @@ class ServiceRunner(dl.BaseServiceRunner):
 
         # model_name = opt_model.name
         # model_obj = dl.models.get(model_name=model_name)
+        logger.info('uploading checkpoints.....')
         for checkpoint_path in checkpoint_paths_list:
             # model_obj.checkpoints.upload(checkpoint_name=checkpoint_path.split('.')[0], local_path=checkpoint_path)
             project.artifacts.upload(filepath=checkpoint_path,

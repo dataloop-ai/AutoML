@@ -5,6 +5,7 @@ import threading
 import logging
 import torch
 import glob
+import shutil
 from dataloop_services import LocalTrialConnector, LocalPredConnector
 from .thread_manager import ThreadManager
 from ObjectDetNet.convert2Yolo import convert
@@ -241,7 +242,8 @@ class Launcher:
         logger.info('starting thread: ' + thread_name)
         if self.remote:
             try:
-                checkpoint_path = 'best_' + trial_id + '.pt'
+                # checkpoint_path = 'best_' + trial_id + '.pt'
+                checkpoint_path = 'checkpoint.pt'
                 path_to_tensorboard_dir = 'runs'
                 logger.info("trying to get execution objects")
                 execution_obj = self._run_trial_remote_execution(inputs_dict)
@@ -258,7 +260,7 @@ class Launcher:
                     os.remove(checkpoint_path)
                 if os.path.exists(path_to_tensorboard_dir):
                     logger.info('overwriting tenorboards runs . . .')
-                    os.rmdir(path_to_tensorboard_dir)
+                    shutil.rmtree(path_to_tensorboard_dir)
                 # download artifacts, should contain metrics and tensorboard runs
                 # TODO: download many different metrics then should have id hash as well..
                 self.project.artifacts.download(package_name=self.package_name,
