@@ -63,6 +63,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         logger.info(str(os.listdir('.')))
         new_checkpoint = torch.load(new_checkpoint_name, map_location=torch.device('cpu'))
         model_name = new_checkpoint['model_specs']['name']
+        new_home_path = new_checkpoint['model_specs']['data']['home_path']
 
         model_obj = dl.models.get(model_name=model_name)
         adapter_temp = model_obj.build(local_path=os.getcwd())
@@ -72,18 +73,30 @@ class ServiceRunner(dl.BaseServiceRunner):
         logger.info(os.listdir(output_path))
         self.compute.add_path_detections(output_path, model_name='new_checkpoint')
         logger.info(str(self.compute.by_model_name.keys()))
+        if len(self.compute.by_model_name.keys()) < 2:
+            # if the model cant predict anything then just skip it
+            fake_new_checkpoint = model_obj.checkpoints.get('check0')
+            fake_new_checkpoint_name = fake_new_checkpoint.download(local_path=os.getcwd())
+            adapter_temp.load_inference(checkpoint_path=fake_new_checkpoint_name)
+            output_path = adapter_temp.predict(output_dir='new_checkpoint')
+            logger.info('second try with fake checkpoint')
+            logger.info('predictions in : ' + output_path)
+            logger.info(os.listdir(output_path))
+            self.compute.add_path_detections(output_path, model_name='new_checkpoint')
         new_checkpoint_mAP = self.compute.get_metric(model_name='new_checkpoint', precision_to_recall_ratio=1.)
-
         new_checkpoint = model_obj.checkpoints.upload(checkpoint_name=new_checkpoint_name[:-3], local_path=new_checkpoint_name)
+        logger.info('uploaded this checkpoint : ' + new_checkpoint_name[:-3])
 
-        best_checkpoint = model_obj.checkpoints.get('checkpoint0')
+        best_checkpoint = model_obj.checkpoints.get('check0')
         check0_path = best_checkpoint.download(local_path=os.getcwd())
         adapter = model_obj.build(local_path=os.getcwd())
         adapter.load_inference(checkpoint_path=check0_path)
-        output_path = adapter.predict(output_dir=best_checkpoint.name)
+
+        output_path = adapter.predict(output_dir=best_checkpoint.name, home_path=new_home_path)
         self.compute.add_path_detections(output_path, model_name=best_checkpoint.name)
         best_checkpoint_mAP = self.compute.get_metric(model_name=best_checkpoint.name, precision_to_recall_ratio=1.)
-
+        logger.info('new checkpoint: ' + str(new_checkpoint_mAP))
+        logger.info('best checkpoint: ' + str(best_checkpoint_mAP))
         if new_checkpoint_mAP > best_checkpoint_mAP:
             predict_service = dl.services.get('predict')
             predict_service.input_params = {'model_id': model_obj.id,
@@ -93,5 +106,5 @@ class ServiceRunner(dl.BaseServiceRunner):
             logger.info('switching with new checkpoint')
 
         self.compute.save_plot_metrics()
-        logger.info('waiting ' + str(time_lapse) + ' for next execution . . . .')
-
+        # logger.info('waiting ' + str(time_lapse) + ' for next execution . . . .')
+        #
