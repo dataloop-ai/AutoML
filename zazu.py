@@ -131,7 +131,7 @@ def maybe_login(env):
 
 def maybe_do_deployment_stuff():
     if args.deploy:
-
+        logger.info('about to launch 2 deployments, zazu and trial')
         with open('global_configs.json', 'r') as fp:
             global_project_name = json.load(fp)['project']
 
@@ -141,12 +141,14 @@ def maybe_do_deployment_stuff():
             # predict_service = deploy_predict(package=global_package_obj)
             trial_service = deploy_model(package=global_package_obj)
             zazu_service = deploy_zazu(package=global_package_obj)
+            logger.info('deployments launched successfully')
         except:
             # predict_service.delete()
             trial_service.delete()
             zazu_service.delete()
 
-    elif args.zazu_timer:
+    if args.zazu_timer:
+        logger.info('about to launch timer deployment')
         with open('global_configs.json', 'r') as fp:
             global_project_name = json.load(fp)['project']
 
@@ -163,6 +165,7 @@ def maybe_do_deployment_stuff():
         init_inputs = [configs_input, time_input, test_dataset_input, query_input]
         deploy_zazu_timer(package=global_package_obj,
                           init_inputs=init_inputs)
+        logger.info('timer deployment launched successfully')
 
     if args.update:
         with open('global_configs.json', 'r') as fp:
