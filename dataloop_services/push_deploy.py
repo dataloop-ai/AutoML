@@ -36,7 +36,7 @@ def deploy_model(package):
                                           package=package,
                                           runtime={'gpu': True,
                                                    'numReplicas': 1,
-                                                   'concurrency': 2,
+                                                   'concurrency': 1,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
                                                    },
                                           is_global=True,
@@ -83,6 +83,26 @@ def deploy_zazu_timer(package, init_inputs):
 
     return service_obj
 
+
+def deploy_predict_item(package, model_id, checkpoint_id):
+    input_to_init = {'model_id': model_id,
+                     'checkpoint_id': checkpoint_id}
+
+    service_obj = package.services.deploy(service_name='predict',
+                                          module_name='predict_item_module',
+                                          package=package,
+                                          runtime={'gpu': True,
+                                                   'numReplicas': 1,
+                                                   'concurrency': 2,
+                                                   'runnerImage': 'buffalonoam/zazu-image:0.3',
+                                                   'podType': 'gpu-k80-m'
+                                                   },
+                                          is_global=True,
+                                          execution_timeout=60 * 60 * 1e10,
+                                          init_input=input_to_init)
+
+    return service_obj
+
 def push_package(project):
     dataset_input = dl.FunctionIO(type='Dataset', name='dataset')
     train_query_input = dl.FunctionIO(type='Json', name='train_query')
@@ -97,6 +117,10 @@ def push_package(project):
     test_dataset_input = dl.FunctionIO(type='Json', name='test_dataset_id')
     query_input = dl.FunctionIO(type='Json', name='query')
 
+    item_input = dl.FunctionIO(type='Item', name='item')
+    model_input = dl.FunctionIO(type='Json', name='model_id')
+    checkpoint_input = dl.FunctionIO(type='Json', name='checkpoint_id')
+
     predict_inputs = [dataset_input, val_query_input, checkpoint_path_input, model_specs_input]
     model_inputs = [dataset_input, train_query_input, val_query_input, hp_value_input, model_specs_input]
     zazu_inputs = [configs_input]
@@ -106,6 +130,11 @@ def push_package(project):
     zazu_search_function = dl.PackageFunction(name='search', inputs=zazu_inputs, outputs=[], description='')
     zazu_predict_function = dl.PackageFunction(name='predict', inputs=zazu_inputs, outputs=[], description='')
     timer_update_function = dl.PackageFunction(name='update_time', inputs=time_input, outputs=[], description='')
+    predict_item_function = dl.PackageFunction(name='predict_single_item', inputs=[item_input], outputs=[],
+                                               description='')
+    load_checkpoint_function = dl.PackageFunction(name='load_new_inference_checkpoint',
+                                                  inputs=[model_input, checkpoint_input], outputs=[],
+                                                  description='')
 
     predict_module = dl.PackageModule(entry_point='dataloop_services/predict_module.py',
                                      name='predict_module',
@@ -126,11 +155,14 @@ def push_package(project):
                                          name='zazu_timer_module',
                                          functions=[timer_update_function],
                                          init_inputs=[configs_input, time_input, test_dataset_input, query_input])
-
+    predict_item_module = dl.PackageModule(entry_point='dataloop_services/prediction_module.py',
+                                           name='predict_item_module',
+                                           functions=[predict_item_function, load_checkpoint_function],
+                                           init_inputs=[model_input, checkpoint_input])
     package_obj = project.packages.push(
         package_name='zazuml',
         src_path=os.getcwd(),
-        modules=[predict_module, models_module, zazu_module, zazu_timer_module])
+        modules=[predict_module, models_module, zazu_module, zazu_timer_module, predict_item_module])
 
     return package_obj
 

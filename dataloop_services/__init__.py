@@ -1,4 +1,4 @@
-
+from .trigger_prediction import create_trigger
 from .trial_local import LocalTrialConnector
 from .predict_local import LocalPredConnector
 from .push_deploy import *

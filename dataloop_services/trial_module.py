@@ -36,6 +36,8 @@ class ServiceRunner(dl.BaseServiceRunner):
         cls = getattr(import_module('.adapter', 'ObjectDetNet.' + model_specs['name']), 'AdapterModel')
 
         inputs_dict = {'devices': {'gpu_index': 0}, 'model_specs': model_specs, 'hp_values': hp_values}
+        #json save
+        #TODO: make sure you dont run two runs in concurrency and have two saving the same thing twice
         torch.save(inputs_dict, 'checkpoint.pt')
 
         adapter = cls()
