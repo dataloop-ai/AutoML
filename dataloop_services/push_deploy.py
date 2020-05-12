@@ -14,7 +14,7 @@ def deploy_predict(package):
     service_obj = package.services.deploy(service_name='predict',
                                           module_name='predict_module',
                                           package=package,
-                                          runtime={'gpu': True,
+                                          runtime={'gpu': False,
                                                    'numReplicas': 1,
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
@@ -72,7 +72,7 @@ def deploy_zazu_timer(package, init_inputs):
     service_obj = package.services.deploy(service_name='timer',
                                           module_name='zazu_timer_module',
                                           package=package,
-                                          runtime={'gpu': True,
+                                          runtime={'gpu': False,
                                                    'numReplicas': 1,
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3'
@@ -91,7 +91,7 @@ def deploy_predict_item(package, model_id, checkpoint_id):
     service_obj = package.services.deploy(service_name='predict',
                                           module_name='predict_item_module',
                                           package=package,
-                                          runtime={'gpu': True,
+                                          runtime={'gpu': False,
                                                    'numReplicas': 1,
                                                    'concurrency': 2,
                                                    'runnerImage': 'buffalonoam/zazu-image:0.3',

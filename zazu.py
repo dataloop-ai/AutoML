@@ -159,7 +159,7 @@ def maybe_do_deployment_stuff():
             configs = json.load(fp)
 
         configs_input = dl.FunctionIO(type='Json', name='configs', value=json.dumps(configs))
-        time_input = dl.FunctionIO(type='Json', name='time', value=36000)
+        time_input = dl.FunctionIO(type='Json', name='time', value=3600*0.25)
         test_dataset_input = dl.FunctionIO(type='Json', name='test_dataset_id', value='5eb7e0bdd4eb9434c77d80b5')
         query_input = dl.FunctionIO(type='Json', name='query', value=json.dumps({"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/items/val*"}, {"hidden": False}, {"type": "file"}]}}))
         init_inputs = [configs_input, time_input, test_dataset_input, query_input]

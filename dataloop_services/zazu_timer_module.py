@@ -43,7 +43,9 @@ class ServiceRunner(dl.BaseServiceRunner):
             download_and_organize(path_to_dataset=path_to_dataset, dataset_obj=test_dataset, filters=filters)
 
         json_file_path = os.path.join(path_to_dataset, 'json')
-        i = 0
+        self.model_obj = self.project.models.get(model_name='retinanet')
+        self.adapter = self.model_obj.build(local_path=os.getcwd())
+        logger.info('model built')
         while 1:
 
             self.compute = precision_recall_compute()
@@ -74,7 +76,9 @@ class ServiceRunner(dl.BaseServiceRunner):
             new_model_name = new_checkpoint_name[:-3]
             logger.info(str(os.listdir('.')))
             new_checkpoint = torch.load(new_checkpoint_name, map_location=torch.device('cpu'))
-            self.model_obj = self.project.models.get(model_name=new_checkpoint['model_specs']['name'])
+            # self.model_obj = self.project.models.get(model_name=new_checkpoint['model_specs']['name'])
+            # self.adapter = self.model_obj.build(local_path=os.getcwd())
+            # logger.info('model built')
             self.new_home_path = new_checkpoint['model_specs']['data']['home_path']
 
             self._compute_predictions(checkpoint_path=new_checkpoint_name,
@@ -91,23 +95,11 @@ class ServiceRunner(dl.BaseServiceRunner):
             if 'check0' not in [checkp.name for checkp in self.model_obj.checkpoints.list()]:
                 logger.info('there is no check0, will add upload new checkpoint as check0 and '
                             'deploy prediction service')
-                new_checkpoint = self.model_obj.checkpoints.upload(checkpoint_name='check0',
-                                                                   local_path=new_checkpoint_name)
+                new_checkpoint_obj = self.model_obj.checkpoints.upload(checkpoint_name='check0',
+                                                                       local_path=new_checkpoint_name)
                 logger.info('uploaded this checkpoint as the new check0 : ' + new_checkpoint_name[:-3])
 
-                # from ObjectDetNet.prediction_deployment_stuff import do_deployment_stuff, create_trigger
-                #
-                # logger.info('about to deploy prediction service')
-                # do_deployment_stuff(model_id=self.model_obj.id, checkpoint_id=new_checkpoint.id)
-                logger.info('about to deploy prediction service')
-                package_obj = dl.packages.get('zazuml')
-                deploy_predict_item(package=package_obj,
-                                    model_id=self.model_obj.id,
-                                    checkpoint_id=new_checkpoint.id)
-                logger.info('service deployed')
-                logger.info('deployed prediction service')
-                create_trigger()
-                logger.info('created prediction trigger')
+                self._maybe_launch_predict(new_checkpoint_obj)
                 continue
             logger.info('i guess check0 does exist')
             best_checkpoint = self.model_obj.checkpoints.get('check0')
@@ -115,7 +107,6 @@ class ServiceRunner(dl.BaseServiceRunner):
             logger.info('downloading best checkpoint')
             logger.info(str(os.listdir('.')))
             logger.info('check0 path is: ' + str(check0_path))
-
             self._compute_predictions(checkpoint_path=check0_path, model_name=best_checkpoint.name)
 
             # compute metrics
@@ -127,20 +118,19 @@ class ServiceRunner(dl.BaseServiceRunner):
             # if new checkpoint performs better switch out prediction
             if new_checkpoint_mAP > best_checkpoint_mAP:
                 logger.info('new checkpoint is better')
-                logger.info('uploading best checkpoint under new name')
+                logger.info('uploading old best checkpoint under new name')
                 self.model_obj.checkpoints.upload(checkpoint_name='checkpoint_' + check0_path.split('_')[-1][:-3],
                                                   local_path=check0_path)
                 logger.info('deleting old best checkpoint')
                 best_checkpoint.delete()
-                logger.info('uploading new best checkpoint')
-                new_best_checkpoint = self.model_obj.checkpoints.upload(checkpoint_name='check0',
-                                                                   local_path=new_checkpoint_name)
-                predict_service = dl.services.get('predict')
-                predict_service.input_params = {'model_id': self.model_obj.id,
-                                                'checkpoint_id': new_best_checkpoint.id}
-                predict_service.update()
-
-                logger.info('switching with new checkpoint')
+                logger.info('uploading new best checkpoint as check0')
+                new_best_checkpoint_obj = self.model_obj.checkpoints.upload(checkpoint_name='check0',
+                                                                            local_path=new_checkpoint_name)
+                if 'predict' not in [s.name for s in dl.services.list()]:
+                    self._maybe_launch_predict(new_best_checkpoint_obj)
+                else:
+                    self._update_predict_service(new_best_checkpoint_obj)
+                logger.info('switched with new checkpoint')
 
             self.compute.save_plot_metrics(save_path=graph_file_name)
 
@@ -150,16 +140,38 @@ class ServiceRunner(dl.BaseServiceRunner):
             self.project.artifacts.upload(filepath=graph_file_name,
                                           package_name='zazuml',
                                           execution_id=execution_obj.id)
-            sleep(3600 * 2)
-        # logger.info('waiting ' + str(time_lapse) + ' for next execution . . . .')
+            logger.info('waiting ' + str(time) + ' seconds for next execution . . . .')
+            sleep(time)
+
 
     def _compute_predictions(self, checkpoint_path, model_name):
-        adapter_temp = self.model_obj.build(local_path=os.getcwd())
-        logger.info('model built')
-        adapter_temp.load_inference(checkpoint_path=checkpoint_path)
+
+        self.adapter.load_inference(checkpoint_path=checkpoint_path)
         logger.info('checkpoint loaded')
-        output_path = adapter_temp.predict(output_dir=model_name, home_path=self.new_home_path)
+        output_path = self.adapter.predict(output_dir=model_name, home_path=self.new_home_path)
         logger.info('predictions in : ' + output_path)
         logger.info(os.listdir(output_path))
         self.compute.add_path_detections(output_path, model_name=model_name)
         logger.info(str(self.compute.by_model_name.keys()))
+
+    def _maybe_launch_predict(self, new_checkpoint_obj):
+        if 'predict' not in [s.name for s in dl.services.list()]:
+            logger.info('predict service doesnt exist, about to deploy prediction service')
+            package_obj = dl.packages.get('zazuml')
+            deploy_predict_item(package=package_obj,
+                                model_id=self.model_obj.id,
+                                checkpoint_id=new_checkpoint_obj.id)
+            logger.info('service deployed')
+            logger.info('deployed prediction service')
+            create_trigger()
+            logger.info('created prediction trigger')
+        else:
+            logger.info('predict service exists, no reason to relaunch')
+
+    def _update_predict_service(self, new_best_checkpoint_obj):
+        predict_service = dl.services.get('predict')
+        logger.info('service: ' + str(predict_service))
+        predict_service.input_params = {'model_id': self.model_obj.id,
+                                        'checkpoint_id': new_best_checkpoint_obj.id}
+        predict_service.update()
+        logger.info('service: ' + str(predict_service))
