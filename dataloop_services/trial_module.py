@@ -34,7 +34,7 @@ class ServiceRunner(dl.BaseServiceRunner):
 
         # start tune
         cls = getattr(import_module('.adapter', 'ObjectDetNet.' + model_specs['name']), 'AdapterModel')
-
+        #TODO: without roberto work with path / or github
         inputs_dict = {'devices': {'gpu_index': 0}, 'model_specs': model_specs, 'hp_values': hp_values}
         #json save
         #TODO: make sure you dont run two runs in concurrency and have two saving the same thing twice
@@ -73,7 +73,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         project.artifacts.upload(filepath=self.path_to_tensorboard_dir,
                                  package_name=save_info['package_name'],
                                  execution_id=save_info['execution_id'])
-
+        # change to clean up
         adapter.delete_stuff()
         self.logger.info('finished uploading checkpoint and logs')
 

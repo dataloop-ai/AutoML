@@ -250,6 +250,7 @@ class Launcher:
                 logger.info("got execution objects")
                 # TODO: Turn execution_obj into metrics
                 while execution_obj.latest_status['status'] != 'success':
+                    #TODO: make time sleep in env variable
                     time.sleep(5)
                     execution_obj = dl.executions.get(execution_id=execution_obj.id)
                     if execution_obj.latest_status['status'] == 'failed':

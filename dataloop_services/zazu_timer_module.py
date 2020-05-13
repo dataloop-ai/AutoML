@@ -169,6 +169,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             logger.info('predict service exists, no reason to relaunch')
 
     def _update_predict_service(self, new_best_checkpoint_obj):
+        logger.info('update predict service')
         predict_service = dl.services.get('predict')
         logger.info('service: ' + str(predict_service))
         predict_service.input_params = {'model_id': self.model_obj.id,
