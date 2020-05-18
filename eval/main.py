@@ -32,3 +32,5 @@ if __name__ == '__main__':
 
     new_checkpoint_mAP = plotter.get_metric(model_name='new_checkpoint', precision_to_recall_ratio=1.)
     plotter.save_plot_metrics()
+
+    suspicious_dets = plotter.get_top_suspicious_detections(model_name='new_checkpoint')
