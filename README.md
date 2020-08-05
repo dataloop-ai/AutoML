@@ -1,17 +1,16 @@
 ![Logo](./images/ZazuML.jpeg)
 <br/><br/>   
 
-This is an easy open-source AutoML framework for object detection. Currently this project contains a 
-model & hyper-parameter tuner, auto augmentations, trial manager and prediction trigger, already loaded with your top preforming 
-model-checkpoint. A working pipeline ready to be plugged into your product, simple as that.
-![](./images/zazuml_diagram.png)
+This is an easy open-source AutoML framework for object detection. This project contains a 
+architeture search + hyper-parameter search + augmentations search, as well as trial manager. 
+An ML Pipeline taylor made for simple integration into your project or code.
+![](./images/zazu_eng.png)
 
 ### *Algorithms*
 
-| *models* | *hyper-parameter optimization algorithms* | *remote*
+| *Augmentations Search* | *Hyper-Parameter Search* | *Architecture Search*
 | :----:         |     :----:      |    :----:      |
-|  <ul><li>Retinanet</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | &#10003; |
-|  <ul><li>YoloV3</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | &#10003; |
+|  <ul><li>Fast-Autoaugment</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | <ul><li>EfficientDet</li><li>EndToEndTransformers</li></ul>  |
 ### *Super EASY to use!*
 
 ![](./images/running_zazu_search2.gif)  
