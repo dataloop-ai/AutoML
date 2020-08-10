@@ -8,7 +8,8 @@ def init_logging(module_name, filename='logger.conf'):
     logger = logging.getLogger(module_name)
 
     if os.path.exists(filename):
-        os.remove(filename)
+        #os.remove(filename)
+        pass
     fileHandler = logging.FileHandler(filename)
     logger.addHandler(fileHandler)
 

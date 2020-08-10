@@ -40,38 +40,5 @@
       "anchor_scales": [1.0, 1.2599210498948732, 1.5874010519681994],
       "anchor_ratios": [0.5, 1.0, 2.0]
     }
-  },
-  "yolov3": {
-    "task": "detection",
-    "model_space": {
-      "accuracy_rating": 4,
-      "speed_rating": 10,
-      "memory_rating": 3
-    },
-    "hp_search_space": [
-      {
-        "name": "learning_rate",
-        "values": [
-          1e-3,
-          2.61e-3,
-          5e-3
-        ]
-      },
-      {
-        "name": "momentum",
-        "values": [
-          0.9,
-          0.949,
-          0.97
-        ]
-      }
-    ],
-    "training_configs": {
-      "tuner/epochs": 272,
-      "batch_size": 16,
-      "input_size": 320,
-      "learning_rate": 2.61e-3,
-      "momentum": 0.949
-    }
   }
 }
