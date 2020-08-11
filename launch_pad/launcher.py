@@ -58,8 +58,9 @@ class Launcher:
         # TODO: dont convert here
         if self.optimal_model.name == 'yolov3':
             if self.optimal_model.data['annotation_type'] == 'coco':
-                self._convert_coco_to_yolo_format()
-                self.optimal_model.data['annotation_type'] = 'yolo'
+                pass
+                #self._convert_coco_to_yolo_format()
+                #self.optimal_model.data['annotation_type'] = 'yolo'
 
     def predict(self, checkpoint_path):
         if self.remote:
@@ -215,7 +216,7 @@ class Launcher:
         for trial_id, metrics_and_checkpoint in ongoing_trials_results.items():
             self.ongoing_trials.update_metrics(trial_id, metrics_and_checkpoint)
 
-    def _convert_coco_to_yolo_format(self):
+    """def _convert_coco_to_yolo_format(self):
         conversion_config_val = {
             "datasets": "COCO",
             "img_path": os.path.join(self.home_path, "images", "val" + self.dataset_name),
@@ -235,7 +236,7 @@ class Launcher:
             "cls_list": os.path.join(self.home_path, "d.names")
         }
         convert(conversion_config_val)
-        convert(conversion_config_train)
+        convert(conversion_config_train)"""
 
     def _collect_metrics(self, inputs_dict, trial_id, results_dict):
         thread_name = threading.currentThread().getName()

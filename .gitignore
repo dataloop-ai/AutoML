@@ -313,3 +313,4 @@ token.txt
 checkpoint*.pt
 logger.conf
 
+/ObjectDetNet/
