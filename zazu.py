@@ -40,6 +40,7 @@ class ZaZu:
     def hp_search(self):
         if not self.remote:
             if self.opt_model.max_instances_at_once > torch.cuda.device_count():
+                print(torch.cuda.is_available())
                 raise Exception(''' 'max_instances_at_once' must be smaller or equal to the number of available gpus''')
         if not hasattr(self.opt_model, 'name'):
             logger.info("no 'update_optimal_model' method, checking for model.txt file . . . ")

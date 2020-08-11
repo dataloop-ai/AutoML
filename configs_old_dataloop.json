@@ -1,0 +1,25 @@
+{
+  "max_trials": 1,
+  "max_instances_at_once": 1,
+  "model_priority_space": [
+    10,
+    0,
+    0
+  ],
+  "task": "detection",
+  "epochs": 100,
+  "search_method": "random",
+  "data": {
+    "home_path": "../data/tiny_coco",
+    "annotation_type": "coco",
+    "dataset_name": ""
+  },
+  "dataloop": {
+    "setenv": "prod",
+    "project": "golden_project",
+    "dataset": "tiny_mice_data",
+    "train_query": {"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/items/dir_*"}, {"hidden": false}, {"type": "file"}]}},
+    "val_query": {"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/items/val*"}, {"hidden": false}, {"type": "file"}]}},
+    "test_dir": "/items/val*"
+  }
+}
