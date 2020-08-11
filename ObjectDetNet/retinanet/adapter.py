@@ -52,7 +52,7 @@ class AdapterModel:
             for x in ['devices', 'model_specs', 'hp_values']:
                 checkpoint.pop(x)
             epoch = checkpoint['epoch']
-            hp_values['tuner/initial_epoch'] = epoch
+            hp_values['hyperparameter_tuner/initial_epoch'] = epoch
 
         self.devices = devices
         self.model_specs = model_specs
@@ -72,15 +72,15 @@ class AdapterModel:
         self.annotations_val_filepath = None
         self.home_path = None
         try:
-            past_trial_id = self.configs['tuner/past_trial_id']
+            past_trial_id = self.configs['hyperparameter_tuner/past_trial_id']
         except:
             past_trial_id = None
         try:
-            new_trial_id = self.configs['tuner/new_trial_id']
+            new_trial_id = self.configs['hyperparameter_tuner/new_trial_id']
         except Exception as e:
             raise Exception('make sure a new trial id was passed, got this error: ' + repr(e))
-        if 'tuner/initial_epoch' not in self.configs.keys():
-            self.configs['tuner/initial_epoch'] = 0
+        if 'hyperparameter_tuner/initial_epoch' not in self.configs.keys():
+            self.configs['hyperparameter_tuner/initial_epoch'] = 0
 
         if self.annotation_type == 'coco':
             self.home_path = self.model_specs['data']['home_path']
@@ -130,8 +130,8 @@ class AdapterModel:
                                    scales=self.configs['anchor_scales'])
 
     def train(self):
-        self.retinanet_model.train(epochs=self.configs['tuner/epochs'],
-                                   init_epoch=self.configs['tuner/initial_epoch'])
+        self.retinanet_model.train(epochs=self.configs['hyperparameter_tuner/epochs'],
+                                   init_epoch=self.configs['hyperparameter_tuner/initial_epoch'])
 
     def get_checkpoint(self):
         logger.info('getting best checkpoint')

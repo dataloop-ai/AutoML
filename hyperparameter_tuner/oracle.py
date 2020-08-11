@@ -55,9 +55,9 @@ class Oracle:
                     return None
                 continue
             self._tried_so_far.add(values_hash)
-            values['tuner/new_trial_id'] = trial_id
-            values['tuner/epochs'] = self.max_epochs
-            values['tuner/initial_epoch'] = 0
+            values['hyperparameter_tuner/new_trial_id'] = trial_id
+            values['hyperparameter_tuner/epochs'] = self.max_epochs
+            values['hyperparameter_tuner/initial_epoch'] = 0
             break
         return {'status': 'RUNNING',
                 'values': values}

@@ -1,6 +1,6 @@
 from model_selector import find_model
 from launch_pad import Launcher
-from tuner import Tuner, OngoingTrials
+from hyperparameter_tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
 from logging_utils import init_logging, logginger
@@ -45,7 +45,7 @@ class ZaZu:
         if not hasattr(self.opt_model, 'name'):
             logger.info("no 'update_optimal_model' method, checking for model.txt file . . . ")
             self.update_optimal_model()
-        # initialize tuner and gun i.e.
+        # initialize hyperparameter_tuner and gun i.e.
         ongoing_trials = OngoingTrials()
         tuner = Tuner(self.opt_model, ongoing_trials)
         gun = Launcher(self.opt_model, ongoing_trials, remote=self.remote)
