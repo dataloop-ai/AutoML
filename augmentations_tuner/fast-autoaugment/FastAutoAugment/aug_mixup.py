@@ -6,8 +6,11 @@ Reference :
 
 import numpy as np
 import torch
-
-from FastAutoAugment.metrics import CrossEntropyLabelSmooth
+import os
+import sys
+# sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
+# sys.path.insert(1, os.path.dirname(__file__))
+from .metrics import CrossEntropyLabelSmooth
 
 
 def mixup(data, targets, alpha):

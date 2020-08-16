@@ -13,6 +13,8 @@ def adjust_learning_rate_resnet(optimizer):
         return MultiStepLR_HotFix(optimizer, [30, 60, 80])
     elif C.get()['epoch'] == 270:   # autoaugment
         return MultiStepLR_HotFix(optimizer, [90, 180, 240])
+    elif C.get()['epoch'] == 1:
+        return MultiStepLR_HotFix(optimizer, [1])
     else:
         raise ValueError('invalid epoch=%d for resnet scheduler' % C.get()['epoch'])
 
