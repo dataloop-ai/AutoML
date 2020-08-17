@@ -209,14 +209,14 @@ if __name__ == '__main__':
             break
 
     logger.info('getting results...')
-    # pretrain_results = [
-    #     train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i],
-    #                 skip_exist=True) for i in range(cv_num)]
-    #
-    # for r_model, r_cv, r_dict in pretrain_results:
-    #     logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
-    #     r_model, r_cv + 1, r_dict['top1_train'], r_dict['top1_valid']))
-    # logger.info('processed in %.4f secs' % w.pause('train_no_aug'))
+    pretrain_results = [
+        train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i],
+                    skip_exist=True) for i in range(cv_num)]
+
+    for r_model, r_cv, r_dict in pretrain_results:
+        logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
+        r_model, r_cv + 1, r_dict['top1_train'], r_dict['top1_valid']))
+    logger.info('processed in %.4f secs' % w.pause('train_no_aug'))
 
     if args.until == 1:
         sys.exit(0)
@@ -311,7 +311,7 @@ if __name__ == '__main__':
                 is_done = True
             if len(epochs) == num_experiments * 2 and min(epochs.values()) >= epoch:
                 break
-            time.sleep(10)
+            time.sleep(10, '-- sleeping for 10 seconds --')
         if is_done:
             break
 
