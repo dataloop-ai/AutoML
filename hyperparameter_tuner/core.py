@@ -8,7 +8,9 @@ class Tuner:
     def __init__(self, optimal_model, ongoing_trials):
 
         if optimal_model.search_method == "hyperband":
-            self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=optimal_model.epochs)
+            self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=optimal_model.epochs, augment=False)
+        elif optimal_model.search_method == "hyperaugment":
+            self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=optimal_model.epochs, augment=True)
         elif optimal_model.search_method == "random":
             self.oracle = Oracle(space=optimal_model.hp_space, max_epochs=optimal_model.epochs, max_trials=optimal_model.max_trials)
         else:

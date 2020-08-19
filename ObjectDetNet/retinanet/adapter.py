@@ -1,6 +1,7 @@
 import os
 
 import sys
+
 sys.path.insert(1, os.path.dirname(__file__))
 from retinanet_model import RetinaModel
 from predict import detect, detect_single_image
@@ -13,10 +14,11 @@ import json
 import torch
 import dtlpy as dl
 import logging
+
 logger = logging.getLogger(__name__)
 
 
-#def combine_values(configs_under, configs_over):
+# def combine_values(configs_under, configs_over):
 #    for hp in configs_over.keys():
 #        configs_under[hp] = configs_over[hp]
 
@@ -57,16 +59,16 @@ class AdapterModel:
         self.devices = devices
         self.model_specs = model_specs
         self.hp_values = hp_values
-     
+
         self.annotation_type = model_specs['data']['annotation_type']
         self.path = os.getcwd()
         self.output_path = os.path.join(self.path, 'output')
-        
+
         # unify training configs and hp_values using dict.update
-        #self.configs = combine_values(self.model_specs['training_configs'], hp_values) 
+        # self.configs = combine_values(self.model_specs['training_configs'], hp_values)
         self.model_specs['training_configs'].update(hp_values)
         self.configs = self.model_specs['training_configs']
-        
+
         self.classes_filepath = None
         self.annotations_train_filepath = None
         self.annotations_val_filepath = None
@@ -75,6 +77,10 @@ class AdapterModel:
             past_trial_id = self.configs['hyperparameter_tuner/past_trial_id']
         except:
             past_trial_id = None
+        try:
+            past_worst_trial_id = self.configs['hyperparameter_tuner/worst_past_trial_id']
+        except:
+            past_worst_trial_id = None
         try:
             new_trial_id = self.configs['hyperparameter_tuner/new_trial_id']
         except Exception as e:
@@ -90,7 +96,7 @@ class AdapterModel:
             self.annotations_train_filepath = os.path.join(self.output_path, 'annotations_train.txt')
             self.annotations_val_filepath = os.path.join(self.output_path, 'annotations_val.txt')
         self.retinanet_model = RetinaModel(devices['gpu_index'], self.home_path, new_trial_id, past_trial_id,
-                                           checkpoint)
+                                           past_worst_trial_id, checkpoint)
 
     def reformat(self):
         pass
@@ -166,7 +172,8 @@ class AdapterModel:
         except:
             try:
                 self.load_inference(checkpoint_path)
-                return detect(checkpoint=self.inference_checkpoint, output_dir=output_dir, home_path=home_path, visualize=True)
+                return detect(checkpoint=self.inference_checkpoint, output_dir=output_dir, home_path=home_path,
+                              visualize=True)
             except:
                 checkpoint = self.get_checkpoint()
                 return detect(checkpoint, output_dir)
@@ -204,7 +211,7 @@ class AdapterModel:
             for result in results:
                 result_ls = result.split(' ')
                 builder.add(dl.Box(left=int(result_ls[2]), top=int(result_ls[3]), right=int(result_ls[4]),
-                                    bottom=int(result_ls[5]), label=result_ls[0]),
+                                   bottom=int(result_ls[5]), label=result_ls[0]),
                             model_info={'confidence': result_ls[1], 'name': model_name})
             item.annotations.upload(builder)
 
