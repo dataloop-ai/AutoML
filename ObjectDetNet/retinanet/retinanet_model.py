@@ -28,7 +28,7 @@ print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 
 class RetinaModel:
-    def __init__(self, device_index, home_path, save_trial_id, resume_trial_id=None, delete_trial_id=None, checkpoint=None):
+    def __init__(self, device_index, home_path, save_trial_id, resume_trial_id=None, checkpoint=None):
         if os.getcwd().split('/')[-1] == 'ObjectDetNet':
             home_path = os.path.join('..', home_path)
         self.home_path = home_path
@@ -45,10 +45,8 @@ class RetinaModel:
             resume_last_checkpoint_path = os.path.join(this_path, 'weights', 'last_' + resume_trial_id + '.pt')
             resume_best_checkpoint_path = os.path.join(this_path, 'weights', 'best_' + resume_trial_id + '.pt')
             self.checkpoint = torch.load(resume_best_checkpoint_path)
-        #if exists, delete worst trial checkpoint to save space
-        if delete_trial_id:
-            os.remove(os.path.join(this_path, 'weights', 'best_' + delete_trial_id + '.pt'))
-            logger.info('deleted old trial: ' + delete_trial_id)
+            os.remove(resume_best_checkpoint_path)
+
             # TODO: resume from best???
         self.save_last_checkpoint_path = os.path.join(this_path, 'weights', 'last_' + save_trial_id + '.pt')
         self.save_best_checkpoint_path = os.path.join(this_path, 'weights', 'best_' + save_trial_id + '.pt')

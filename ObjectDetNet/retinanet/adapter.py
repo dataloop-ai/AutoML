@@ -78,10 +78,6 @@ class AdapterModel:
         except:
             past_trial_id = None
         try:
-            past_worst_trial_id = self.configs['hyperparameter_tuner/worst_past_trial_id']
-        except:
-            past_worst_trial_id = None
-        try:
             new_trial_id = self.configs['hyperparameter_tuner/new_trial_id']
         except Exception as e:
             raise Exception('make sure a new trial id was passed, got this error: ' + repr(e))
@@ -96,7 +92,7 @@ class AdapterModel:
             self.annotations_train_filepath = os.path.join(self.output_path, 'annotations_train.txt')
             self.annotations_val_filepath = os.path.join(self.output_path, 'annotations_val.txt')
         self.retinanet_model = RetinaModel(devices['gpu_index'], self.home_path, new_trial_id, past_trial_id,
-                                           past_worst_trial_id, checkpoint)
+                                           checkpoint)
 
     def reformat(self):
         pass

@@ -53,7 +53,7 @@ class HyperBand(Oracle):
                 past_round_info = rounds[round_num - 1]
                 # In the first step of the last round, run augmentation search on previous round results
                 if len(round_info) == 0 and round_num == len(rounds) and self.augment:
-                    self.fast_autoaugment()
+                    past_round_info
 
                 size = self._get_size(bracket_num, round_num)
                 past_size = self._get_size(bracket_num, round_num - 1)
@@ -71,13 +71,10 @@ class HyperBand(Oracle):
                         key=lambda i: self.trials[i]['metrics']['val_accuracy'],
                         reverse=True)
                     best_trial_id = sorted_candidates[0]
-                    worst_trial_id = sorted_candidates[-1]
-
 
                     values = self.trials[best_trial_id]['hp_values']
                     values['hyperparameter_tuner/new_trial_id'] = trial_id
                     values['hyperparameter_tuner/past_trial_id'] = best_trial_id
-                    values['hyperparameter_tuner/worst_past_trial_id'] = worst_trial_id
                     values['hyperparameter_tuner/epochs'] = self._get_epochs(
                         bracket_num, round_num)
                     values['hyperparameter_tuner/initial_epoch'] = self._get_epochs(
