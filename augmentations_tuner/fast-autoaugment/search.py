@@ -28,6 +28,10 @@ from FastAutoAugment.metrics import Accumulator
 from FastAutoAugment.networks import get_model, num_class
 from FastAutoAugment.train import train_and_eval
 from theconf import Config as C, ConfigArgumentParser
+import json
+from pystopwatch2 import PyStopwatch
+
+w = PyStopwatch()
 
 top1_valid_by_cv = defaultdict(lambda: list)
 
@@ -143,26 +147,11 @@ def eval_tta(config, augment):
     return metrics['correct']
 
 
-if __name__ == '__main__':
-    import json
-    from pystopwatch2 import PyStopwatch
-
-    w = PyStopwatch()
-
-    parser = ConfigArgumentParser(conflict_handler='resolve')
-    parser.add_argument('--dataroot', type=str, default='/home/noam/data/private/pretrainedmodels',
-                        help='torchvision data folder')
-    parser.add_argument('--until', type=int, default=5)
-    parser.add_argument('--num-op', type=int, default=2)
-    parser.add_argument('--num-policy', type=int, default=5)
-    parser.add_argument('--num-search', type=int, default=200)
-    parser.add_argument('--cv-ratio', type=float, default=0.4)
-    parser.add_argument('--decay', type=float, default=-1)
-    parser.add_argument('--redis', type=str, default='gpu-cloud-vnode30.dakao.io:23655')
-    parser.add_argument('--per-class', action='store_true')
-    parser.add_argument('--resume', action='store_true')
-    parser.add_argument('--smoke-test', action='store_true', default=True)
-    args = parser.parse_args()
+def search(args, paths=None):
+    args.redis = 'gpu-cloud-vnode30.dakao.io:23655'
+    args.per_class = True
+    args.resume = True
+    args.smoke_test = True
 
     if args.decay > 0:
         logger.info('decay=%.4f' % args.decay)
@@ -182,8 +171,10 @@ if __name__ == '__main__':
     logger.info('search augmentation policies, dataset=%s model=%s' % (C.get()['dataset'], C.get()['model']['type']))
     logger.info('----- Train without Augmentations cv=%d ratio(test)=%.1f -----' % (cv_num, args.cv_ratio))
     w.start(tag='train_no_aug')
-    paths = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i in
-             range(cv_num)]
+    if paths == None:
+        paths = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
+                 in
+                 range(cv_num)]
     print(paths)
     tqdm_epoch = tqdm(range(C.get()['epoch']))
 
@@ -213,11 +204,9 @@ if __name__ == '__main__':
             space['prob_%d_%d' % (i, j)] = hp.uniform('prob_%d_ %d' % (i, j), 0.0, 1.0)
             space['level_%d_%d' % (i, j)] = hp.uniform('level_%d_ %d' % (i, j), 0.0, 1.0)
 
-
     def eval_t(augs):
         print(augs)
         return eval_tta(copy.deepcopy(copied_c), augs)
-
 
     final_policy_set = []
     total_computation = 0
@@ -316,3 +305,12 @@ if __name__ == '__main__':
     logger.info('processed in %.4f secs' % w.pause('train_aug'))
 
     logger.info(w)
+
+
+if __name__ == '__main__':
+
+
+    parser = ConfigArgumentParser(conflict_handler='resolve')
+    args = parser.parse_args()
+
+    search(args=args)

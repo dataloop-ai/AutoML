@@ -53,8 +53,8 @@ class HyperBand(Oracle):
                 past_round_info = rounds[round_num - 1]
                 # In the first step of the last round, run augmentation search on previous round results
                 if len(round_info) == 0 and round_num == len(rounds) and self.augment:
-                    past_round_info
-
+                    trial_ids_for_aug = [info['id'] for info in past_round_info]
+                    self.trials
                 size = self._get_size(bracket_num, round_num)
                 past_size = self._get_size(bracket_num, round_num - 1)
 

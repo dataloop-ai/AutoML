@@ -17,3 +17,11 @@ optimizer:
   decay: 0.0001
   clip: 0
   ema: 0
+dataroot: '/home/noam/data/private/pretrainedmodels'
+until: 5
+"num_op": 2
+"num-policy": 5
+"num-search": 200
+"cv-ratio": 0.4
+"decay": -1
+
