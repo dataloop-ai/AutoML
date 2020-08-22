@@ -20,8 +20,8 @@ optimizer:
 dataroot: '/home/noam/data/private/pretrainedmodels'
 until: 5
 "num_op": 2
-"num-policy": 5
-"num-search": 200
-"cv-ratio": 0.4
+"num_policy": 5
+"num_search": 200
+"cv_ratio": 0.4
 "decay": -1
 
