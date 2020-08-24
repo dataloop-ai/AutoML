@@ -7,8 +7,8 @@
     0
   ],
   "task": "detection",
-  "epochs": 10,
-  "search_method": "hyperband",
+  "epochs": 100,
+  "search_method": "random",
   "data": {
     "home_path": "../data/tiny_coco",
     "annotation_type": "coco",
