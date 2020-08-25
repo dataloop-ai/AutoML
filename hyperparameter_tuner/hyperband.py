@@ -38,7 +38,7 @@ class HyperBand(Oracle):
             self._start_new_bracket()
             return self._get_trial(trial_id)
 
-
+#111
     def _get_trial(self, trial_id):
         bracket_num = self._bracket['bracket_num']
         rounds = self._bracket['rounds']
