@@ -36,7 +36,7 @@ It's easy to implement into your python script or run in your terminal.
 ![](./images/zazu_via_sdk.gif)
 
 - Get started with [Quick Start](DOCS/GETTINGSTARTED.md)
-- read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
+- Read up on [Configuring ZazuML](DOCS/CONFIGURINGZAZU.md)
 - Launch [ZazuML remotely](DOCS/REMOTEZAZU.md)
 - Take a look [Under The Hood](DOCS/UNDERTHEHOOD.md)
 - Customize by [adding your own models](DOCS/ADDINGMODELS.md)
