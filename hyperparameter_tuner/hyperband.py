@@ -1,7 +1,6 @@
 import math
 from .oracle import Oracle
 import torch
-from augmentations_tuner.fast-autoaugment.search import search as aug_search
 class HyperBand(Oracle):
 
     def __init__(self,
@@ -51,12 +50,6 @@ class HyperBand(Oracle):
 
                 round_info = rounds[round_num]
                 past_round_info = rounds[round_num - 1]
-                # In the first step of the last round, run augmentation search on previous round results
-                if len(round_info) == 0 and round_num == len(rounds) and self.augment:
-                    trial_ids_for_aug = [info['id'] for info in past_round_info]
-                    for trial_id in trial_ids_for_aug:
-                        torch.save(self.trials[trial_id]['checkpoint'], paths)
-                        aug_search(paths)
 
                 size = self._get_size(bracket_num, round_num)
                 past_size = self._get_size(bracket_num, round_num - 1)

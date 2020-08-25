@@ -77,6 +77,14 @@ class OptModel(Spec):
         return None
 
     @property
+    def augmentation_search_method(self):
+        for dic in self.spec_data.values():
+            if 'augmentation_search_method' in dic:
+                return dic['augmentation_search_method']
+
+        return None
+
+    @property
     def max_instances_at_once(self):
         for dic in self.spec_data.values():
             if 'max_instances_at_once' in dic:

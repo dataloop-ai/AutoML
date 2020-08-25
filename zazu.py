@@ -1,16 +1,19 @@
 from model_selector import find_model
 from launch_pad import Launcher
 from hyperparameter_tuner import Tuner, OngoingTrials
+
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
 from logging_utils import init_logging, logginger
 from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict, \
     deploy_zazu_timer
+from augmentations_tuner.fastautoaugment import augmentation_search
 import argparse
 import os
 import torch
 import json
 import dtlpy as dl
+import sys
 
 logger = logginger(__name__)
 
@@ -62,16 +65,28 @@ class ZaZu:
             tuner.search_hp()
 
         trials = tuner.get_trials()
-        sorted_trial_ids = tuner.get_sorted_trial_ids()
+        if self.opt_model.augmentation_search_method == 'fastautoaugment':
+            sorted_trial_ids = tuner.get_sorted_trial_ids()
 
-        string1 = self.path_to_best_checkpoint.split('.')[0]
-        for i in range(len(sorted_trial_ids)):
-            save_checkpoint_location = string1 + str(i) + '.pt'
-            if os.path.exists(save_checkpoint_location):
-                logger.info('overwriting checkpoint . . .')
-                os.remove(save_checkpoint_location)
-            logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
-            torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
+            string1 = self.path_to_best_checkpoint.split('.')[0]
+            for i in range(len(sorted_trial_ids[:5])):
+                save_checkpoint_location = string1 + str(i) + '.pt'
+                logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
+                save_checkpoint_location = os.path.join('augmentations_tuner', 'fastautoaugment', 'FastAutoAugment', 'models', save_checkpoint_location)
+                if os.path.exists(save_checkpoint_location):
+                    logger.info('overwriting checkpoint . . .')
+                    os.remove(save_checkpoint_location)
+                torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
+                augmentation_search()
+                retrain()
+                add_to_oracle_trials()
+
+        sorted_trial_ids = tuner.get_sorted_trial_ids()
+        logger.info('the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
+        if os.path.exists(save_checkpoint_location):
+            logger.info('overwriting checkpoint . . .')
+            os.remove(save_checkpoint_location)
+        torch.save(trials[sorted_trial_ids[0]]['checkpoint'], save_checkpoint_location)
 
         logger.info('best trial: ' + str(trials[sorted_trial_ids[0]]['hp_values']) + '\nbest value: ' + str(
             trials[sorted_trial_ids[0]]['metrics']))
@@ -83,6 +98,9 @@ class ZaZu:
         with open(self.path_to_best_trial, 'w') as fp:
             json.dump(best_trial, fp)
             logger.info('results saved to best_trial.json')
+
+    def augmentations_search(self):
+        pass
 
     def train_new_model(self):
         # to train a new model you must have updated the found model and the best trial

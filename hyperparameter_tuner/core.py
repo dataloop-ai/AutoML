@@ -33,7 +33,7 @@ class Tuner:
             self.ongoing_trials.update_trial_hp(trial_id, hp_values=hp_values)
 
     def get_trials(self):
-        return self.oracle.trials
+        return self.oracle.trials #TODO pop deleted last round hyperband models from trials
 
     def get_sorted_trial_ids(self):
         sorted_trial_ids = sorted(self.oracle.trials.keys(), key=lambda x: self.oracle.trials[x]['metrics']['val_accuracy'], reverse=True)
