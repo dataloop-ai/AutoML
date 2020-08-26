@@ -36,28 +36,7 @@ RUN conda install -y -c pytorch \
 
 RUN conda install -c conda-forge pycocotools
 # Install HDF5 Python bindings
-RUN pip install \
-	h5py==2.9.0 \
-	h5py-cache==1.0 \
-	Keras==2.1.6 \
-	matplotlib==3.0.3 \
-	numpy==1.17.1 \
-	opencv-python==3.4.2.17 \
-	pandas==0.24.2 \
-	parse==1.12.1 \
-	Pillow==6.2.0 \
-	protobuf==3.9.1 \
-	PyYAML==5.1.2 \
-	requests==2.21.0 \
-	scikit-image==0.15.0 \
-	scipy==1.3.1 \
-	tensorboard==2.0.1 \
-	tensorflow==2.0.0 \
-	tensorflow-gpu==2.0.0 \
-	tqdm==4.32.2 \
-	urllib3==1.24.3 \
-	dtlpy==1.8.16 \
-	future
+RUN pip install -r requirements.txt
 
 WORKDIR /root
 
