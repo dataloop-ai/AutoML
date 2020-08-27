@@ -48,13 +48,9 @@ It's easy to implement into your python script or run in your terminal.
 - NAS to replace some of the HP search
 - Intelligent Losses to replace some of the HP search
 
-## *Contact*
+## *Want to contribute*
 
-If you're interested in becoming a collaborator or just have some questions, feel free to contact me at:
-
-WeChat: BuffaloNoam   
-Line: buffalonoam   
-WhatsApp: +972524226459   
+If you're interested in becoming a collaborator or just have some questions, feel free to join our <a href="https://join.slack.com/t/zazuml/shared_invite/zt-h0brn54k-wFIH7HWxXlummmpWaDr3ZA">slack</a> community.
 
 ## *Refrences*
 
