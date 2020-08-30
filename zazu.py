@@ -79,7 +79,7 @@ class ZaZu:
                     os.remove(save_checkpoint_location)
                 torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
                 paths_ls.append(save_checkpoint_location)
-            augmentation_search(paths_ls)
+            augmentation_search(paths_ls=paths_ls)
             retrain()
             add_to_oracle_trials()
 

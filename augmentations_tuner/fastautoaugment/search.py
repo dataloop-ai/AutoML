@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from collections import OrderedDict, defaultdict
+import yaml
 
 import torch
 import torch.utils.model_zoo as model_zoo
@@ -147,7 +148,11 @@ def eval_tta(config, augment):
     return metrics['correct']
 
 
-def search(args, paths=None):
+def search(args=None, paths_ls=None):
+    if args is None:
+        d = yaml.load(open('/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'), Loader=yaml.FullLoader)
+        from argparse import Namespace
+        args = Namespace(**d)
     args.redis = 'gpu-cloud-vnode30.dakao.io:23655'
     args.per_class = True
     args.resume = True
@@ -165,17 +170,17 @@ def search(args, paths=None):
     ray.init(num_cpus=1, num_gpus=1)
 
     num_result_per_cv = 10 if not args.smoke_test else 2
-    cv_num = 5
+    cv_num = 5 if paths_ls is None else len(paths_ls)
     copied_c = copy.deepcopy(C.get().conf)
 
     logger.info('search augmentation policies, dataset=%s model=%s' % (C.get()['dataset'], C.get()['model']['type']))
-    logger.info('----- Train without Augmentations cv=%d ratio(test)=%.1f -----' % (cv_num, args.cv_ratio))
+    logger.info('----- Train without Augmentations ratio(test)=%.1f -----' % (args.cv_ratio))
     w.start(tag='train_no_aug')
-    if paths == None:
-        paths = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
-                 in
-                 range(cv_num)]
-    print(paths)
+    if paths_ls is None:
+        paths_ls = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
+                    in
+                    range(cv_num)]
+    print(paths_ls)
     tqdm_epoch = tqdm(range(C.get()['epoch']))
 
     logger.info('getting results...')
@@ -183,7 +188,7 @@ def search(args, paths=None):
     #     train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i],
     #                 skip_exist=True) for i in range(cv_num)]
     pretrain_results = [
-        train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i], skip_exist=True)
+        train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths_ls[i], skip_exist=True)
         for i in range(cv_num)]
     for r_model, r_cv, r_dict in pretrain_results:
         logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
@@ -218,7 +223,7 @@ def search(args, paths=None):
             print(name)
             algo = HyperOptSearch(space, max_concurrent=1, metric=reward_attr)
             aug_config = {
-                'dataroot': args.dataroot, 'save_path': paths[cv_fold],
+                'dataroot': args.dataroot, 'save_path': paths_ls[cv_fold],
                 'cv_ratio_test': args.cv_ratio, 'cv_fold': cv_fold,
                 'num_op': args.num_op, 'num_policy': args.num_policy
             }
