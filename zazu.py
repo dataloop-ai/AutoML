@@ -69,6 +69,7 @@ class ZaZu:
             sorted_trial_ids = tuner.get_sorted_trial_ids()
 
             string1 = self.path_to_best_checkpoint.split('.')[0]
+            paths_ls = []
             for i in range(len(sorted_trial_ids[:5])):
                 save_checkpoint_location = string1 + str(i) + '.pt'
                 logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
@@ -77,9 +78,10 @@ class ZaZu:
                     logger.info('overwriting checkpoint . . .')
                     os.remove(save_checkpoint_location)
                 torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
-                augmentation_search()
-                retrain()
-                add_to_oracle_trials()
+                paths_ls.append(save_checkpoint_location)
+            augmentation_search(paths_ls)
+            retrain()
+            add_to_oracle_trials()
 
         sorted_trial_ids = tuner.get_sorted_trial_ids()
         logger.info('the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))

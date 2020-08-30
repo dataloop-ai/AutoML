@@ -183,7 +183,7 @@ def search(args, paths=None):
     #     train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i],
     #                 skip_exist=True) for i in range(cv_num)]
     pretrain_results = [
-        train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i])
+        train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i], skip_exist=True)
         for i in range(cv_num)]
     for r_model, r_cv, r_dict in pretrain_results:
         logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
