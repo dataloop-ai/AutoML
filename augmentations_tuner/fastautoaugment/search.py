@@ -180,16 +180,13 @@ def search(args=None, paths_ls=None):
         paths_ls = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
                     in
                     range(cv_num)]
-    print(paths_ls)
-    tqdm_epoch = tqdm(range(C.get()['epoch']))
+        print(paths_ls)
+        logger.info('getting results...')
+        pretrain_results = [
+            train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths_ls[i],
+                        skip_exist=args.smoke_test)
+            for i in range(cv_num)]
 
-    logger.info('getting results...')
-    # pretrain_results = [
-    #     train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths[i],
-    #                 skip_exist=True) for i in range(cv_num)]
-    pretrain_results = [
-        train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths_ls[i], skip_exist=True)
-        for i in range(cv_num)]
     for r_model, r_cv, r_dict in pretrain_results:
         logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
             r_model, r_cv + 1, r_dict['top1_train'], r_dict['top1_valid']))
@@ -253,45 +250,14 @@ def search(args=None, paths_ls=None):
     logger.info('----- Train with Augmentations model=%s dataset=%s aug=%s ratio(test)=%.1f -----' % (
         C.get()['model']['type'], C.get()['dataset'], C.get()['aug'], args.cv_ratio))
     w.start(tag='train_aug')
+    return final_policy_set
 
+def retrain():
     num_experiments = 5
     default_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_default%d' % (args.cv_ratio, _))
                     for _ in range(num_experiments)]
     augment_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_augment%d' % (args.cv_ratio, _))
                     for _ in range(num_experiments)]
-    tqdm_epoch = tqdm(range(C.get()['epoch']))
-    is_done = False
-    for epoch in tqdm_epoch:
-        while True:
-            epochs = OrderedDict()
-            for exp_idx in range(num_experiments):
-                try:
-                    if os.path.exists(default_path[exp_idx]):
-                        latest_ckpt = torch.load(default_path[exp_idx])
-                        if 'epoch' not in latest_ckpt:
-                            epochs['default_exp%d' % (exp_idx + 1)] = C.get()['epoch']
-                        else:
-                            epochs['default_exp%d' % (exp_idx + 1)] = latest_ckpt['epoch']
-                except Exception as e:
-                    pass
-                try:
-                    if os.path.exists(augment_path[exp_idx]):
-                        latest_ckpt = torch.load(augment_path[exp_idx])
-                        if 'epoch' not in latest_ckpt:
-                            epochs['augment_exp%d' % (exp_idx + 1)] = C.get()['epoch']
-                        else:
-                            epochs['augment_exp%d' % (exp_idx + 1)] = latest_ckpt['epoch']
-                except:
-                    pass
-
-            tqdm_epoch.set_postfix(epochs)
-            if len(epochs) == num_experiments * 2 and min(epochs.values()) >= C.get()['epoch']:
-                is_done = True
-            if len(epochs) == num_experiments * 2 and min(epochs.values()) >= epoch:
-                break
-            time.sleep(10, '-- sleeping for 10 seconds --')
-        if is_done:
-            break
 
     logger.info('getting results...')
     final_results = [train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], 0.0, 0,
