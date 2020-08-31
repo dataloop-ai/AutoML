@@ -165,13 +165,17 @@ def search(args=None, paths_ls=None):
     add_filehandler(logger, os.path.join('FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
         C.get()['dataset'], C.get()['model']['type'], args.cv_ratio)))
     logger.info('configuration...')
-    logger.info(json.dumps(C.get().conf, sort_keys=True, indent=4))
+    logger.info(json.dumps(args, sort_keys=True, indent=4))
     logger.info('initialize ray...')
     ray.init(num_cpus=1, num_gpus=1)
 
     num_result_per_cv = 10 if not args.smoke_test else 2
     cv_num = 5 if paths_ls is None else len(paths_ls)
-    copied_c = copy.deepcopy(C.get().conf)
+    args.version = 1
+    args._timestamp = '2020/08/30 20:40:10'
+    args.config = '/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'
+
+    copied_c = copy.deepcopy(args)
 
     logger.info('search augmentation policies, dataset=%s model=%s' % (C.get()['dataset'], C.get()['model']['type']))
     logger.info('----- Train without Augmentations ratio(test)=%.1f -----' % (args.cv_ratio))
