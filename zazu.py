@@ -7,7 +7,7 @@ from spec import ModelsSpec
 from logging_utils import init_logging, logginger
 from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict, \
     deploy_zazu_timer
-from augmentations_tuner.fastautoaugment import augmentation_search
+from augmentations_tuner.fastautoaugment import AugSearch
 import argparse
 import os
 import torch
@@ -79,8 +79,8 @@ class ZaZu:
                     os.remove(save_checkpoint_location)
                 torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
                 paths_ls.append(save_checkpoint_location)
-            augmentation_search(paths_ls=paths_ls)
-            retrain()
+            augsearch = AugSearch(paths_ls=paths_ls)
+            augsearch.retrain()
             add_to_oracle_trials()
 
         sorted_trial_ids = tuner.get_sorted_trial_ids()

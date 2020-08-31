@@ -147,139 +147,144 @@ def eval_tta(config, augment):
     tune.report(minus_loss=metrics['minus_loss'], top1_valid=metrics['correct'], elapsed_time=gpu_secs, done=True)
     return metrics['correct']
 
+class AugSearch:
 
-def search(args=None, paths_ls=None):
-    if args is None:
-        d = yaml.load(open('/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'), Loader=yaml.FullLoader)
-        from argparse import Namespace
-        args = Namespace(**d)
-    args.redis = 'gpu-cloud-vnode30.dakao.io:23655'
-    args.per_class = True
-    args.resume = True
-    args.smoke_test = True
+    def __init__(self, args=None, paths_ls=None):
+        if args is None:
+            d = yaml.load(open('/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'), Loader=yaml.FullLoader)
+            from argparse import Namespace
+            args = Namespace(**d)
+        args.redis = 'gpu-cloud-vnode30.dakao.io:23655'
+        args.per_class = True
+        args.resume = True
+        args.smoke_test = True
 
-    if args.decay > 0:
-        logger.info('decay=%.4f' % args.decay)
-        C.get()['optimizer']['decay'] = args.decay
+        if args.decay > 0:
+            logger.info('decay=%.4f' % args.decay)
+            C.get()['optimizer']['decay'] = args.decay
 
-    add_filehandler(logger, os.path.join('FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
-        C.get()['dataset'], C.get()['model']['type'], args.cv_ratio)))
-    logger.info('configuration...')
-    logger.info(json.dumps(args, sort_keys=True, indent=4))
-    logger.info('initialize ray...')
-    ray.init(num_cpus=1, num_gpus=1)
+        add_filehandler(logger, os.path.join('FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
+            C.get()['dataset'], C.get()['model']['type'], args.cv_ratio)))
+        logger.info('configuration...')
+        logger.info(json.dumps(args, sort_keys=True, indent=4))
+        logger.info('initialize ray...')
+        ray.init(num_cpus=1, num_gpus=1)
 
-    num_result_per_cv = 10 if not args.smoke_test else 2
-    cv_num = 5 if paths_ls is None else len(paths_ls)
-    args.version = 1
-    args._timestamp = '2020/08/30 20:40:10'
-    args.config = '/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'
+        num_result_per_cv = 10 if not args.smoke_test else 2
+        cv_num = 5 if paths_ls is None else len(paths_ls)
+        args.version = 1
+        args._timestamp = '2020/08/30 20:40:10'
+        args.config = '/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'
 
-    copied_c = copy.deepcopy(args)
+        copied_c = copy.deepcopy(args)
+        self.copied_c = copied_c
 
-    logger.info('search augmentation policies, dataset=%s model=%s' % (C.get()['dataset'], C.get()['model']['type']))
-    logger.info('----- Train without Augmentations ratio(test)=%.1f -----' % (args.cv_ratio))
-    w.start(tag='train_no_aug')
-    if paths_ls is None:
-        paths_ls = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
-                    in
-                    range(cv_num)]
-        print(paths_ls)
+        logger.info('search augmentation policies, dataset=%s model=%s' % (C.get()['dataset'], C.get()['model']['type']))
+        logger.info('----- Train without Augmentations ratio(test)=%.1f -----' % (args.cv_ratio))
+        w.start(tag='train_no_aug')
+        if paths_ls is None:
+            paths_ls = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
+                        in
+                        range(cv_num)]
+            print(paths_ls)
+            logger.info('getting results...')
+            pretrain_results = [
+                train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths_ls[i],
+                            skip_exist=args.smoke_test)
+                for i in range(cv_num)]
+
+        for r_model, r_cv, r_dict in pretrain_results:
+            logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
+                r_model, r_cv + 1, r_dict['top1_train'], r_dict['top1_valid']))
+        logger.info('processed in %.4f secs' % w.pause('train_no_aug'))
+
+        if args.until == 1:
+            sys.exit(0)
+
+        logger.info('----- Search Test-Time Augmentation Policies -----')
+        w.start(tag='search')
+
+        ops = augment_list(False)
+        space = {}
+        for i in range(args.num_policy):
+            for j in range(args.num_op):
+                space['policy_%d_%d' % (i, j)] = hp.choice('policy_%d_%d' % (i, j), list(range(0, len(ops))))
+                space['prob_%d_%d' % (i, j)] = hp.uniform('prob_%d_ %d' % (i, j), 0.0, 1.0)
+                space['level_%d_%d' % (i, j)] = hp.uniform('level_%d_ %d' % (i, j), 0.0, 1.0)
+
+        def eval_t(augs):
+            print(augs)
+            return eval_tta(copy.deepcopy(copied_c), augs)
+
+        final_policy_set = []
+        total_computation = 0
+        reward_attr = 'top1_valid'  # top1_valid or minus_loss
+        for _ in range(1):  # run multiple times.
+            for cv_fold in range(cv_num):
+                name = "search_%s_%s_fold%d_ratio%.1f" % (
+                    C.get()['dataset'], C.get()['model']['type'], cv_fold, args.cv_ratio)
+                print(name)
+                algo = HyperOptSearch(space, max_concurrent=1, metric=reward_attr)
+                aug_config = {
+                    'dataroot': args.dataroot, 'save_path': paths_ls[cv_fold],
+                    'cv_ratio_test': args.cv_ratio, 'cv_fold': cv_fold,
+                    'num_op': args.num_op, 'num_policy': args.num_policy
+                }
+                num_samples = 4 if args.smoke_test else args.num_search
+                print(aug_config)
+                eval_t(aug_config)
+                results = run(eval_t, search_alg=algo, config=aug_config, num_samples=num_samples,
+                              resources_per_trial={'gpu': 1}, stop={'training_iteration': args.num_policy})
+                dataframe = results.dataframe().sort_values(reward_attr, ascending=False)
+                total_computation = dataframe['elapsed_time'].sum()
+                for i in range(num_result_per_cv):
+                    config_dict = dataframe.loc[i].filter(like='config').to_dict()
+                    new_keys = [x.replace('config/', '') for x in config_dict.keys()]
+                    new_config_dict = {}
+                    for key in new_keys:
+                        new_config_dict[key] = config_dict['config/' + key]
+                    final_policy = policy_decoder(new_config_dict, args.num_policy, args.num_op)
+                    logger.info('loss=%.12f top1_valid=%.4f %s' % (
+                        dataframe.loc[i]['minus_loss'].item(), dataframe.loc[i]['top1_valid'].item(), final_policy))
+
+                    final_policy = remove_deplicates(final_policy)
+                    final_policy_set.extend(final_policy)
+
+        logger.info(json.dumps(final_policy_set))
+        logger.info('final_policy=%d' % len(final_policy_set))
+        logger.info('processed in %.4f secs, gpu hours=%.4f' % (w.pause('search'), total_computation / 3600.))
+        logger.info('----- Train with Augmentations model=%s dataset=%s aug=%s ratio(test)=%.1f -----' % (
+            C.get()['model']['type'], C.get()['dataset'], C.get()['aug'], args.cv_ratio))
+        w.start(tag='train_aug')
+        self.final_policy_set = final_policy_set
+
+    def search(self):
+        pass
+    
+    def retrain(self):
+        num_experiments = 5
+        default_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_default%d' % (args.cv_ratio, _))
+                        for _ in range(num_experiments)]
+        augment_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_augment%d' % (args.cv_ratio, _))
+                        for _ in range(num_experiments)]
+
         logger.info('getting results...')
-        pretrain_results = [
-            train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths_ls[i],
-                        skip_exist=args.smoke_test)
-            for i in range(cv_num)]
+        final_results = [train_model(copy.deepcopy(self.copied_c), args.dataroot, C.get()['aug'], 0.0, 0,
+                                     save_path=default_path[_], skip_exist=True) for _ in range(num_experiments)] + \
+                        [train_model(copy.deepcopy(self.copied_c), args.dataroot, self.final_policy_set, 0.0, 0,
+                                     save_path=augment_path[_]) for _ in range(num_experiments)]
 
-    for r_model, r_cv, r_dict in pretrain_results:
-        logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
-            r_model, r_cv + 1, r_dict['top1_train'], r_dict['top1_valid']))
-    logger.info('processed in %.4f secs' % w.pause('train_no_aug'))
+        for train_mode in ['default', 'augment']:
+            avg = 0.
+            for _ in range(num_experiments):
+                r_model, r_cv, r_dict = final_results.pop(0)
+                logger.info('[%s] top1_train=%.4f top1_test=%.4f' % (train_mode, r_dict['top1_train'], r_dict['top1_test']))
+                avg += r_dict['top1_test']
+            avg /= num_experiments
+            logger.info('[%s] top1_test average=%.4f (#experiments=%d)' % (train_mode, avg, num_experiments))
+        logger.info('processed in %.4f secs' % w.pause('train_aug'))
 
-    if args.until == 1:
-        sys.exit(0)
-
-    logger.info('----- Search Test-Time Augmentation Policies -----')
-    w.start(tag='search')
-
-    ops = augment_list(False)
-    space = {}
-    for i in range(args.num_policy):
-        for j in range(args.num_op):
-            space['policy_%d_%d' % (i, j)] = hp.choice('policy_%d_%d' % (i, j), list(range(0, len(ops))))
-            space['prob_%d_%d' % (i, j)] = hp.uniform('prob_%d_ %d' % (i, j), 0.0, 1.0)
-            space['level_%d_%d' % (i, j)] = hp.uniform('level_%d_ %d' % (i, j), 0.0, 1.0)
-
-    def eval_t(augs):
-        print(augs)
-        return eval_tta(copy.deepcopy(copied_c), augs)
-
-    final_policy_set = []
-    total_computation = 0
-    reward_attr = 'top1_valid'  # top1_valid or minus_loss
-    for _ in range(1):  # run multiple times.
-        for cv_fold in range(cv_num):
-            name = "search_%s_%s_fold%d_ratio%.1f" % (
-                C.get()['dataset'], C.get()['model']['type'], cv_fold, args.cv_ratio)
-            print(name)
-            algo = HyperOptSearch(space, max_concurrent=1, metric=reward_attr)
-            aug_config = {
-                'dataroot': args.dataroot, 'save_path': paths_ls[cv_fold],
-                'cv_ratio_test': args.cv_ratio, 'cv_fold': cv_fold,
-                'num_op': args.num_op, 'num_policy': args.num_policy
-            }
-            num_samples = 4 if args.smoke_test else args.num_search
-            print(aug_config)
-            eval_t(aug_config)
-            results = run(eval_t, search_alg=algo, config=aug_config, num_samples=num_samples,
-                          resources_per_trial={'gpu': 1}, stop={'training_iteration': args.num_policy})
-            dataframe = results.dataframe().sort_values(reward_attr, ascending=False)
-            total_computation = dataframe['elapsed_time'].sum()
-            for i in range(num_result_per_cv):
-                config_dict = dataframe.loc[i].filter(like='config').to_dict()
-                new_keys = [x.replace('config/', '') for x in config_dict.keys()]
-                new_config_dict = {}
-                for key in new_keys:
-                    new_config_dict[key] = config_dict['config/' + key]
-                final_policy = policy_decoder(new_config_dict, args.num_policy, args.num_op)
-                logger.info('loss=%.12f top1_valid=%.4f %s' % (
-                    dataframe.loc[i]['minus_loss'].item(), dataframe.loc[i]['top1_valid'].item(), final_policy))
-
-                final_policy = remove_deplicates(final_policy)
-                final_policy_set.extend(final_policy)
-
-    logger.info(json.dumps(final_policy_set))
-    logger.info('final_policy=%d' % len(final_policy_set))
-    logger.info('processed in %.4f secs, gpu hours=%.4f' % (w.pause('search'), total_computation / 3600.))
-    logger.info('----- Train with Augmentations model=%s dataset=%s aug=%s ratio(test)=%.1f -----' % (
-        C.get()['model']['type'], C.get()['dataset'], C.get()['aug'], args.cv_ratio))
-    w.start(tag='train_aug')
-    return final_policy_set
-
-def retrain():
-    num_experiments = 5
-    default_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_default%d' % (args.cv_ratio, _))
-                    for _ in range(num_experiments)]
-    augment_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_augment%d' % (args.cv_ratio, _))
-                    for _ in range(num_experiments)]
-
-    logger.info('getting results...')
-    final_results = [train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], 0.0, 0,
-                                 save_path=default_path[_], skip_exist=True) for _ in range(num_experiments)] + \
-                    [train_model(copy.deepcopy(copied_c), args.dataroot, final_policy_set, 0.0, 0,
-                                 save_path=augment_path[_]) for _ in range(num_experiments)]
-
-    for train_mode in ['default', 'augment']:
-        avg = 0.
-        for _ in range(num_experiments):
-            r_model, r_cv, r_dict = final_results.pop(0)
-            logger.info('[%s] top1_train=%.4f top1_test=%.4f' % (train_mode, r_dict['top1_train'], r_dict['top1_test']))
-            avg += r_dict['top1_test']
-        avg /= num_experiments
-        logger.info('[%s] top1_test average=%.4f (#experiments=%d)' % (train_mode, avg, num_experiments))
-    logger.info('processed in %.4f secs' % w.pause('train_aug'))
-
-    logger.info(w)
+        logger.info(w)
 
 
 if __name__ == '__main__':
@@ -287,5 +292,5 @@ if __name__ == '__main__':
 
     parser = ConfigArgumentParser(conflict_handler='resolve')
     args = parser.parse_args()
+    augsearch = AugSearch(args=args)
 
-    search(args=args)

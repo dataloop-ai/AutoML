@@ -1,1 +1,1 @@
-from .search import search as augmentation_search
+from .search import AugSearch
