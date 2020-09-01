@@ -165,8 +165,7 @@ class AugSearch:
 
         add_filehandler(logger, os.path.join('FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
             C.get()['dataset'], C.get()['model']['type'], args.cv_ratio)))
-        logger.info('configuration...')
-        logger.info(json.dumps(args, sort_keys=True, indent=4))
+
         logger.info('initialize ray...')
         ray.init(num_cpus=1, num_gpus=1)
 
@@ -257,35 +256,21 @@ class AugSearch:
             C.get()['model']['type'], C.get()['dataset'], C.get()['aug'], args.cv_ratio))
         w.start(tag='train_aug')
         self.final_policy_set = final_policy_set
+        self.args = args
+        self.paths_ls = paths_ls
 
     def search(self):
         pass
-    
-    def retrain(self):
-        num_experiments = 5
-        default_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_default%d' % (args.cv_ratio, _))
-                        for _ in range(num_experiments)]
-        augment_path = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_augment%d' % (args.cv_ratio, _))
-                        for _ in range(num_experiments)]
+
+    def retrain(self, save_path=None):
+        if save_path is None:
+            augment_path = _get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_augment%d' % (args.cv_ratio, 0))
 
         logger.info('getting results...')
-        final_results = [train_model(copy.deepcopy(self.copied_c), args.dataroot, C.get()['aug'], 0.0, 0,
-                                     save_path=default_path[_], skip_exist=True) for _ in range(num_experiments)] + \
-                        [train_model(copy.deepcopy(self.copied_c), args.dataroot, self.final_policy_set, 0.0, 0,
-                                     save_path=augment_path[_]) for _ in range(num_experiments)]
-
-        for train_mode in ['default', 'augment']:
-            avg = 0.
-            for _ in range(num_experiments):
-                r_model, r_cv, r_dict = final_results.pop(0)
-                logger.info('[%s] top1_train=%.4f top1_test=%.4f' % (train_mode, r_dict['top1_train'], r_dict['top1_test']))
-                avg += r_dict['top1_test']
-            avg /= num_experiments
-            logger.info('[%s] top1_test average=%.4f (#experiments=%d)' % (train_mode, avg, num_experiments))
-        logger.info('processed in %.4f secs' % w.pause('train_aug'))
-
+        final_results = train_model(copy.deepcopy(self.copied_c), args.dataroot, self.final_policy_set, 0.0, 0,
+                                     save_path=save_path)
         logger.info(w)
-
+        return final_results
 
 if __name__ == '__main__':
 

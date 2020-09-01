@@ -79,9 +79,10 @@ class ZaZu:
                     os.remove(save_checkpoint_location)
                 torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
                 paths_ls.append(save_checkpoint_location)
-            augsearch = AugSearch(paths_ls=paths_ls)
-            augsearch.retrain()
-            add_to_oracle_trials()
+            augsearch = AugSearch(paths_ls=paths_ls) #TODO: calibrate between the model dictionaries
+            checkpointwithaugspath = 'final' + string1 + '.pt'
+            augsearch.retrain(save_path=checkpointwithaugspath)
+            tuner.add_to_oracle_trials(checkpointwithaugspath)
 
         sorted_trial_ids = tuner.get_sorted_trial_ids()
         logger.info('the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
