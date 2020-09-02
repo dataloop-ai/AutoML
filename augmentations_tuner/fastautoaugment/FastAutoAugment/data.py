@@ -86,30 +86,30 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode
         raise ValueError('dataset=%s' % dataset)
 
     total_aug = augs = None
-    if isinstance(C.get()['aug'], list):
+    if isinstance(C.get().aug, list):
         logger.debug('augmentation provided.')
-        transform_train.transforms.insert(0, Augmentation(C.get()['aug']))
+        transform_train.transforms.insert(0, Augmentation(C.get().aug))
     else:
-        logger.debug('augmentation: %s' % C.get()['aug'])
-        if C.get()['aug'] == 'fa_reduced_cifar10':
+        logger.debug('augmentation: %s' % C.get().aug)
+        if C.get().aug == 'fa_reduced_cifar10':
             transform_train.transforms.insert(0, Augmentation(fa_reduced_cifar10()))
 
-        elif C.get()['aug'] == 'fa_reduced_imagenet':
+        elif C.get().aug == 'fa_reduced_imagenet':
             transform_train.transforms.insert(0, Augmentation(fa_resnet50_rimagenet()))
 
-        elif C.get()['aug'] == 'fa_reduced_svhn':
+        elif C.get().aug == 'fa_reduced_svhn':
             transform_train.transforms.insert(0, Augmentation(fa_reduced_svhn()))
 
-        elif C.get()['aug'] == 'arsaug':
+        elif C.get().aug == 'arsaug':
             transform_train.transforms.insert(0, Augmentation(arsaug_policy()))
-        elif C.get()['aug'] == 'autoaug_cifar10':
+        elif C.get().aug == 'autoaug_cifar10':
             transform_train.transforms.insert(0, Augmentation(autoaug_paper_cifar10()))
-        elif C.get()['aug'] == 'autoaug_extend':
+        elif C.get().aug == 'autoaug_extend':
             transform_train.transforms.insert(0, Augmentation(autoaug_policy()))
-        elif C.get()['aug'] in ['default']:
+        elif C.get().aug in ['default']:
             pass
         else:
-            raise ValueError('not found augmentations. %s' % C.get()['aug'])
+            raise ValueError('not found augmentations. %s' % C.get().aug)
 
     if C.get()['cutout'] > 0:
         transform_train.transforms.append(CutoutDefault(C.get()['cutout']))

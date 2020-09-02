@@ -31,7 +31,8 @@ from FastAutoAugment.train import train_and_eval
 from theconf import Config as C, ConfigArgumentParser
 import json
 from pystopwatch2 import PyStopwatch
-
+import argparse
+from easydict import EasyDict as edict
 w = PyStopwatch()
 
 top1_valid_by_cv = defaultdict(lambda: list)
@@ -70,9 +71,9 @@ def _get_path(dataset, model, tag):
 def train_model(config, dataroot, augment, cv_ratio_test, cv_fold, save_path=None, skip_exist=False):
     C.get()
     C.get().conf = config
-    C.get()['aug'] = augment
+    C.get().aug = augment
 
-    result = train_and_eval(None, dataroot, cv_ratio_test, cv_fold, save_path=save_path, only_eval=skip_exist)
+    result = train_and_eval(config, None, dataroot, cv_ratio_test, cv_fold, save_path=save_path, only_eval=skip_exist)
     return C.get()['model']['type'], cv_fold, result
 
 
@@ -84,7 +85,7 @@ def eval_tta(config, augment):
     cv_ratio_test, cv_fold, save_path = augment['cv_ratio_test'], augment['cv_fold'], augment['save_path']
     print(augment)
     # setup - provided augmentation rules
-    C.get()['aug'] = policy_decoder(augment, augment['num_policy'], augment['num_op'])
+    C.get().aug = policy_decoder(augment, augment['num_policy'], augment['num_op'])
 
     # eval
     model = get_model(C.get()['model'], num_class(C.get()['dataset']))
@@ -152,8 +153,9 @@ class AugSearch:
     def __init__(self, args=None, paths_ls=None):
         if args is None:
             d = yaml.load(open('/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'), Loader=yaml.FullLoader)
-            from argparse import Namespace
-            args = Namespace(**d)
+            # from argparse import Namespace
+            # args = Namespace(**d)
+            args = edict(d)
         args.redis = 'gpu-cloud-vnode30.dakao.io:23655'
         args.per_class = True
         args.resume = True
@@ -161,10 +163,10 @@ class AugSearch:
 
         if args.decay > 0:
             logger.info('decay=%.4f' % args.decay)
-            C.get()['optimizer']['decay'] = args.decay
+            args['optimizer']['decay'] = args.decay
 
         add_filehandler(logger, os.path.join('FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
-            C.get()['dataset'], C.get()['model']['type'], args.cv_ratio)))
+            args['dataset'], args['model']['type'], args.cv_ratio)))
 
         logger.info('initialize ray...')
         ray.init(num_cpus=1, num_gpus=1)
@@ -175,20 +177,20 @@ class AugSearch:
         args._timestamp = '2020/08/30 20:40:10'
         args.config = '/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'
 
-        copied_c = copy.deepcopy(args)
-        self.copied_c = copied_c
+        copied_args = copy.deepcopy(args)
+        self.copied_args = copied_args
 
-        logger.info('search augmentation policies, dataset=%s model=%s' % (C.get()['dataset'], C.get()['model']['type']))
+        logger.info('search augmentation policies, dataset=%s model=%s' % (args['dataset'], args['model']['type']))
         logger.info('----- Train without Augmentations ratio(test)=%.1f -----' % (args.cv_ratio))
         w.start(tag='train_no_aug')
         if paths_ls is None:
-            paths_ls = [_get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
+            paths_ls = [_get_path(args['dataset'], args['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
                         in
                         range(cv_num)]
             print(paths_ls)
             logger.info('getting results...')
             pretrain_results = [
-                train_model(copy.deepcopy(copied_c), args.dataroot, C.get()['aug'], args.cv_ratio, i, save_path=paths_ls[i],
+                train_model(copy.deepcopy(copied_args), args.dataroot, args['aug'], args.cv_ratio, i, save_path=paths_ls[i],
                             skip_exist=args.smoke_test)
                 for i in range(cv_num)]
 
@@ -213,7 +215,7 @@ class AugSearch:
 
         def eval_t(augs):
             print(augs)
-            return eval_tta(copy.deepcopy(copied_c), augs)
+            return eval_tta(copy.deepcopy(copied_args), augs)
 
         final_policy_set = []
         total_computation = 0
@@ -221,7 +223,7 @@ class AugSearch:
         for _ in range(1):  # run multiple times.
             for cv_fold in range(cv_num):
                 name = "search_%s_%s_fold%d_ratio%.1f" % (
-                    C.get()['dataset'], C.get()['model']['type'], cv_fold, args.cv_ratio)
+                    args['dataset'], args['model']['type'], cv_fold, args.cv_ratio)
                 print(name)
                 algo = HyperOptSearch(space, max_concurrent=1, metric=reward_attr)
                 aug_config = {
@@ -253,7 +255,7 @@ class AugSearch:
         logger.info('final_policy=%d' % len(final_policy_set))
         logger.info('processed in %.4f secs, gpu hours=%.4f' % (w.pause('search'), total_computation / 3600.))
         logger.info('----- Train with Augmentations model=%s dataset=%s aug=%s ratio(test)=%.1f -----' % (
-            C.get()['model']['type'], C.get()['dataset'], C.get()['aug'], args.cv_ratio))
+            args['model']['type'], args['dataset'], args.aug, args.cv_ratio))
         w.start(tag='train_aug')
         self.final_policy_set = final_policy_set
         self.args = args
@@ -264,18 +266,15 @@ class AugSearch:
 
     def retrain(self, save_path=None):
         if save_path is None:
-            augment_path = _get_path(C.get()['dataset'], C.get()['model']['type'], 'ratio%.1f_augment%d' % (args.cv_ratio, 0))
+            augment_path = _get_path(self.args['dataset'], self.args['model']['type'], 'ratio%.1f_augment%d' % (self.args.cv_ratio, 0))
 
         logger.info('getting results...')
-        final_results = train_model(copy.deepcopy(self.copied_c), args.dataroot, self.final_policy_set, 0.0, 0,
-                                     save_path=save_path)
+        final_results = train_model(copy.deepcopy(self.copied_args), self.args.dataroot, self.final_policy_set, 0.0, 0,
+                                    save_path=save_path)
         logger.info(w)
         return final_results
 
 if __name__ == '__main__':
 
-
-    parser = ConfigArgumentParser(conflict_handler='resolve')
-    args = parser.parse_args()
-    augsearch = AugSearch(args=args)
+    augsearch = AugSearch()
 
