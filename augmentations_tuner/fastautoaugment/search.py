@@ -20,13 +20,13 @@ from ray import tune
 from ray.tune import track
 from tqdm import tqdm
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
-# sys.path.insert(1, os.path.dirname(__file__))
+sys.path.insert(1, os.path.dirname(__file__))
 from FastAutoAugment.archive import remove_deplicates, policy_decoder
 from FastAutoAugment.augmentations import augment_list
 from FastAutoAugment.common import get_logger, add_filehandler
 from FastAutoAugment.data import get_dataloaders
 from FastAutoAugment.metrics import Accumulator
-from FastAutoAugment.networks import get_model, num_class
+from networks import get_model, num_class
 from FastAutoAugment.train import train_and_eval
 from theconf import Config as C, ConfigArgumentParser
 import json
@@ -165,7 +165,7 @@ class AugSearch:
             logger.info('decay=%.4f' % args.decay)
             args['optimizer']['decay'] = args.decay
 
-        add_filehandler(logger, os.path.join('FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
+        add_filehandler(logger, os.path.join('augmentations_tuner/fastautoaugment/FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
             args['dataset'], args['model']['type'], args.cv_ratio)))
 
         logger.info('initialize ray...')

@@ -22,7 +22,7 @@ from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_re
 from .augmentations import *
 from .common import get_logger
 from .imagenet import ImageNet
-from .networks.efficientnet_pytorch.model import EfficientNet
+from networks.efficientnet_pytorch.model import EfficientNet
 
 logger = get_logger('Fast AutoAugment')
 logger.setLevel(logging.INFO)
