@@ -8,11 +8,13 @@ import torch.optim as optim
 from tqdm import tqdm
 from torchvision import transforms
 if __package__ == '':
-    import model, csv_eval
+    import csv_eval
     from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
         Augmenter, Normalizer
+    from networks.retinanet import model
 else:
-    from . import model, csv_eval
+    from . import csv_eval
+    from  networks.retinanet import model
     from .dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
         Augmenter, Normalizer
 from torch.utils.data import DataLoader
