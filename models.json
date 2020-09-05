@@ -34,7 +34,7 @@
     ],
     "training_configs": {
       "tuner/epochs": 30,
-      "depth": 152,
+      "depth": 50,
       "input_size": 608,
       "learning_rate": 1e-5,
       "anchor_scales": [1.0, 1.2599210498948732, 1.5874010519681994],

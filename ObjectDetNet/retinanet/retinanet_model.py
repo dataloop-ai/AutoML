@@ -11,10 +11,10 @@ if __package__ == '':
     import csv_eval
     from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
         Augmenter, Normalizer
-    from networks.retinanet import model
+    from networks.retinanet import ret50
 else:
     from . import csv_eval
-    from  networks.retinanet import model
+    from  networks.retinanet import ret50
     from .dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
         Augmenter, Normalizer
 from torch.utils.data import DataLoader
@@ -115,7 +115,7 @@ class RetinaModel:
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 50:
-            retinanet = model.resnet50(num_classes=self.dataset_train.num_classes(), ratios=ratios, scales=scales,
+            retinanet = ret50(num_classes=self.dataset_train.num_classes(), ratios=ratios, scales=scales,
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 101:

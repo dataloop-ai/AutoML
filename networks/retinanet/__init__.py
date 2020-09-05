@@ -1,1 +1,1 @@
-from . import model
+from .model import resnet50 as ret50

@@ -3,11 +3,6 @@ import torch.nn as nn
 import numpy as np
 
 
-def combine_values(configs_under, configs_over):
-    for hp in configs_over.keys():
-        configs_under[hp] = configs_over[hp]
-
-    return configs_under
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""

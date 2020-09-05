@@ -7,13 +7,12 @@ import torch
 import shutil
 from torch.utils.data import DataLoader
 from torchvision import transforms
+from copy import deepcopy
 if __package__ == '':
-    import model
-    from utils import combine_values
+    from networks.retinanet import ret50
     from dataloaders import PredDataset, collater, Resizer, Normalizer, UnNormalizer
 else:
-    from . import model
-    from .utils import combine_values
+    from networks.retinanet import ret50
     from .dataloaders import PredDataset, collater, Resizer, Normalizer, UnNormalizer
 try:
     from logging_utils import logginger
@@ -53,13 +52,13 @@ def detect(checkpoint, output_dir, home_path=None, visualize=False):
     labels = checkpoint['labels']
     logger.info('labels are: ' + str(labels))
     num_classes = len(labels)
-
-    configs = combine_values(checkpoint['model_specs']['training_configs'], checkpoint['hp_values'])
+    configs = deepcopy(checkpoint['model_specs']['training_configs'])
+    configs = configs.update(checkpoint['hp_values'])
     logger.info('initializing retinanet model')
     if checkpoint['model_specs']['training_configs']['depth'] == 50:
-        retinanet = model.resnet50(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
+        retinanet = ret50(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
     elif checkpoint['model_specs']['training_configs']['depth'] == 152:
-        retinanet = model.resnet152(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios'])
+        retinanet = ret152(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios'])
     logger.info('loading weights')
     retinanet.load_state_dict(checkpoint['model'])
     retinanet = retinanet.to(device=device)
@@ -132,7 +131,8 @@ def detect(checkpoint, output_dir, home_path=None, visualize=False):
 
 def detect_single_image(checkpoint, image_path, visualize=False):
     device = torch.device(type='cuda') if torch.cuda.is_available() else torch.device(type='cpu')
-    configs = combine_values(checkpoint['model_specs']['training_configs'], checkpoint['hp_values'])
+    configs = deepcopy(checkpoint['model_specs']['training_configs'])
+    configs = configs.update(checkpoint['hp_values'])
     labels = checkpoint['labels']
     num_classes = len(labels)
     retinanet = model.resnet152(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
