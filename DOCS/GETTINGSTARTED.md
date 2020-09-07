@@ -11,14 +11,13 @@ Be sure to update the nvidia-devices flag!
 ### *clone the repo*
 ```
 git clone https://github.com/dataloop-ai/ZazuML.git
-cd ZazuML
-git clone https://github.com/dataloop-ai/ObjectDetNet.git
+
 ```
 
 ### *download tiny coco dataset*
 ```
-mkdir ../data
-cd ../data
+mkdir data
+cd data
 git clone https://github.com/dataloop-ai/tiny_coco.git
 cd ../ZazuML
 ```

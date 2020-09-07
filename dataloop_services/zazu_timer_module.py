@@ -43,7 +43,7 @@ class ServiceRunner(dl.BaseServiceRunner):
             download_and_organize(path_to_dataset=path_to_dataset, dataset_obj=test_dataset, filters=filters)
 
         json_file_path = os.path.join(path_to_dataset, 'json')
-        self.model_obj = self.project.models.get(model_name='retinanet')
+        self.model_obj = self.project.models.get(model_name='object_detection')
         self.adapter = self.model_obj.build(local_path=os.getcwd())
         logger.info('model built')
         while 1:

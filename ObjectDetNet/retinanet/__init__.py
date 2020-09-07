@@ -1,2 +1,0 @@
-from .adapter import AdapterModel
-

@@ -14,7 +14,8 @@ class LocalTrialConnector():
 
     def run(self, inputs_dict):
         model_name = inputs_dict['model_specs']['name']
-        cls = getattr(import_module('.adapter', 'ObjectDetNet.' + model_name), 'AdapterModel')
+        # cls = getattr(import_module('.adapter', 'ObjectDetNet.' + model_name), 'AdapterModel')
+        cls = getattr(import_module('.adapter', 'ObjectDetNet.object_detection'), 'AdapterModel')#TODO: reapropriate the model choosing to networks
         torch.save(inputs_dict, 'checkpoint.pt')
         adapter = cls()
         # adapter.load(devices, model_specs, hp_values)
