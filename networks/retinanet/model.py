@@ -20,7 +20,7 @@ else:
 
     # from lib.nms.pth_nms import pth_nms
     if torch.cuda.is_available():
-        from .lib.eNMS.nms.gpu_nms import gpu_nms
+        from .lib.nms.gpu_nms import gpu_nms
     else:
         from .lib.nms import cpu_nms
 
