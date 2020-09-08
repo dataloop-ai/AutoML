@@ -6,20 +6,26 @@ from torch.nn.parallel import DistributedDataParallel
 import torch.backends.cudnn as cudnn
 # from torchvision import models
 import numpy as np
+import os
 
-from FastAutoAugment.networks.resnet import ResNet
-from FastAutoAugment.networks.pyramidnet import PyramidNet
-from FastAutoAugment.networks.shakeshake.shake_resnet import ShakeResNet
-from FastAutoAugment.networks.wideresnet import WideResNet
-from FastAutoAugment.networks.shakeshake.shake_resnext import ShakeResNeXt
-from FastAutoAugment.networks.efficientnet_pytorch import EfficientNet, RoutingFn
-from FastAutoAugment.tf_port.tpu_bn import TpuBatchNormalization
+from .retinanet import ret50
+from .resnet import ResNet
+from .pyramidnet import PyramidNet
+from .shakeshake.shake_resnet import ShakeResNet
+from .wideresnet import WideResNet
+from .shakeshake.shake_resnext import ShakeResNeXt
+from .efficientnet_pytorch import EfficientNet, RoutingFn
+from tf_port.tpu_bn import TpuBatchNormalization
 
 
-def get_model(conf, num_class=10, local_rank=-1):
-    name = conf['type']
+def get_model(name, num_class=10, configs=None, local_rank=-1):
 
-    if name == 'resnet50':
+
+    if name == 'retinanet':
+        model = ret50(num_classes=num_class, ratios=configs['anchor_ratios'], scales=configs['anchor_scales'],
+                                       weights_dir=os.path.join(os.getcwd(), 'weights'),
+                                       pretrained=True)
+    elif name == 'resnet50':
         model = ResNet(dataset='imagenet', depth=50, num_classes=num_class, bottleneck=True)
     elif name == 'resnet200':
         model = ResNet(dataset='imagenet', depth=200, num_classes=num_class, bottleneck=True)

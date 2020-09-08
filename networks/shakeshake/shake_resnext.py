@@ -5,8 +5,8 @@ import math
 import torch.nn as nn
 import torch.nn.functional as F
 
-from FastAutoAugment.networks.shakeshake.shakeshake import ShakeShake
-from FastAutoAugment.networks.shakeshake.shakeshake import Shortcut
+from networks.shakeshake.shakeshake import ShakeShake
+from networks.shakeshake.shakeshake import Shortcut
 
 
 class ShakeBottleNeck(nn.Module):

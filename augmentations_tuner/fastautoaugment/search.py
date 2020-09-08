@@ -88,8 +88,9 @@ def eval_tta(config, augment):
     C.get().aug = policy_decoder(augment, augment['num_policy'], augment['num_op'])
 
     # eval
-    model = get_model(C.get()['model'], num_class(C.get()['dataset']))
     ckpt = torch.load(save_path)
+    model = get_model(ckpt['model_specs']['name'], len(ckpt['labels']), ckpt['model_specs']['training_configs']) #TODO: get model configuration from Retinanet
+
     if 'model' in ckpt:
         model.load_state_dict(ckpt['model'])
     else:
@@ -194,9 +195,10 @@ class AugSearch:
                             skip_exist=args.smoke_test)
                 for i in range(cv_num)]
 
-        for r_model, r_cv, r_dict in pretrain_results:
-            logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
-                r_model, r_cv + 1, r_dict['top1_train'], r_dict['top1_valid']))
+        # for r_model, r_cv, r_dict in pretrain_results:
+            # logger.info('model=%s cv=%d top1_train=%.4f top1_valid=%.4f' % (
+            #     r_model, r_cv + 1, r_dict['top1_train'], r_dict['top1_valid']))
+            # logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
         logger.info('processed in %.4f secs' % w.pause('train_no_aug'))
 
         if args.until == 1:

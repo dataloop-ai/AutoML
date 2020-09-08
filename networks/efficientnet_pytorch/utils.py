@@ -18,7 +18,7 @@ from torch.utils import model_zoo
 
 
 # Parameters for the entire model (stem, all blocks, and head)
-from FastAutoAugment.networks.efficientnet_pytorch.condconv import CondConv2d
+from networks.efficientnet_pytorch.condconv import CondConv2d
 
 GlobalParams = collections.namedtuple('GlobalParams', [
     'batch_norm_momentum', 'batch_norm_epsilon', 'dropout_rate',

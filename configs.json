@@ -1,5 +1,5 @@
 {
-  "max_trials": 1,
+  "max_trials": 4,
   "max_instances_at_once": 1,
   "model_priority_space": [
     10,
@@ -7,8 +7,8 @@
     0
   ],
   "task": "detection",
-  "epochs": 10,
-  "search_method": "hyperband",
+  "epochs": 2,
+  "search_method": "random",
   "augmentation_search_method": "fastautoaugment",
   "data": {
     "home_path": "../data/tiny_coco",

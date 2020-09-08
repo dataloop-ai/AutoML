@@ -138,7 +138,7 @@ class ZaZu:
         gun.predict(path_to_first_checkpoint)
 
     def one_time_inference(self, image_path, checkpoint_path):
-        from ObjectDetNet.object_detection import AdapterModel
+        from object_detecter.object_detection import AdapterModel
         model = AdapterModel()
         return model.predict_single_image(checkpoint_path, image_path)
 
