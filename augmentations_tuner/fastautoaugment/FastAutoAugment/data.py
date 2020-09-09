@@ -18,27 +18,35 @@ import os
 import sys
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
 # sys.path.insert(1, os.path.dirname(__file__))
-from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_reduced_cifar10, fa_reduced_svhn, fa_resnet50_rimagenet
+from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_reduced_cifar10, fa_reduced_svhn, \
+    fa_resnet50_rimagenet
 from .augmentations import *
 from .common import get_logger
 from .imagenet import ImageNet
 from networks.efficientnet_pytorch.model import EfficientNet
+from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
+    Augmenter, Normalizer
 
 logger = get_logger('Fast AutoAugment')
 logger.setLevel(logging.INFO)
 _IMAGENET_PCA = {
     'eigval': [0.2175, 0.0188, 0.0045],
     'eigvec': [
-        [-0.5675,  0.7192,  0.4009],
+        [-0.5675, 0.7192, 0.4009],
         [-0.5808, -0.0045, -0.8140],
-        [-0.5836, -0.6948,  0.4203],
+        [-0.5836, -0.6948, 0.4203],
     ]
 }
 _CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 
 
-def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode=False, target_lb=-1):
-    if 'cifar' in dataset or 'svhn' in dataset:
+def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=0, multinode=False, target_lb=-1):
+    if 'coco' in dataset:
+        transform_train = transforms.Compose(
+        [Normalizer(), Augmenter(), Resizer(min_side=resize)])
+        transform_test = transforms.Compose([Normalizer(), Resizer(min_side=resize)])
+
+    elif 'cifar' in dataset or 'svhn' in dataset:
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
@@ -55,7 +63,7 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode
 
         if 'efficientnet' in C.get()['model']['type']:
             input_size = EfficientNet.get_image_size(C.get()['model']['type'])
-            sized_size = input_size + 32    # TODO
+            sized_size = input_size + 32  # TODO
             # sized_size = int(round(input_size / 224. * 256))
             # sized_size = input_size
             logger.info('size changed to %d/%d.' % (input_size, sized_size))
@@ -115,11 +123,13 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode
         transform_train.transforms.append(CutoutDefault(C.get()['cutout']))
 
     if dataset == 'cifar10':
-        total_trainset = torchvision.datasets.CIFAR10(root=dataroot, train=True, download=True, transform=transform_train)
+        total_trainset = torchvision.datasets.CIFAR10(root=dataroot, train=True, download=True,
+                                                      transform=transform_train)
         testset = torchvision.datasets.CIFAR10(root=dataroot, train=False, download=True, transform=transform_test)
     elif dataset == 'reduced_cifar10':
-        total_trainset = torchvision.datasets.CIFAR10(root=dataroot, train=True, download=True, transform=transform_train)
-        sss = StratifiedShuffleSplit(n_splits=1, test_size=46000, random_state=0)   # 4000 trainset
+        total_trainset = torchvision.datasets.CIFAR10(root=dataroot, train=True, download=True,
+                                                      transform=transform_train)
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=46000, random_state=0)  # 4000 trainset
         sss = sss.split(list(range(len(total_trainset))), total_trainset.targets)
         train_idx, valid_idx = next(sss)
         targets = [total_trainset.targets[idx] for idx in train_idx]
@@ -128,7 +138,8 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode
 
         testset = torchvision.datasets.CIFAR10(root=dataroot, train=False, download=True, transform=transform_test)
     elif dataset == 'cifar100':
-        total_trainset = torchvision.datasets.CIFAR100(root=dataroot, train=True, download=True, transform=transform_train)
+        total_trainset = torchvision.datasets.CIFAR100(root=dataroot, train=True, download=True,
+                                                       transform=transform_train)
         testset = torchvision.datasets.CIFAR100(root=dataroot, train=False, download=True, transform=transform_test)
     elif dataset == 'svhn':
         trainset = torchvision.datasets.SVHN(root=dataroot, split='train', download=True, transform=transform_train)
@@ -136,8 +147,9 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode
         total_trainset = ConcatDataset([trainset, extraset])
         testset = torchvision.datasets.SVHN(root=dataroot, split='test', download=True, transform=transform_test)
     elif dataset == 'reduced_svhn':
-        total_trainset = torchvision.datasets.SVHN(root=dataroot, split='train', download=True, transform=transform_train)
-        sss = StratifiedShuffleSplit(n_splits=1, test_size=73257-1000, random_state=0)  # 1000 trainset
+        total_trainset = torchvision.datasets.SVHN(root=dataroot, split='train', download=True,
+                                                   transform=transform_train)
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=73257 - 1000, random_state=0)  # 1000 trainset
         sss = sss.split(list(range(len(total_trainset))), total_trainset.targets)
         train_idx, valid_idx = next(sss)
         targets = [total_trainset.targets[idx] for idx in train_idx]
@@ -146,15 +158,21 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode
 
         testset = torchvision.datasets.SVHN(root=dataroot, split='test', download=True, transform=transform_test)
     elif dataset == 'imagenet':
-        total_trainset = ImageNet(root=os.path.join(dataroot, 'imagenet-pytorch'), transform=transform_train, download=True)
+        total_trainset = ImageNet(root=os.path.join(dataroot, 'imagenet-pytorch'), transform=transform_train,
+                                  download=True)
         testset = ImageNet(root=os.path.join(dataroot, 'imagenet-pytorch'), split='val', transform=transform_test)
 
         # compatibility
         total_trainset.targets = [lb for _, lb in total_trainset.samples]
     elif dataset == 'reduced_imagenet':
         # randomly chosen indices
-#         idx120 = sorted(random.sample(list(range(1000)), k=120))
-        idx120 = [16, 23, 52, 57, 76, 93, 95, 96, 99, 121, 122, 128, 148, 172, 181, 189, 202, 210, 232, 238, 257, 258, 259, 277, 283, 289, 295, 304, 307, 318, 322, 331, 337, 338, 345, 350, 361, 375, 376, 381, 388, 399, 401, 408, 424, 431, 432, 440, 447, 462, 464, 472, 483, 497, 506, 512, 530, 541, 553, 554, 557, 564, 570, 584, 612, 614, 619, 626, 631, 632, 650, 657, 658, 660, 674, 675, 680, 682, 691, 695, 699, 711, 734, 736, 741, 754, 757, 764, 769, 770, 780, 781, 787, 797, 799, 811, 822, 829, 830, 835, 837, 842, 843, 845, 873, 883, 897, 900, 902, 905, 913, 920, 925, 937, 938, 940, 941, 944, 949, 959]
+        #         idx120 = sorted(random.sample(list(range(1000)), k=120))
+        idx120 = [16, 23, 52, 57, 76, 93, 95, 96, 99, 121, 122, 128, 148, 172, 181, 189, 202, 210, 232, 238, 257, 258,
+                  259, 277, 283, 289, 295, 304, 307, 318, 322, 331, 337, 338, 345, 350, 361, 375, 376, 381, 388, 399,
+                  401, 408, 424, 431, 432, 440, 447, 462, 464, 472, 483, 497, 506, 512, 530, 541, 553, 554, 557, 564,
+                  570, 584, 612, 614, 619, 626, 631, 632, 650, 657, 658, 660, 674, 675, 680, 682, 691, 695, 699, 711,
+                  734, 736, 741, 754, 757, 764, 769, 770, 780, 781, 787, 797, 799, 811, 822, 829, 830, 835, 837, 842,
+                  843, 845, 873, 883, 897, 900, 902, 905, 913, 920, 925, 937, 938, 940, 941, 944, 949, 959]
         total_trainset = ImageNet(root=os.path.join(dataroot, 'imagenet-pytorch'), transform=transform_train)
         testset = ImageNet(root=os.path.join(dataroot, 'imagenet-pytorch'), split='val', transform=transform_test)
 
@@ -206,16 +224,21 @@ def get_dataloaders(dataset, batch, dataroot, split=0.15, split_idx=0, multinode
         valid_sampler = SubsetSampler(valid_idx)
 
         if multinode:
-            train_sampler = torch.utils.data.distributed.DistributedSampler(Subset(total_trainset, train_idx), num_replicas=dist.get_world_size(), rank=dist.get_rank())
+            train_sampler = torch.utils.data.distributed.DistributedSampler(Subset(total_trainset, train_idx),
+                                                                            num_replicas=dist.get_world_size(),
+                                                                            rank=dist.get_rank())
     else:
         valid_sampler = SubsetSampler([])
 
         if multinode:
-            train_sampler = torch.utils.data.distributed.DistributedSampler(total_trainset, num_replicas=dist.get_world_size(), rank=dist.get_rank())
+            train_sampler = torch.utils.data.distributed.DistributedSampler(total_trainset,
+                                                                            num_replicas=dist.get_world_size(),
+                                                                            rank=dist.get_rank())
             logger.info(f'----- dataset with DistributedSampler  {dist.get_rank()}/{dist.get_world_size()}')
 
     trainloader = torch.utils.data.DataLoader(
-        total_trainset, batch_size=batch, shuffle=True if train_sampler is None else False, num_workers=8, pin_memory=True,
+        total_trainset, batch_size=batch, shuffle=True if train_sampler is None else False, num_workers=8,
+        pin_memory=True,
         sampler=train_sampler, drop_last=True)
     validloader = torch.utils.data.DataLoader(
         total_trainset, batch_size=batch, shuffle=False, num_workers=4, pin_memory=True,
@@ -232,6 +255,7 @@ class CutoutDefault(object):
     """
     Reference : https://github.com/quark0/darts/blob/master/cnn/utils.py
     """
+
     def __init__(self, length):
         self.length = length
 
@@ -268,7 +292,8 @@ class Augmentation(object):
 
 
 class EfficientNetRandomCrop:
-    def __init__(self, imgsize, min_covered=0.1, aspect_ratio_range=(3./4, 4./3), area_range=(0.08, 1.0), max_attempts=10):
+    def __init__(self, imgsize, min_covered=0.1, aspect_ratio_range=(3. / 4, 4. / 3), area_range=(0.08, 1.0),
+                 max_attempts=10):
         assert 0.0 < min_covered
         assert 0 < aspect_ratio_range[0] <= aspect_ratio_range[1]
         assert 0 < area_range[0] <= area_range[1]
@@ -314,7 +339,8 @@ class EfficientNetRandomCrop:
             if area < self.min_covered * (original_width * original_height):
                 continue
             if width == original_width and height == original_height:
-                return self._fallback(img)      # https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/preprocessing.py#L102
+                return self._fallback(
+                    img)  # https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/preprocessing.py#L102
 
             x = random.randint(0, original_width - width)
             y = random.randint(0, original_height - height)
