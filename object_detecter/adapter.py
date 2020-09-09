@@ -2,9 +2,9 @@ import os
 
 import sys
 
-sys.path.insert(1, os.path.dirname(__file__))
-from retinanet_model import RetinaModel
-from predict import detect, detect_single_image
+# sys.path.insert(1, os.path.dirname(__file__))
+from .retinanet_model import RetinaModel
+from .predict import detect, detect_single_image
 
 from copy import deepcopy
 import random
@@ -120,7 +120,6 @@ class AdapterModel:
                                         csv_train=self.annotations_train_filepath,
                                         csv_val=self.annotations_val_filepath,
                                         csv_classes=self.classes_filepath,
-                                        coco_path=True,
                                         train_set_name='train' + self.dataset_name,
                                         val_set_name='val' + self.dataset_name,
                                         resize=self.configs['input_size'])

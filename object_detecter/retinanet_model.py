@@ -8,7 +8,7 @@ import torch.optim as optim
 from tqdm import tqdm
 from torchvision import transforms
 
-import csv_eval
+from . import csv_eval
 from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
     Augmenter, Normalizer
 from networks.retinanet import ret50
@@ -52,12 +52,10 @@ class RetinaModel:
         self.tb_writer = None
         self.retinanet = None
 
-    def preprocess(self, dataset='csv', csv_train=None, csv_val=None, csv_classes=None, coco_path=False,
+    def preprocess(self, dataset='csv', csv_train=None, csv_val=None, csv_classes=None,
                    train_set_name='train2017', val_set_name='val2017', resize=608):
         self.dataset = dataset
         if self.dataset == 'coco':
-            if coco_path is None:
-                raise ValueError('Must provide --home_path when training on COCO,')
             self.dataset_train = CocoDataset(self.home_path, set_name=train_set_name,
                                              transform=transforms.Compose(
                                                  [Normalizer(), Augmenter(), Resizer(min_side=resize)]))

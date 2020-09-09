@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(1, os.path.dirname(__file__))
-from retinanet import AdapterModel
+from .adapter import AdapterModel
 from dataloop_services import push_package, deploy_predict_item, create_trigger
 import argparse
 import dtlpy as dl
