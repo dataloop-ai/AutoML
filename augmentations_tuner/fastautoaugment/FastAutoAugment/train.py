@@ -27,7 +27,7 @@ from .data import get_dataloaders
 from .lr_scheduler import adjust_learning_rate_resnet
 from .metrics import accuracy, Accumulator, CrossEntropyLabelSmooth
 from networks import get_model, num_class
-from .tf_port.rmsprop import RMSpropTF
+from tf_port.rmsprop import RMSpropTF
 from .aug_mixup import CrossEntropyMixUpLabelSmooth, mixup
 from warmup_scheduler import GradualWarmupScheduler
 
