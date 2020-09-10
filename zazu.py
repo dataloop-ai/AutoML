@@ -85,11 +85,12 @@ class ZaZu:
             tuner.add_to_oracle_trials(checkpointwithaugspath)
 
         sorted_trial_ids = tuner.get_sorted_trial_ids()
+        save_best_checkpoint_location = 'best_checkpoint.pt'
         logger.info('the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
-        if os.path.exists(save_checkpoint_location):
+        if os.path.exists(save_best_checkpoint_location):
             logger.info('overwriting checkpoint . . .')
-            os.remove(save_checkpoint_location)
-        torch.save(trials[sorted_trial_ids[0]]['checkpoint'], save_checkpoint_location)
+            os.remove(save_best_checkpoint_location)
+        torch.save(trials[sorted_trial_ids[0]]['checkpoint'], save_best_checkpoint_location)
 
         logger.info('best trial: ' + str(trials[sorted_trial_ids[0]]['hp_values']) + '\nbest value: ' + str(
             trials[sorted_trial_ids[0]]['metrics']))
