@@ -111,6 +111,9 @@ def run_epoch(config, model, loader, loss_fn, optimizer, desc_default='', epoch=
 
 
 def train_and_eval(config, tag, dataroot, test_ratio=0.0, cv_fold=0, reporter=None, metric='last', save_path=None, only_eval=False, local_rank=-1, evaluation_interval=5):
+
+    # ckpt = torch.load(save_path)
+
     total_batch = config["batch"]
     if local_rank >= 0:
         dist.init_process_group(backend='nccl', init_method='env://', world_size=int(os.environ['WORLD_SIZE']))

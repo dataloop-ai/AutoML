@@ -122,7 +122,8 @@ class AdapterModel:
                                         csv_classes=self.classes_filepath,
                                         train_set_name='train' + self.dataset_name,
                                         val_set_name='val' + self.dataset_name,
-                                        resize=self.configs['input_size'])
+                                        resize=self.configs['input_size'],
+                                        batch=self.configs['batch'])
 
     def build(self):
         self.retinanet_model.build(depth=self.configs['depth'],

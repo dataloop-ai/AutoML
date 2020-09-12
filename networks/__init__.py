@@ -84,13 +84,11 @@ def get_model(name, num_class=10, configs=None, local_rank=-1):
     else:
         raise NameError('no model named, %s' % name)
 
-    if local_rank >= 0:
-        device = torch.device('cuda', local_rank)
-        model = model.to(device)
-        model = DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
-    else:
-        model = model.cuda()
-#         model = DataParallel(model)
+
+    device = torch.device('cuda', local_rank)
+    model = model.to(device)
+    # model = DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
+
 
     cudnn.benchmark = True
     return model

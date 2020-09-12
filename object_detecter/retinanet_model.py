@@ -53,7 +53,7 @@ class RetinaModel:
         self.retinanet = None
 
     def preprocess(self, dataset='csv', csv_train=None, csv_val=None, csv_classes=None,
-                   train_set_name='train2017', val_set_name='val2017', resize=608):
+                   train_set_name='train2017', val_set_name='val2017', resize=608, batch=2):
         self.dataset = dataset
         if self.dataset == 'coco':
             self.dataset_train = CocoDataset(self.home_path, set_name=train_set_name,
@@ -81,7 +81,7 @@ class RetinaModel:
         else:
             raise ValueError('Dataset type not understood (must be csv or coco), exiting.')
 
-        sampler = AspectRatioBasedSampler(self.dataset_train, batch_size=2, drop_last=False)
+        sampler = AspectRatioBasedSampler(self.dataset_train, batch_size=batch, drop_last=False)
         self.dataloader_train = DataLoader(self.dataset_train, num_workers=0, collate_fn=collater,
                                            batch_sampler=sampler)
         if self.dataset_val is not None:

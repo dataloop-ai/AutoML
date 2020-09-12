@@ -61,8 +61,8 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
         input_size = 224
         sized_size = 256
 
-        if 'efficientnet' in C.get()['model']['type']:
-            input_size = EfficientNet.get_image_size(C.get()['model']['type'])
+        if 'efficientnet' in C.get()['model']:
+            input_size = EfficientNet.get_image_size(C.get()['model'])
             sized_size = input_size + 32  # TODO
             # sized_size = int(round(input_size / 224. * 256))
             # sized_size = input_size
@@ -122,7 +122,10 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
     if C.get()['cutout'] > 0:
         transform_train.transforms.append(CutoutDefault(C.get()['cutout']))
 
-    if dataset == 'cifar10':
+    if dataset == 'coco':
+        pass
+
+    elif dataset == 'cifar10':
         total_trainset = torchvision.datasets.CIFAR10(root=dataroot, train=True, download=True,
                                                       transform=transform_train)
         testset = torchvision.datasets.CIFAR10(root=dataroot, train=False, download=True, transform=transform_test)

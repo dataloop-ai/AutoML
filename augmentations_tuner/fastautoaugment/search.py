@@ -74,7 +74,7 @@ def train_model(config, dataroot, augment, cv_ratio_test, cv_fold, save_path=Non
     C.get().aug = augment
 
     result = train_and_eval(config, None, dataroot, cv_ratio_test, cv_fold, save_path=save_path, only_eval=skip_exist)
-    return C.get()['model']['type'], cv_fold, result
+    return C.get()['model'], cv_fold, result
 
 
 # def eval_tta(config, augment, reporter):
@@ -89,7 +89,7 @@ def eval_tta(config, augment):
 
     # eval
     ckpt = torch.load(save_path)
-    model = get_model(ckpt['model_specs']['name'], len(ckpt['labels']), ckpt['model_specs']['training_configs']) #TODO: get model configuration from Retinanet
+    model = get_model(ckpt['model_specs']['name'], len(ckpt['labels']), ckpt['model_specs']['training_configs'], local_rank=ckpt['devices']['gpu_index']) #TODO: get model configuration from Retinanet
 
     if 'model' in ckpt:
         model.load_state_dict(ckpt['model'])
@@ -99,8 +99,8 @@ def eval_tta(config, augment):
 
     loaders = []
     for _ in range(augment['num_policy']):  # TODO
-        _, tl, validloader, tl2 = get_dataloaders(ckpt['model_specs']['data']['annotation_type'], C.get()['batch'], augment['dataroot'],
-                                                  cv_ratio_test, split_idx=cv_fold)
+        _, tl, validloader, tl2 = get_dataloaders(ckpt['model_specs']['data']['annotation_type'], ckpt['model_specs']['training_configs']['batch'], augment['dataroot'],
+                                                  split=cv_ratio_test, split_idx=cv_fold)
         loaders.append(iter(validloader))
         del tl, tl2
 
@@ -167,7 +167,7 @@ class AugSearch:
             args['optimizer']['decay'] = args.decay
 
         add_filehandler(logger, os.path.join('augmentations_tuner/fastautoaugment/FastAutoAugment/models', '%s_%s_cv%.1f.log' % (
-            args['dataset'], args['model']['type'], args.cv_ratio)))
+            args['dataset'], args['model'], args.cv_ratio)))
 
         logger.info('initialize ray...')
         ray.init(num_cpus=1, num_gpus=1)
@@ -181,11 +181,11 @@ class AugSearch:
         copied_args = copy.deepcopy(args)
         self.copied_args = copied_args
 
-        logger.info('search augmentation policies, dataset=%s model=%s' % (args['dataset'], args['model']['type']))
+        logger.info('search augmentation policies, dataset=%s model=%s' % (args['dataset'], args['model']))
         logger.info('----- Train without Augmentations ratio(test)=%.1f -----' % (args.cv_ratio))
         w.start(tag='train_no_aug')
         if paths_ls is None:
-            paths_ls = [_get_path(args['dataset'], args['model']['type'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
+            paths_ls = [_get_path(args['dataset'], args['model'], 'ratio%.1f_fold%d' % (args.cv_ratio, i)) for i
                         in
                         range(cv_num)]
             print(paths_ls)
@@ -225,7 +225,7 @@ class AugSearch:
         for _ in range(1):  # run multiple times.
             for cv_fold in range(cv_num):
                 name = "search_%s_%s_fold%d_ratio%.1f" % (
-                    args['dataset'], args['model']['type'], cv_fold, args.cv_ratio)
+                    args['dataset'], args['model'], cv_fold, args.cv_ratio)
                 print(name)
                 algo = HyperOptSearch(space, max_concurrent=1, metric=reward_attr)
                 aug_config = {
@@ -257,7 +257,7 @@ class AugSearch:
         logger.info('final_policy=%d' % len(final_policy_set))
         logger.info('processed in %.4f secs, gpu hours=%.4f' % (w.pause('search'), total_computation / 3600.))
         logger.info('----- Train with Augmentations model=%s dataset=%s aug=%s ratio(test)=%.1f -----' % (
-            args['model']['type'], args['dataset'], args.aug, args.cv_ratio))
+            args['model'], args['dataset'], args.aug, args.cv_ratio))
         w.start(tag='train_aug')
         self.final_policy_set = final_policy_set
         self.args = args
@@ -268,7 +268,7 @@ class AugSearch:
 
     def retrain(self, save_path=None):
         if save_path is None:
-            augment_path = _get_path(self.args['dataset'], self.args['model']['type'], 'ratio%.1f_augment%d' % (self.args.cv_ratio, 0))
+            augment_path = _get_path(self.args['dataset'], self.args['model'], 'ratio%.1f_augment%d' % (self.args.cv_ratio, 0))
 
         logger.info('getting results...')
         final_results = train_model(copy.deepcopy(self.copied_args), self.args.dataroot, self.final_policy_set, 0.0, 0,

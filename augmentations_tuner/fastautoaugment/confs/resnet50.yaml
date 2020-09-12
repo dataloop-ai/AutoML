@@ -1,5 +1,4 @@
-model:
-  type: resnet50
+model: resnet50
 dataset: cifar10
 aug: fa_reduced_cifar10
 cutout: 0
