@@ -96,10 +96,10 @@ def eval_tta(config, augment):
     else:
         model.load_state_dict(ckpt)
     model.eval()
-
+    dataroot = ckpt['model_specs']['data']['home_path']
     loaders = []
     for _ in range(augment['num_policy']):  # TODO
-        _, tl, validloader, tl2 = get_dataloaders(ckpt['model_specs']['data']['annotation_type'], ckpt['model_specs']['training_configs']['batch'], augment['dataroot'],
+        _, tl, validloader, tl2 = get_dataloaders(ckpt['model_specs']['data']['annotation_type'], ckpt['model_specs']['training_configs']['batch'], dataroot,
                                                   split=cv_ratio_test, split_idx=cv_fold)
         loaders.append(iter(validloader))
         del tl, tl2

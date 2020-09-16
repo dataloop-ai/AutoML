@@ -12,12 +12,13 @@ from PIL import Image
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
 import torch.distributed as dist
 from torchvision.transforms import transforms
-from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from theconf import Config as C
 import os
 import sys
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
 # sys.path.insert(1, os.path.dirname(__file__))
+from pycocotools.coco import COCO
 from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_reduced_cifar10, fa_reduced_svhn, \
     fa_resnet50_rimagenet
 from .augmentations import *
@@ -41,11 +42,13 @@ _CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 
 
 def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=0, multinode=False, target_lb=-1):
+    multilabel = False
     if 'coco' in dataset:
         transform_train = transforms.Compose(
-        [Normalizer(), Augmenter(), Resizer(min_side=resize)])
+            [Normalizer(), Augmenter(), Resizer(min_side=resize)])
         transform_test = transforms.Compose([Normalizer(), Resizer(min_side=resize)])
 
+        multilabel = True
     elif 'cifar' in dataset or 'svhn' in dataset:
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
@@ -123,7 +126,10 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
         transform_train.transforms.append(CutoutDefault(C.get()['cutout']))
 
     if dataset == 'coco':
-        pass
+        total_trainset = CocoDataset(dataroot, set_name='train2017',
+                                         transform=transform_train)
+        testset = CocoDataset(dataroot, set_name='val2017',
+                                       transform=transform_test)
 
     elif dataset == 'cifar10':
         total_trainset = torchvision.datasets.CIFAR10(root=dataroot, train=True, download=True,
@@ -214,10 +220,18 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
 
     train_sampler = None
     if split > 0.0:
-        sss = StratifiedShuffleSplit(n_splits=5, test_size=split, random_state=0)
-        sss = sss.split(list(range(len(total_trainset))), total_trainset.targets)
-        for _ in range(split_idx + 1):
-            train_idx, valid_idx = next(sss)
+        if multilabel:
+            # not sure how important stratified is, especially for val,
+            # might want to test with and without and add it for multilabel in the future
+            sss = ShuffleSplit(n_splits=5, test_size=split, random_state=0)
+            sss = sss.split(list(range(len(total_trainset))))
+            for _ in range(split_idx + 1):
+                train_idx, valid_idx = next(sss)
+        else:
+            sss = StratifiedShuffleSplit(n_splits=5, test_size=split, random_state=0)
+            sss = sss.split(list(range(len(total_trainset))), total_trainset.targets)
+            for _ in range(split_idx + 1):
+                train_idx, valid_idx = next(sss)
 
         if target_lb >= 0:
             train_idx = [i for i in train_idx if total_trainset.targets[i] == target_lb]
