@@ -112,12 +112,11 @@ def eval_tta(config, augment):
             losses = []
             corrects = []
             for loader in loaders:
-                data, label = next(loader)
-                data = data.cuda()
-                label = label.cuda()
+                data = next(loader)
+                img = data['img'].cuda()
+                label = data['annot'].cuda()
 
-                pred = model(data)
-
+                pred = model(img)
                 loss = loss_fn(pred, label)
                 losses.append(loss.detach().cpu().numpy())
 

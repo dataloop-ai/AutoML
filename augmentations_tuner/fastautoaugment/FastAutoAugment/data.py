@@ -27,7 +27,7 @@ from .imagenet import ImageNet
 from networks.efficientnet_pytorch.model import EfficientNet
 from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
     Augmenter, Normalizer
-
+from torch.utils.data import DataLoader
 logger = get_logger('Fast AutoAugment')
 logger.setLevel(logging.INFO)
 _IMAGENET_PCA = {
@@ -253,15 +253,15 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
                                                                             rank=dist.get_rank())
             logger.info(f'----- dataset with DistributedSampler  {dist.get_rank()}/{dist.get_world_size()}')
 
-    trainloader = torch.utils.data.DataLoader(
+    trainloader = DataLoader(
         total_trainset, batch_size=batch, shuffle=True if train_sampler is None else False, num_workers=8,
         pin_memory=True,
         sampler=train_sampler, drop_last=True)
-    validloader = torch.utils.data.DataLoader(
+    validloader = DataLoader(
         total_trainset, batch_size=batch, shuffle=False, num_workers=4, pin_memory=True,
         sampler=valid_sampler, drop_last=False)
 
-    testloader = torch.utils.data.DataLoader(
+    testloader = DataLoader(
         testset, batch_size=batch, shuffle=False, num_workers=8, pin_memory=True,
         drop_last=False
     )

@@ -18,7 +18,7 @@ from .efficientnet_pytorch import EfficientNet, RoutingFn
 from tf_port.tpu_bn import TpuBatchNormalization
 
 
-def get_model(name, num_class=10, configs=None, local_rank=-1):
+def get_model(name, num_class=10, configs=None, local_rank=0):
 
 
     if name == 'retinanet':
