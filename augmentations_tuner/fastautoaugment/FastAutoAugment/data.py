@@ -256,15 +256,15 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
     trainloader = DataLoader(
         total_trainset, batch_size=batch, shuffle=True if train_sampler is None else False, num_workers=8,
         pin_memory=True,
-        sampler=train_sampler, drop_last=True)
+        sampler=train_sampler, drop_last=True, collate_fn=collater)
     validloader = DataLoader(
         total_trainset, batch_size=batch, shuffle=False, num_workers=4, pin_memory=True,
-        sampler=valid_sampler, drop_last=False)
+        sampler=valid_sampler, drop_last=False, collate_fn=collater)
 
     testloader = DataLoader(
         testset, batch_size=batch, shuffle=False, num_workers=8, pin_memory=True,
-        drop_last=False
-    )
+        drop_last=False, collate_fn=collater)
+
     return train_sampler, trainloader, validloader, testloader
 
 

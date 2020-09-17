@@ -34,7 +34,7 @@ from pystopwatch2 import PyStopwatch
 import argparse
 from easydict import EasyDict as edict
 w = PyStopwatch()
-
+from object_detecter.csv_eval import evaluate
 top1_valid_by_cv = defaultdict(lambda: list)
 
 
@@ -97,56 +97,20 @@ def eval_tta(config, augment):
         model.load_state_dict(ckpt)
     model.eval()
     dataroot = ckpt['model_specs']['data']['home_path']
-    loaders = []
+    mAPs = []
+    start_t = time.time()
     for _ in range(augment['num_policy']):  # TODO
         _, tl, validloader, tl2 = get_dataloaders(ckpt['model_specs']['data']['annotation_type'], ckpt['model_specs']['training_configs']['batch'], dataroot,
                                                   split=cv_ratio_test, split_idx=cv_fold)
-        loaders.append(iter(validloader))
+        mAP = evaluate(dataset_val, model)
+        mAPs.append(mAP)
         del tl, tl2
 
-    start_t = time.time()
-    metrics = Accumulator()
-    loss_fn = torch.nn.CrossEntropyLoss(reduction='none')
-    try:
-        while True:
-            losses = []
-            corrects = []
-            for loader in loaders:
-                data = next(loader)
-                img = data['img'].cuda()
-                label = data['annot'].cuda()
-
-                pred = model(img)
-                loss = loss_fn(pred, label)
-                losses.append(loss.detach().cpu().numpy())
-
-                _, pred = pred.topk(1, 1, True, True)
-                pred = pred.t()
-                correct = pred.eq(label.view(1, -1).expand_as(pred)).detach().cpu().numpy()
-                corrects.append(correct)
-                del loss, correct, pred, data, label
-
-            losses = np.concatenate(losses)
-            losses_min = np.min(losses, axis=0).squeeze()
-
-            corrects = np.concatenate(corrects)
-            corrects_max = np.max(corrects, axis=0).squeeze()
-            metrics.add_dict({
-                'minus_loss': -1 * np.sum(losses_min),
-                'correct': np.sum(corrects_max),
-                'cnt': len(corrects_max)
-            })
-            del corrects, corrects_max
-    except StopIteration:
-        pass
-
-    del model
-    metrics = metrics / 'cnt'
     gpu_secs = (time.time() - start_t) * torch.cuda.device_count()
     # reporter(minus_loss=metrics['minus_loss'], top1_valid=metrics['correct'], elapsed_time=gpu_secs, done=True)
     # track.log(minus_loss=metrics['minus_loss'], top1_valid=metrics['correct'], elapsed_time=gpu_secs, done=True)
-    tune.report(minus_loss=metrics['minus_loss'], top1_valid=metrics['correct'], elapsed_time=gpu_secs, done=True)
-    return metrics['correct']
+    tune.report(top1_valid=np.mean(mAPs))
+    return np.mean(mAPs)
 
 class AugSearch:
 
