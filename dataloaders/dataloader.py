@@ -126,6 +126,7 @@ class CocoDataset(Dataset):
         image = self.coco.loadImgs(self.image_ids[image_index])[0]
         return float(image['width']) / float(image['height'])
 
+    @property
     def num_classes(self):
         return len(self.classes)
 

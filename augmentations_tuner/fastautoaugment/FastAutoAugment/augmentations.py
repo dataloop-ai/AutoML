@@ -5,6 +5,7 @@ import random
 import PIL, PIL.ImageOps, PIL.ImageEnhance, PIL.ImageDraw
 import numpy as np
 import torch
+from dataloaders.custom_transforms import *
 from torchvision.transforms.transforms import Compose
 
 random_mirror = True
@@ -181,17 +182,24 @@ def augment_list(for_autoaug=True):  # 16 oeprations and their ranges
         ]
     return l
 
+def detection_augment_list():
+    l = []
+    return l
 
 augment_dict = {fn.__name__: (fn, v1, v2) for fn, v1, v2 in augment_list()}
 
+detection_augment_dict = {fn.__name__: (fn, v1, v2) for fn, v1, v2 in detection_augment_list()}
 
-def get_augment(name):
-    return augment_dict[name]
+def get_augment(name, detection=False):
+    if detection:
+        return detection_augment_dict[name]
+    else:
+        return augment_dict[name]
 
 
-def apply_augment(img, name, level):
-    augment_fn, low, high = get_augment(name)
-    return augment_fn(img.copy(), level * (high - low) + low)
+def apply_augment(sample, name, level, detection=False):
+    augment_fn, low, high = get_augment(name, detection)
+    return augment_fn(sample.copy(), level * (high - low) + low)
 
 
 class Lighting(object):

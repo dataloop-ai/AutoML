@@ -24,7 +24,7 @@ from tqdm import tqdm
 from augmentations_tuner.fastautoaugment.FastAutoAugment.archive import remove_deplicates, policy_decoder
 from augmentations_tuner.fastautoaugment.FastAutoAugment.augmentations import augment_list
 from augmentations_tuner.fastautoaugment.FastAutoAugment.common import get_logger, add_filehandler
-from augmentations_tuner.fastautoaugment.FastAutoAugment.data import get_dataloaders
+from augmentations_tuner.fastautoaugment.FastAutoAugment.data import get_data
 from augmentations_tuner.fastautoaugment.FastAutoAugment.metrics import Accumulator
 from networks import get_model, num_class
 from augmentations_tuner.fastautoaugment.FastAutoAugment.train import train_and_eval
@@ -100,11 +100,12 @@ def eval_tta(config, augment):
     mAPs = []
     start_t = time.time()
     for _ in range(augment['num_policy']):  # TODO
-        _, tl, validloader, tl2 = get_dataloaders(ckpt['model_specs']['data']['annotation_type'], ckpt['model_specs']['training_configs']['batch'], dataroot,
+        train_dataset, test_dataset = get_data(ckpt['model_specs']['data']['annotation_type'], dataroot,
                                                   split=cv_ratio_test, split_idx=cv_fold)
-        mAP = evaluate(dataset_val, model)
+        # mAP = evaluate(dataset_val, model)
+        mAP = evaluate(train_dataset, model) #TODO: adjust from train to testing on randomely selected perecentage every time
         mAPs.append(mAP)
-        del tl, tl2
+        del train_dataset, test_dataset
 
     gpu_secs = (time.time() - start_t) * torch.cuda.device_count()
     # reporter(minus_loss=metrics['minus_loss'], top1_valid=metrics['correct'], elapsed_time=gpu_secs, done=True)

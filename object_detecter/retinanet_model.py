@@ -98,23 +98,23 @@ class RetinaModel:
               scales=[2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]):
         # Create the model
         if depth == 18:
-            retinanet = model.resnet18(num_classes=self.dataset_train.num_classes(), ratios=ratios, scales=scales,
+            retinanet = model.resnet18(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 34:
-            retinanet = model.resnet34(num_classes=self.dataset_train.num_classes(), ratios=ratios, scales=scales,
+            retinanet = model.resnet34(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 50:
-            retinanet = ret50(num_classes=self.dataset_train.num_classes(), ratios=ratios, scales=scales,
+            retinanet = ret50(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 101:
-            retinanet = model.resnet101(num_classes=self.dataset_train.num_classes(), ratios=ratios, scales=scales,
+            retinanet = model.resnet101(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                         weights_dir=self.weights_dir_path,
                                         pretrained=True)
         elif depth == 152:
-            retinanet = model.resnet152(num_classes=self.dataset_train.num_classes(), ratios=ratios, scales=scales,
+            retinanet = model.resnet152(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                         weights_dir=self.weights_dir_path,
                                         pretrained=True)
         else:

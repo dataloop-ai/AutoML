@@ -76,7 +76,7 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
     # Returns
         A list of lists containing the detections for each image in the generator.
     """
-    all_detections = [[None for i in range(dataset.num_classes())] for j in range(len(dataset))]
+    all_detections = [[None for i in range(dataset.num_classes)] for j in range(len(dataset))]
     device = [p.device for p in retinanet.parameters()][0]
     retinanet.eval()
     
@@ -86,7 +86,7 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
             try:
                 data = dataset[index]
             except:
-                for label in range(dataset.num_classes()):
+                for label in range(dataset.num_classes):
                     all_detections[index][label] = np.zeros((0, 5))
                 continue
 
@@ -117,11 +117,11 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
                 image_detections = np.concatenate([image_boxes, np.expand_dims(image_scores, axis=1), np.expand_dims(image_labels, axis=1)], axis=1)
 
                 # copy detections to all_detections
-                for label in range(dataset.num_classes()):
+                for label in range(dataset.num_classes):
                     all_detections[index][label] = image_detections[image_detections[:, -1] == label, :-1]
             else:
                 # copy detections to all_detections
-                for label in range(dataset.num_classes()):
+                for label in range(dataset.num_classes):
                     all_detections[index][label] = np.zeros((0, 5))
 
             print('{}/{}'.format(index + 1, len(dataset)), end='\r')
@@ -138,14 +138,14 @@ def _get_annotations(generator):
     # Returns
         A list of lists containing the annotations for each image in the generator.
     """
-    all_annotations = [[None for i in range(generator.num_classes())] for j in range(len(generator))]
+    all_annotations = [[None for i in range(generator.num_classes)] for j in range(len(generator))]
 
     for i in range(len(generator)):
         # load the annotations
         annotations = generator.load_annotations(i)
 
         # copy detections to all_annotations
-        for label in range(generator.num_classes()):
+        for label in range(generator.num_classes):
             all_annotations[i][label] = annotations[annotations[:, 4] == label, :4].copy()
 
         print('{}/{}'.format(i + 1, len(generator)), end='\r')
@@ -182,7 +182,7 @@ def evaluate(
 
     average_precisions = {}
 
-    for label in range(generator.num_classes()):
+    for label in range(generator.num_classes):
         false_positives = np.zeros((0,))
         true_positives  = np.zeros((0,))
         scores          = np.zeros((0,))
@@ -239,7 +239,7 @@ def evaluate(
     total_num_annotations = 0
     sum_AP = 0
 
-    for label in range(generator.num_classes()):
+    for label in range(generator.num_classes):
         sum_AP = sum_AP + average_precisions[label][0] * average_precisions[label][1]
         total_num_annotations = total_num_annotations + average_precisions[label][1]
     if total_num_annotations > 0:

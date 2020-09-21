@@ -43,12 +43,14 @@ _CIFAR_MEAN, _CIFAR_STD = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 
 def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=0, multinode=False, target_lb=-1):
     multilabel = False
+    detection = False
     if 'coco' in dataset:
         transform_train = transforms.Compose(
             [Normalizer(), Augmenter(), Resizer(min_side=resize)])
         transform_test = transforms.Compose([Normalizer(), Resizer(min_side=resize)])
 
         multilabel = True
+        detection = True
     elif 'cifar' in dataset or 'svhn' in dataset:
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
@@ -99,7 +101,7 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
     total_aug = augs = None
     if isinstance(C.get().aug, list):
         logger.debug('augmentation provided.')
-        transform_train.transforms.insert(0, Augmentation(C.get().aug))
+        transform_train.transforms.insert(0, Augmentation(C.get().aug, detection=detection))
     else:
         logger.debug('augmentation: %s' % C.get().aug)
         if C.get().aug == 'fa_reduced_cifar10':
@@ -267,6 +269,24 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
 
     return train_sampler, trainloader, validloader, testloader
 
+def get_data(dataset, dataroot, resize=608, split=0.15, split_idx=0, multinode=False, target_lb=-1):
+
+    transform_train = transforms.Compose(
+        [Normalizer(), Augmenter(), Resizer(min_side=resize)])
+    transform_test = transforms.Compose([Normalizer(), Resizer(min_side=resize)])
+
+    if isinstance(C.get().aug, list):
+        logger.debug('augmentation provided.')
+        transform_train.transforms.insert(0, Augmentation(C.get().aug, detection=True))
+
+    if dataset == 'coco':
+        total_trainset = CocoDataset(dataroot, set_name='train2017',
+                                         transform=transform_train)
+        testset = CocoDataset(dataroot, set_name='val2017',
+                                       transform=transform_test)
+
+
+    return total_trainset, testset
 
 class CutoutDefault(object):
     """
@@ -295,17 +315,19 @@ class CutoutDefault(object):
 
 
 class Augmentation(object):
-    def __init__(self, policies):
+    def __init__(self, policies, detection=True):
         self.policies = policies
+        self.detection = detection
 
-    def __call__(self, img):
+    def __call__(self, sample):
         for _ in range(1):
             policy = random.choice(self.policies)
             for name, pr, level in policy:
                 if random.random() > pr:
                     continue
-                img = apply_augment(img, name, level)
-        return img
+                sample = apply_augment(sample, name, level, self.detection)
+        return sample
+
 
 
 class EfficientNetRandomCrop:
