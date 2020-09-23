@@ -183,7 +183,10 @@ def augment_list(for_autoaug=True):  # 16 oeprations and their ranges
     return l
 
 def detection_augment_list():
-    l = []
+    l = [
+        (RandomRotate,-30, 30),
+        (RandomGaussianBlur, 0, 1)
+    ]
     return l
 
 augment_dict = {fn.__name__: (fn, v1, v2) for fn, v1, v2 in augment_list()}
@@ -193,13 +196,15 @@ detection_augment_dict = {fn.__name__: (fn, v1, v2) for fn, v1, v2 in detection_
 def get_augment(name, detection=False):
     if detection:
         return detection_augment_dict[name]
+        # return augment_dict[name]
     else:
         return augment_dict[name]
 
 
 def apply_augment(sample, name, level, detection=False):
-    augment_fn, low, high = get_augment(name, detection)
-    return augment_fn(sample.copy(), level * (high - low) + low)
+    augment_obj, low, high = get_augment(name, detection)
+    augment_inst = augment_obj(level * (high - low) + low)
+    return augment_inst(sample.copy())
 
 
 class Lighting(object):

@@ -1,5 +1,4 @@
 import json
-import skimage
 from PIL import Image
 import os
 from pycocotools.coco import COCO

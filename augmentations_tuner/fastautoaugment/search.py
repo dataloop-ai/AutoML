@@ -100,7 +100,7 @@ def eval_tta(config, augment):
     mAPs = []
     start_t = time.time()
     for _ in range(augment['num_policy']):  # TODO
-        train_dataset, test_dataset = get_data(ckpt['model_specs']['data']['annotation_type'], dataroot,
+        train_dataset, test_dataset = get_data(ckpt['model_specs']['data']['annotation_type'], dataroot, augment,
                                                   split=cv_ratio_test, split_idx=cv_fold)
         # mAP = evaluate(dataset_val, model)
         mAP = evaluate(train_dataset, model) #TODO: adjust from train to testing on randomely selected perecentage every time

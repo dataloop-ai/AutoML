@@ -85,7 +85,7 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
         for index in range(len(dataset)):
             try:
                 data = dataset[index]
-            except:
+            except Exception as e:
                 for label in range(dataset.num_classes):
                     all_detections[index][label] = np.zeros((0, 5))
                 continue

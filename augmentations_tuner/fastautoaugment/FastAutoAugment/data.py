@@ -8,7 +8,7 @@ import random
 import torch
 import torchvision
 from PIL import Image
-
+from augmentations_tuner.fastautoaugment.FastAutoAugment.archive import policy_decoder
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
 import torch.distributed as dist
 from torchvision.transforms import transforms
@@ -269,7 +269,7 @@ def get_dataloaders(dataset, batch, dataroot, resize=608, split=0.15, split_idx=
 
     return train_sampler, trainloader, validloader, testloader
 
-def get_data(dataset, dataroot, resize=608, split=0.15, split_idx=0, multinode=False, target_lb=-1):
+def get_data(dataset, dataroot, augment, resize=608, split=0.15, split_idx=0, multinode=False, target_lb=-1):
 
     transform_train = transforms.Compose(
         [Normalizer(), Augmenter(), Resizer(min_side=resize)])
@@ -277,7 +277,8 @@ def get_data(dataset, dataroot, resize=608, split=0.15, split_idx=0, multinode=F
 
     if isinstance(C.get().aug, list):
         logger.debug('augmentation provided.')
-        transform_train.transforms.insert(0, Augmentation(C.get().aug, detection=True))
+        policies = policy_decoder(augment, augment['num_policy'], augment['num_op'])
+        transform_train.transforms.insert(0, Augmentation(policies, detection=True))
 
     if dataset == 'coco':
         total_trainset = CocoDataset(dataroot, set_name='train2017',

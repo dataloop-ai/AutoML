@@ -8,7 +8,7 @@ import os
 import sys
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
 # sys.path.insert(1, os.path.dirname(__file__))
-from .augmentations import get_augment, augment_list
+from .augmentations import get_augment, augment_list, detection_augment_list
 
 
 def arsaug_policy():
@@ -297,7 +297,7 @@ def fa_reduced_svhn():
 
 
 def policy_decoder(augment, num_policy, num_op):
-    op_list = augment_list(False)
+    op_list = detection_augment_list()
     policies = []
     # for i in range(num_policy):
     #     ops = []
@@ -309,10 +309,11 @@ def policy_decoder(augment, num_policy, num_op):
     #     policies.append(ops)
     # temp for prototyping
     import numpy as np
+
     for i in range(num_policy):
         ops = []
         for j in range(num_op):
-            op_idx = np.random.randint(0,13)
+            op_idx = np.random.randint(0,len(op_list))
             op_prob = np.random.uniform()
             op_level = np.random.uniform()
             ops.append((op_list[op_idx][0].__name__, op_prob, op_level))

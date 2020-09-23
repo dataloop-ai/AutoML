@@ -79,7 +79,11 @@ class RandomRotate(object):
                 'label': mask}
 
 
+#TODO: fix this later
 class RandomGaussianBlur(object):
+    def __init__(self, _):
+        pass
+
     def __call__(self, sample):
         img = sample['image']
         mask = sample['label']
