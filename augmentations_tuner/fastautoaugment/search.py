@@ -96,7 +96,7 @@ def eval_tta(config, augment):
     else:
         model.load_state_dict(ckpt)
     model.eval()
-    dataroot = ckpt['model_specs']['data']['home_path']
+    dataroot = os.path.join(augment['working_dir'], ckpt['model_specs']['data']['home_path'])
     mAPs = []
     start_t = time.time()
     for _ in range(augment['num_policy']):  # TODO
@@ -193,13 +193,13 @@ class AugSearch:
                 print(name)
                 algo = HyperOptSearch(space, max_concurrent=1, metric=reward_attr)
                 aug_config = {
-                    'dataroot': args.dataroot, 'save_path': paths_ls[cv_fold],
+                    'working_dir': os.getcwd(), 'save_path': paths_ls[cv_fold],
                     'cv_ratio_test': args.cv_ratio, 'cv_fold': cv_fold,
                     'num_op': args.num_op, 'num_policy': args.num_policy
                 }
                 num_samples = 4 if args.smoke_test else args.num_search
                 print(aug_config)
-                eval_t(aug_config)
+                # eval_t(aug_config)
                 results = run(eval_t, search_alg=algo, config=aug_config, num_samples=num_samples,
                               resources_per_trial={'gpu': 1}, stop={'training_iteration': args.num_policy})
                 dataframe = results.dataframe().sort_values(reward_attr, ascending=False)

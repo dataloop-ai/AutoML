@@ -73,7 +73,7 @@ class ZaZu:
             for i in range(len(sorted_trial_ids[:5])):
                 save_checkpoint_location = string1 + str(i) + '.pt'
                 logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
-                save_checkpoint_location = os.path.join('augmentations_tuner', 'fastautoaugment', 'FastAutoAugment', 'models', save_checkpoint_location)
+                save_checkpoint_location = os.path.join(os.getcwd(), 'augmentations_tuner', 'fastautoaugment', 'FastAutoAugment', 'models', save_checkpoint_location)
                 if os.path.exists(save_checkpoint_location):
                     logger.info('overwriting checkpoint . . .')
                     os.remove(save_checkpoint_location)
