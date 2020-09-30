@@ -13,7 +13,7 @@ from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
 import torch.distributed as dist
 from torchvision.transforms import transforms
 from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
-from theconf import Config as C
+# from theconf import Config as C
 import os
 import sys
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
