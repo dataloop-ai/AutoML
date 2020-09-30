@@ -16,8 +16,8 @@ click==7.1.2
 cloudpickle==1.5.0
 colorama==0.4.3
 colorful==0.5.4
-conda==4.8.3
-conda-package-handling==1.7.0
+#conda==4.8.3
+#conda-package-handling==1.7.0
 cryptography==2.9.2
 cycler==0.10.0
 Cython==0.29.21
@@ -55,7 +55,7 @@ kiwisolver==1.2.0
 Markdown==3.2.2
 MarkupSafe==1.1.1
 matplotlib==3.3.0
-mkl-fft==1.1.0
+mkl-fft>=1.1.0
 mkl-random==1.1.1
 mkl-service==2.3.0
 msgpack==1.0.0
@@ -87,7 +87,7 @@ pyOpenSSL==19.1.0
 pyparsing==2.4.7
 pyrsistent==0.16.0
 PySocks==1.7.1
-pystopwatch2==0.1.1
+git+https://github.com/ildoonet/pystopwatch2.git # pystopwatch2==0.1.1 
 python-dateutil==2.8.1
 pytz==2020.1
 PyWavelets==1.1.1
@@ -110,11 +110,10 @@ tabulate==0.8.7
 tensorboard==2.3.0
 tensorboard-plugin-wit==1.7.0
 tensorboardX==2.1
-tensorflow==2.3.0
+tensorflow==2.3.1
 tensorflow-estimator==2.3.0
-tensorflow-gpu==2.3.0
+tensorflow-gpu==2.3.1
 termcolor==1.1.0
-theconf==0.1.0
 threadpoolctl==2.1.0
 tifffile==2020.7.24
 torch==1.4.0
@@ -122,7 +121,7 @@ torchvision==0.5.0
 tqdm==4.46.0
 urllib3==1.25.8
 validators==0.17.1
-warmup-scheduler==0.1
+git+https://github.com/ildoonet/pytorch-gradual-warmup-lr.git@v0.1  # warmup-scheduler==0.1
 wcwidth==0.2.5
 webvtt-py==0.4.3
 Werkzeug==1.0.1
