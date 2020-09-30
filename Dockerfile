@@ -47,4 +47,6 @@ RUN conda install -y -c pytorch \
 
 RUN conda install -c conda-forge pycocotools
 # Install HDF5 Python bindings
-RUN pip install -r requirements.txt
+
+RUN cd /root/ZazuML && \
+    pip install -r requirements.txt
