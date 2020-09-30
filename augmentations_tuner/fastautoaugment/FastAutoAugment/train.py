@@ -17,7 +17,7 @@ from torch.nn.parallel import DistributedDataParallel
 import torch.distributed as dist
 
 from tqdm import tqdm
-from theconf import Config as C, ConfigArgumentParser
+# from theconf import Config as C, ConfigArgumentParser
 import os
 import sys
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))

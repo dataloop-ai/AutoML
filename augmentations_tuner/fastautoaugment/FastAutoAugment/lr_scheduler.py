@@ -1,6 +1,6 @@
 import torch
 from torch.optim.lr_scheduler import MultiStepLR
-from theconf import Config as C
+# from theconf import Config as C
 
 
 def adjust_learning_rate_resnet(optimizer):

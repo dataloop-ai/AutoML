@@ -28,7 +28,7 @@ from augmentations_tuner.fastautoaugment.FastAutoAugment.data import get_data
 from augmentations_tuner.fastautoaugment.FastAutoAugment.metrics import Accumulator
 from networks import get_model, num_class
 from augmentations_tuner.fastautoaugment.FastAutoAugment.train import train_and_eval
-from theconf import Config as C, ConfigArgumentParser
+# from theconf import Config as C, ConfigArgumentParser
 import json
 from pystopwatch2 import PyStopwatch
 import argparse
