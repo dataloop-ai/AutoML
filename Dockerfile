@@ -1,7 +1,9 @@
 FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
 WORKDIR /root
-ADD . /root
+ADD . /root/ZazuML
+
+RUN mkdir /root/data
 
 # Install some basic utilities
 RUN apt-get update && apt-get install -y \
@@ -16,10 +18,14 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libglib2.0-0 \
+    libgl1-mesa-glx \
     nano \
     vim \
     python3-numpy \
     && rm -rf /var/lib/apt/lists/*
+
+RUN cd /root/data && \
+    git clone https://github.com/dataloop-ai/tiny_coco.git
 
 # Install Miniconda
 RUN wget \
