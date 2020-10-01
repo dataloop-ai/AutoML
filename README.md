@@ -1,8 +1,8 @@
 ![Logo](./images/ZazuML.jpeg)
 <br/><br/>   
 
-This is an easy open-source AutoML framework for object detection. This project contains a 
-architeture search + hyper-parameter search + augmentations search, as well as trial manager. 
+This is an easy open-source AutoML framework for object detection. This project contains an
+architecture  search + hyper-parameter search + augmentations search, as well as trial manager. 
 An ML Pipeline taylor made for simple integration into your project or code.
 
 <br></br>
