@@ -1,8 +1,5 @@
 FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
-WORKDIR /root
-ADD . /root/ZazuML
-
 RUN mkdir /root/data
 
 # Install some basic utilities
@@ -48,5 +45,9 @@ RUN conda install -y -c pytorch \
 RUN conda install -c conda-forge pycocotools
 # Install HDF5 Python bindings
 
-RUN cd /root/ZazuML && \
-    pip install -r requirements.txt
+RUN cd /root && git clone https://github.com/dataloop-ai/ZazuML-easy_AutoML.git \
+    && mv /root/ZazuML-easy_AutoML /root/ZazuML && cd /root/ZazuML
+
+RUN pip install -r /root/ZazuML/requirements.txt
+
+WORKDIR /root/ZazuML
