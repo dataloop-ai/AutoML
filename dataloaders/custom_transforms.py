@@ -72,7 +72,9 @@ class Translate_Y(object):
     def __call__(self, sample):
         img, annot = sample['img'], sample['annot']
 
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
         aug = iaa.geometric.TranslateY(percent=self.v)
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
@@ -88,7 +90,9 @@ class Translate_Y_BBoxes(object):
         img, annot = sample['img'], sample['annot']
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels, foreground=iaa.geometric.TranslateY(percent=self.v))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
@@ -103,12 +107,15 @@ class Translate_X(object):
     def __call__(self, sample):
         img, annot = sample['img'], sample['annot']
 
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
         aug = iaa.geometric.TranslateX(percent=self.v)
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
         return {'image': img_aug, 'annot': annot_aug}
+
 
 class Translate_X_BBoxes(object):
     def __init__(self, v):
@@ -118,12 +125,15 @@ class Translate_X_BBoxes(object):
         img, annot = sample['img'], sample['annot']
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels, foreground=iaa.geometric.TranslateX(percent=self.v))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
         return {'image': img_aug, 'annot': annot_aug}
+
 
 class CutOut(object):
     def __init__(self, v):
@@ -135,11 +145,31 @@ class CutOut(object):
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
             shape=img.shape)
-        aug = iaa.Cutout(nb_iterations=1, size=0.2, fill_mode="gaussian")
+        aug = iaa.Cutout(nb_iterations=1, size=self.v, fill_mode="gaussian")
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
         return {'image': img_aug, 'annot': annot_aug}
+
+
+class CutOut_BBoxes(object):
+    def __init__(self, v):
+        self.v = v #self.v should be between 6 - 20
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+        unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+                                          foreground=iaa.Cutout(nb_iterations=self.v, size=0.05, fill_mode="gaussian"))
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
 
 class RandomRotate(object):
     def __init__(self, degree):
@@ -150,7 +180,9 @@ class RandomRotate(object):
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         rotate_degree = random.uniform(-1 * self.degree, self.degree)
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels, foreground=iaa.geometric.TranslateY(percent=0.1))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         # drawn_img = bbs_aug.draw_on_image(img_aug * 255, size=2, color=[0, 255., 0])
@@ -163,8 +195,7 @@ class RandomRotate(object):
                 'label': mask}
 
 
-
-#TODO: fix this later
+# TODO: fix this later
 class RandomGaussianBlur(object):
     def __init__(self, _):
         pass
