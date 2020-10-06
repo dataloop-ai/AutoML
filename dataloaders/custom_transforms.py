@@ -52,33 +52,6 @@ class ToTensor(object):
         return {'image': img,
                 'label': mask}
 
-class Translate_Y(object):
-    def __init__(self, v):
-        self.v = v
-
-    def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
-
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=ann[4]) for ann in annot], shape=img.shape)
-        aug = iaa.geometric.TranslateY(percent=self.v)
-        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-        annot_aug = [[bb.x1, bb.y1, bb.x2, bb.y2, bb.label] for bb in bbs_aug]
-
-        return {'image': img_aug, 'annot': annot_aug}
-
-class Translate_Y_BBoxes(object):
-    def __init__(self, v):
-        self.v = v
-
-    def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
-
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=ann[4]) for ann in annot], shape=img.shape)
-        aug = iaa.BlendAlphaBoundingBoxes(None, foreground=iaa.geometric.TranslateY(percent=self.v))
-        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-        annot_aug = [[bb.x1, bb.y1, bb.x2, bb.y2, bb.label] for bb in bbs_aug]
-
-        return {'image': img_aug, 'annot': annot_aug}
 
 class RandomHorizontalFlip(object):
     def __call__(self, sample):
@@ -91,6 +64,40 @@ class RandomHorizontalFlip(object):
         return {'image': img,
                 'label': mask}
 
+
+class Translate_Y(object):
+    def __init__(self, v):
+        self.v = v
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
+        aug = iaa.geometric.TranslateY(percent=0.1)
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+
+class Translate_Y_BBoxes(object):
+    def __init__(self, v):
+        self.v = v
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+        unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+
+        bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels, foreground=iaa.geometric.TranslateY(percent=0.1))
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        # drawn_img = bbs_aug.draw_on_image(img_aug * 255, size=2, color=[0, 255., 0])
+        # import skimage
+        # skimage.io.imsave('draw.png', drawn_img)
+        return {'image': img_aug, 'annot': annot_aug}
+
+
 class RandomRotate(object):
     def __init__(self, degree):
         self.degree = degree
@@ -101,13 +108,13 @@ class RandomRotate(object):
 
         rotate_degree = random.uniform(-1 * self.degree, self.degree)
         bbs = BoundingBoxesOnImage([BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot], shape=img.shape)
-        aug = iaa.BlendAlphaBoundingBoxes(labels=None, foreground=iaa.geometric.TranslateY(percent=0.1))
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels, foreground=iaa.geometric.TranslateY(percent=0.1))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-        drawn_img = bbs_aug.draw_on_image(img_aug, size=2, color=[0, 1, 0])
-        import skimage
-        skimage.io.imsave('draw.png', drawn_img)
-        img = img.rotate(rotate_degree, Image.BILINEAR)
-        mask = mask.rotate(rotate_degree, Image.NEAREST)
+        # drawn_img = bbs_aug.draw_on_image(img_aug * 255, size=2, color=[0, 255., 0])
+        # import skimage
+        # skimage.io.imsave('draw.png', drawn_img)
+        # img = img.rotate(rotate_degree, Image.BILINEAR)
+        # mask = mask.rotate(rotate_degree, Image.NEAREST)
 
         return {'image': img,
                 'label': mask}
