@@ -137,7 +137,7 @@ class Translate_X_BBoxes(object):
 
 class CutOut(object):
     def __init__(self, v):
-        self.v = v
+        self.v = v # between 0.1 - 0.3
 
     def __call__(self, sample):
         img, annot = sample['img'], sample['annot']
