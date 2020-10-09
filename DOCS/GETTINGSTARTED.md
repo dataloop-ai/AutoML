@@ -6,7 +6,7 @@ First thing to do is . . .
 ```
 docker run --rm -it --gpus all  buffalonoam/zazu-image:0.7 bash
 ```
-Be sure to update the nvidia-devices flag!
+About the docker image: Should work over all Cuda 10.* systems, this API is for docker 19.03 +
 
 ### *If you don't use docker, clone the repo and data*
 ```
