@@ -22,7 +22,7 @@ else:
     if torch.cuda.is_available():
         from .lib.nms.gpu_nms import gpu_nms
     else:
-        from .lib.nms import cpu_nms
+        from .lib.nms.cpu_nms import cpu_nms
 
 
 def nms(dets, thresh):

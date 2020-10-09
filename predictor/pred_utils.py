@@ -22,27 +22,12 @@ except:
     logger = logging.getLogger(__name__)
 
 
-def detect(checkpoint, output_dir, home_path=None, visualize=False):
+def detect(checkpoint, pred_on_path, output_path, threshold=0.5, visualize=False):
     device = torch.device(type='cuda') if torch.cuda.is_available() else torch.device(type='cpu')
-    if home_path is None:
-        home_path = checkpoint['model_specs']['data']['home_path']
-    if os.getcwd().split('/')[-1] == 'object_detecter':
-        home_path = os.path.join('..', home_path)
-    # must have a file to predictor on called "predict_on"
-    pred_on_path = os.path.join(home_path, 'predict_on')
 
-    #create output path
-    output_path = os.path.join(home_path, 'predictions', output_dir)
-
-    try:
+    if os.path.exists(output_path):
+        shutil.rmtree(output_path)
         os.makedirs(output_path)
-    except FileExistsError:
-        if output_dir != 'check0':
-            raise Exception('there are already predictions for model: ' + output_dir)
-        else:
-            logger.info('there was already a check0 in place, erasing and predicting again from scratch')
-            shutil.rmtree(output_path)
-            os.makedirs(output_path)
     logger.info('inside ' + str(pred_on_path) + ': ' + str(os.listdir(pred_on_path)))
     dataset_val = PredDataset(pred_on_path=pred_on_path,
                               transform=transforms.Compose([Normalizer(), Resizer(min_side=608)])) #TODO make resize an input param
@@ -53,12 +38,9 @@ def detect(checkpoint, output_dir, home_path=None, visualize=False):
     logger.info('labels are: ' + str(labels))
     num_classes = len(labels)
     configs = deepcopy(checkpoint['model_specs']['training_configs'])
-    configs = configs.update(checkpoint['hp_values'])
+    configs.update(checkpoint['hp_values'])
     logger.info('initializing object_detection model')
-    if checkpoint['model_specs']['training_configs']['depth'] == 50:
-        retinanet = ret50(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
-    elif checkpoint['model_specs']['training_configs']['depth'] == 152:
-        retinanet = ret152(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios'])
+    retinanet = ret50(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
     logger.info('loading weights')
     retinanet.load_state_dict(checkpoint['model'])
     retinanet = retinanet.to(device=device)
@@ -70,14 +52,16 @@ def detect(checkpoint, output_dir, home_path=None, visualize=False):
         b = np.array(box).astype(int)
         cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
         cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
-
+    inference_times = []
     for idx, data in enumerate(dataloader_val):
         scale = data['scale'][0]
         with torch.no_grad():
             st = time.time()
             scores, classification, transformed_anchors = retinanet(data['img'].to(device=device).float())
-            print('Elapsed time: {}'.format(time.time() - st))
-            idxs = np.where(scores.cpu() > 0.5)[0]
+            elapsed_time = time.time() - st
+            print('Elapsed time: {}'.format(elapsed_time))
+            inference_times.append(elapsed_time)
+            idxs = np.where(scores.cpu() > threshold)[0]
             if visualize:
                 img = np.array(255 * unnormalize(data['img'][0, :, :, :])).copy()
 
@@ -126,7 +110,7 @@ def detect(checkpoint, output_dir, home_path=None, visualize=False):
                 save_to_path = os.path.join(output_path, img_name)
                 cv2.imwrite(save_to_path, img)
                 cv2.waitKey(0)
-
+    print('average inference time per image: ', np.mean(inference_times))
     return output_path
 
 def detect_single_image(checkpoint, image_path, visualize=False):
@@ -135,7 +119,7 @@ def detect_single_image(checkpoint, image_path, visualize=False):
     configs = configs.update(checkpoint['hp_values'])
     labels = checkpoint['labels']
     num_classes = len(labels)
-    retinanet = model.resnet152(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
+    retinanet = ret50(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
     retinanet.load_state_dict(checkpoint['model'])
     retinanet = retinanet.to(device=device)
     retinanet.eval()
