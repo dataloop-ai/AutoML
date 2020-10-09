@@ -15,7 +15,7 @@ from .shakeshake.shake_resnet import ShakeResNet
 from .wideresnet import WideResNet
 from .shakeshake.shake_resnext import ShakeResNeXt
 from .efficientnet_pytorch import EfficientNet, RoutingFn
-from tf_port.tpu_bn import TpuBatchNormalization
+# from tf_port.tpu_bn import TpuBatchNormalization
 
 
 def get_model(name, num_class=10, configs=None, local_rank=0):

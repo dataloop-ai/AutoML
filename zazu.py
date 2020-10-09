@@ -1,10 +1,8 @@
 from model_selector import find_model
 from launch_pad import Launcher
 from hyperparameter_tuner import Tuner, OngoingTrials
-
 from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
-from logging_utils import init_logging, logginger
 from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict, \
     deploy_zazu_timer
 from augmentations_tuner.fastautoaugment import AugSearch
@@ -14,7 +12,7 @@ import torch
 import json
 import dtlpy as dl
 import sys
-
+from logging_utils import init_logging, logginger
 logger = logginger(__name__)
 
 
