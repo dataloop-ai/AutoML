@@ -184,8 +184,7 @@ def augment_list(for_autoaug=True):  # 16 oeprations and their ranges
 
 def detection_augment_list():
     l = [
-        (RandomRotate,-30, 30),
-        (RandomGaussianBlur, 0, 1)
+        (RandomRotate,-30, 30)
     ]
     return l
 

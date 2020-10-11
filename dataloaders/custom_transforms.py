@@ -170,6 +170,92 @@ class CutOut_BBoxes(object):
 
         return {'image': img_aug, 'annot': annot_aug}
 
+# Rotate BBOXES ONLY DOESNT SEEM to WORK WITH THIS LIBRARY SO FAR
+class Rotate(object):
+    def __init__(self, v):
+        self.v = v # between -30 - 30
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.Rotate(rotate=self.v)
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+class ShearX(object):
+    def __init__(self, v):
+        self.v = v # between -30 - 30
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.ShearX(self.v)
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+class ShearX_BBoxes(object):
+    def __init__(self, v):
+        self.v = v #self.v should be between 6 - 20
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+        unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+                                          foreground=iaa.ShearX(self.v))
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+
+class ShearY(object):
+    def __init__(self, v):
+        self.v = v # between -30 - 30
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.ShearY(self.v)
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+class ShearY_BBoxes(object):
+    def __init__(self, v):
+        self.v = v #self.v should be between 6 - 20
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+        unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+                                          foreground=iaa.ShearY(self.v))
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
 
 class RandomRotate(object):
     def __init__(self, degree):
@@ -194,6 +280,22 @@ class RandomRotate(object):
         return {'image': img,
                 'label': mask}
 
+# FLIP LR BBOXES ONLY DOESNT SEEM to WORK WITH THIS LIBRARY SO FAR
+class FlipLR(object):
+    def __init__(self, v):
+        self.v = v #ignore ??
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.Fliplr()
+        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
 
 # TODO: fix this later
 class RandomGaussianBlur(object):

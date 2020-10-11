@@ -28,7 +28,7 @@ from augmentations_tuner.fastautoaugment.FastAutoAugment.data import get_data
 from augmentations_tuner.fastautoaugment.FastAutoAugment.metrics import Accumulator
 from networks import get_model, num_class
 from augmentations_tuner.fastautoaugment.FastAutoAugment.train import train_and_eval
-# from theconf import Config as C, ConfigArgumentParser
+from theconf import Config as C, ConfigArgumentParser
 import json
 from pystopwatch2 import PyStopwatch
 import argparse
@@ -199,7 +199,7 @@ class AugSearch:
                 }
                 num_samples = 4 if args.smoke_test else args.num_search
                 print(aug_config)
-                # eval_t(aug_config)
+                eval_t(aug_config)
                 results = run(eval_t, search_alg=algo, config=aug_config, num_samples=num_samples,
                               resources_per_trial={'gpu': 1}, stop={'training_iteration': args.num_policy})
                 dataframe = results.dataframe().sort_values(reward_attr, ascending=False)
