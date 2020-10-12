@@ -81,7 +81,8 @@ class Translate_Y(object):
 
         return {'image': img_aug, 'annot': annot_aug}
 
-
+#TODO: Enhance this function so bounding boxes will account for change in actual object,
+# i.e. if the translateY bbox moves the object up, the lower limit of the bbox should move up
 class Translate_Y_BBoxes(object):
     def __init__(self, v):
         self.v = v
