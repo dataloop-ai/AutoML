@@ -67,7 +67,7 @@ class RandomHorizontalFlip(object):
 
 class Translate_Y(object):
     def __init__(self, v):
-        self.v = v
+        self.v = v # -0.3 - 0.3 ??
 
     def __call__(self, sample):
         img, annot = sample['img'], sample['annot']
@@ -282,42 +282,43 @@ class ShearY_BBoxes(object):
 
         return {'image': img_aug, 'annot': annot_aug}
 
-#TODO: Equalize has an error
 
-# class Equalize(object):
-#     def __init__(self, v):
-#         self.v = v # not applied?
-#
-#     def __call__(self, sample):
-#         img, annot = sample['img'], sample['annot']
-#
-#         bbs = BoundingBoxesOnImage(
-#             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
-#             shape=img.shape)
-#         aug = iaa.AllChannelsHistogramEqualization()
-#         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-#         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-#
-#         return {'image': img_aug, 'annot': annot_aug}
-#
-#
-# class Equalize_BBoxes(object):
-#     def __init__(self, v):
-#         self.v = v #not applied?
-#
-#     def __call__(self, sample):
-#         img, annot = sample['img'], sample['annot']
-#         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
-#
-#         bbs = BoundingBoxesOnImage(
-#             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
-#             shape=img.shape)
-#         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
-#                                           foreground=iaa.AllChannelsHistogramEqualization())
-#         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-#         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-#
-#         return {'image': img_aug, 'annot': annot_aug}
+class Equalize(object):
+    def __init__(self, v):
+        self.v = v # not applied
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.AllChannelsHistogramEqualization()
+        img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
+        img_aug = img_aug.astype('float32') / 255.
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+
+class Equalize_BBoxes(object):
+    def __init__(self, v):
+        self.v = v #not applied
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+        unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+                                          foreground=iaa.AllChannelsHistogramEqualization())
+        img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
+        img_aug = img_aug.astype('float32') / 255.
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
 
 
 class Solarize(object):
@@ -369,7 +370,7 @@ class Color(object):
             shape=img.shape)
         aug = iaa.pillike.EnhanceColor(self.v)
         img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
-        img_aug = (img_aug / 255.).astype('float32')
+        img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
         return {'image': img_aug, 'annot': annot_aug}
@@ -389,7 +390,7 @@ class Color_BBoxes(object):
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
                                           foreground=iaa.pillike.EnhanceColor(self.v))
         img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
-        img_aug = (img_aug / 255.).astype('float32')
+        img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
         return {'image': img_aug, 'annot': annot_aug}
