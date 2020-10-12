@@ -37,7 +37,7 @@ ENV CONDA_AUTO_UPDATE_CONDA=false
 
 # CUDA 10.0-specific steps
 RUN conda install -y -c pytorch \
-    cudatoolkit=10.1 \
+    cudatoolkit=10.2 \
     pytorch=1.6 \
     torchvision=0.7.0 \
  && conda clean -ya
