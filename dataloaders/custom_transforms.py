@@ -170,7 +170,7 @@ class CutOut_BBoxes(object):
 
         return {'image': img_aug, 'annot': annot_aug}
 
-# Rotate BBOXES ONLY DOESNT SEEM to WORK WITH THIS LIBRARY SO FAR
+
 class Rotate(object):
     def __init__(self, v):
         self.v = v # between -30 - 30
@@ -186,6 +186,29 @@ class Rotate(object):
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
         return {'image': img_aug, 'annot': annot_aug}
+
+# TODO: Figure out how to make rotate just bboxes work correctly
+
+# class Rotate_BBoxes(object):
+#     def __init__(self):
+#         pass
+#
+#     def __call__(self, sample):
+#         img, annot = sample['img'], sample['annot']
+#         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+#
+#         bbs = BoundingBoxesOnImage(
+#             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+#             shape=img.shape)
+#         aug = iaa.Rotate(30)
+#         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+#         rotate_bb_aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+#                                                     foreground=iaa.Rotate(30))
+#         img_rotate_bb_aug, bbs_rotate_bb_aug = rotate_bb_aug(image=img, bounding_boxes=bbs_aug)
+#         drawn_img = bbs_rotate_bb_aug.draw_on_image(img_rotate_bb_aug * 255, size=2, color=[0, 255., 0])
+#         import skimage
+#         skimage.io.imsave('draw10.png', drawn_img)
+
 
 class ShearX(object):
     def __init__(self, v):
@@ -203,9 +226,10 @@ class ShearX(object):
 
         return {'image': img_aug, 'annot': annot_aug}
 
+
 class ShearX_BBoxes(object):
     def __init__(self, v):
-        self.v = v #self.v should be between 6 - 20
+        self.v = v #self.v should be between -30 - 30
 
     def __call__(self, sample):
         img, annot = sample['img'], sample['annot']
@@ -238,9 +262,10 @@ class ShearY(object):
 
         return {'image': img_aug, 'annot': annot_aug}
 
+
 class ShearY_BBoxes(object):
     def __init__(self, v):
-        self.v = v #self.v should be between 6 - 20
+        self.v = v #self.v should be between -30 - 30
 
     def __call__(self, sample):
         img, annot = sample['img'], sample['annot']
@@ -252,6 +277,118 @@ class ShearY_BBoxes(object):
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
                                           foreground=iaa.ShearY(self.v))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+#TODO: Equalize has an error
+
+# class Equalize(object):
+#     def __init__(self, v):
+#         self.v = v # not applied?
+#
+#     def __call__(self, sample):
+#         img, annot = sample['img'], sample['annot']
+#
+#         bbs = BoundingBoxesOnImage(
+#             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+#             shape=img.shape)
+#         aug = iaa.AllChannelsHistogramEqualization()
+#         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+#         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+#
+#         return {'image': img_aug, 'annot': annot_aug}
+#
+#
+# class Equalize_BBoxes(object):
+#     def __init__(self, v):
+#         self.v = v #not applied?
+#
+#     def __call__(self, sample):
+#         img, annot = sample['img'], sample['annot']
+#         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+#
+#         bbs = BoundingBoxesOnImage(
+#             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+#             shape=img.shape)
+#         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+#                                           foreground=iaa.AllChannelsHistogramEqualization())
+#         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
+#         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+#
+#         return {'image': img_aug, 'annot': annot_aug}
+
+
+class Solarize(object):
+    def __init__(self, v):
+        self.v = v # -1 - 1.
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.pillike.Solarize(threshold=self.v)
+        img_aug, bbs_aug = aug(image=(img * 2. - 1.), bounding_boxes=bbs)
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        img_aug = (img_aug + 1.) / 2
+        return {'image': img_aug, 'annot': annot_aug}
+
+
+class Solarize_BBoxes(object):
+    def __init__(self, v):
+        self.v = v #-1 - 1
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+        unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+                                          foreground=iaa.pillike.Solarize(threshold=0.))
+        img_aug, bbs_aug = aug(image=(img * 2. - 1.), bounding_boxes=bbs)
+        img_aug = (img_aug + 1.) / 2
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+
+class Color(object):
+    def __init__(self, v):
+        self.v = v # 0.0 - 3.0
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.pillike.EnhanceColor(self.v)
+        img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
+        img_aug = (img_aug / 255.).astype('float32')
+        annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        return {'image': img_aug, 'annot': annot_aug}
+
+
+class Color_BBoxes(object):
+    def __init__(self, v):
+        self.v = v #not applied?
+
+    def __call__(self, sample):
+        img, annot = sample['img'], sample['annot']
+        unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
+
+        bbs = BoundingBoxesOnImage(
+            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
+            shape=img.shape)
+        aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
+                                          foreground=iaa.pillike.EnhanceColor(self.v))
+        img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
+        img_aug = (img_aug / 255.).astype('float32')
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
         return {'image': img_aug, 'annot': annot_aug}
