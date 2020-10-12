@@ -47,6 +47,7 @@ hiredis==1.1.0
 hyperopt==0.2.4
 idna==2.9
 imageio==2.9.0
+imgaug
 Jinja2==2.11.2
 joblib==0.16.0
 jsonschema==3.2.0
