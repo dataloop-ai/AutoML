@@ -22,7 +22,7 @@ from tqdm import tqdm
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
 # sys.path.insert(1, os.path.dirname(__file__))
 from augmentations_tuner.fastautoaugment.FastAutoAugment.archive import remove_deplicates, policy_decoder
-from augmentations_tuner.fastautoaugment.FastAutoAugment.augmentations import augment_list
+from augmentations_tuner.fastautoaugment.FastAutoAugment.augmentations import detection_augment_list
 from augmentations_tuner.fastautoaugment.FastAutoAugment.common import get_logger, add_filehandler
 from augmentations_tuner.fastautoaugment.FastAutoAugment.data import get_data
 from augmentations_tuner.fastautoaugment.FastAutoAugment.metrics import Accumulator
@@ -171,7 +171,7 @@ class AugSearch:
         logger.info('----- Search Test-Time Augmentation Policies -----')
         w.start(tag='search')
 
-        ops = augment_list(False)
+        ops = detection_augment_list()
         space = {}
         for i in range(args.num_policy):
             for j in range(args.num_op):

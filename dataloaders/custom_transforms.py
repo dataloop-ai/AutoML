@@ -138,7 +138,7 @@ class Translate_X_BBoxes(object):
 
 class CutOut(object):
     def __init__(self, v):
-        self.v = v # between 0.1 - 0.3
+        self.v = v # between 6 - 20
 
     def __call__(self, sample):
         img, annot = sample['img'], sample['annot']
@@ -146,7 +146,7 @@ class CutOut(object):
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
             shape=img.shape)
-        aug = iaa.Cutout(nb_iterations=1, size=self.v, fill_mode="gaussian")
+        aug = iaa.Cutout(nb_iterations=self.v, size=0.05, fill_mode="gaussian")
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
