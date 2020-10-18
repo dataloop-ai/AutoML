@@ -1,13 +1,5 @@
 import logging
-
-import numpy as np
-import os
-
-import math
-import random
-import torch
 import torchvision
-from PIL import Image
 from augmentations_tuner.fastautoaugment.FastAutoAugment.archive import policy_decoder
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
 import torch.distributed as dist
@@ -15,10 +7,6 @@ from torchvision.transforms import transforms
 from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from theconf import Config as C
 import os
-import sys
-# sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
-# sys.path.insert(1, os.path.dirname(__file__))
-from pycocotools.coco import COCO
 from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_reduced_cifar10, fa_reduced_svhn, \
     fa_resnet50_rimagenet
 from .augmentations import *
