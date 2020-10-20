@@ -55,8 +55,8 @@ def step_w_log(self):
     return original(self)
 
 
-patch = gorilla.Patch(ray.tune.trial_runner.TrialRunner, 'step', step_w_log, settings=gorilla.Settings(allow_hit=True))
-gorilla.apply(patch)
+# patch = gorilla.Patch(ray.tune.trial_runner.TrialRunner, 'step', step_w_log, settings=gorilla.Settings(allow_hit=True))
+# gorilla.apply(patch)
 
 logger = get_logger('Fast AutoAugment')
 
@@ -110,7 +110,7 @@ def eval_tta(config, augment):
     gpu_secs = (time.time() - start_t) * torch.cuda.device_count()
     # reporter(minus_loss=metrics['minus_loss'], top1_valid=metrics['correct'], elapsed_time=gpu_secs, done=True)
     # track.log(minus_loss=metrics['minus_loss'], top1_valid=metrics['correct'], elapsed_time=gpu_secs, done=True)
-    tune.report(top1_valid=np.mean(mAPs))
+    tune.report(top1_valid=np.mean(mAPs), elapsed_time=gpu_secs)
     return np.mean(mAPs)
 
 class AugSearch:
@@ -199,7 +199,7 @@ class AugSearch:
                 }
                 num_samples = 4 if args.smoke_test else args.num_search
                 print(aug_config)
-                eval_t(aug_config)
+                # eval_t(aug_config)
                 results = run(eval_t, search_alg=algo, config=aug_config, num_samples=num_samples,
                               resources_per_trial={'gpu': 1}, stop={'training_iteration': args.num_policy})
                 dataframe = results.dataframe().sort_values(reward_attr, ascending=False)
@@ -211,8 +211,7 @@ class AugSearch:
                     for key in new_keys:
                         new_config_dict[key] = config_dict['config/' + key]
                     final_policy = policy_decoder(new_config_dict, args.num_policy, args.num_op)
-                    logger.info('loss=%.12f top1_valid=%.4f %s' % (
-                        dataframe.loc[i]['minus_loss'].item(), dataframe.loc[i]['top1_valid'].item(), final_policy))
+                    logger.info('top1_valid=%.4f %s' % (dataframe.loc[i]['top1_valid'].item(), final_policy))
 
                     final_policy = remove_deplicates(final_policy)
                     final_policy_set.extend(final_policy)

@@ -16,18 +16,10 @@ class LocalTrialConnector():
         model_name = inputs_dict['model_specs']['name']
         # cls = getattr(import_module('.adapter', 'object_detecter.' + model_name), 'AdapterModel')
         cls = getattr(import_module('.adapter', 'object_detecter'), 'AdapterModel')#TODO: reapropriate the model choosing to networks
-        torch.save(inputs_dict, 'checkpoint.pt')
+        checkpoint_path = 'checkpoint.pt'
+        torch.save(inputs_dict, checkpoint_path)
         adapter = cls()
-        # adapter.load(devices, model_specs, hp_values)
-        adapter.load()
-        if hasattr(adapter, 'reformat'):
-            adapter.reformat()
-        if hasattr(adapter, 'data_loader'):
-            adapter.data_loader()
-        if hasattr(adapter, 'preprocess'):
-            adapter.preprocess()
-        if hasattr(adapter, 'build'):
-            adapter.build()
+        adapter.load(checkpoint_path=checkpoint_path)
         self.logger.info('commencing training . . . ')
         adapter.train()
         self.logger.info('training finished')
