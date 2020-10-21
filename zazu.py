@@ -12,7 +12,9 @@ import torch
 import json
 import dtlpy as dl
 import sys
+from hyperparameter_tuner.trial import generate_trial_id
 from logging_utils import init_logging, logginger
+
 logger = logginger(__name__)
 
 
@@ -71,20 +73,26 @@ class ZaZu:
             for i in range(len(sorted_trial_ids[:5])):
                 save_checkpoint_location = string1 + str(i) + '.pt'
                 logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
-                save_checkpoint_location = os.path.join(os.getcwd(), 'augmentations_tuner', 'fastautoaugment', 'FastAutoAugment', 'models', save_checkpoint_location)
+                save_checkpoint_location = os.path.join(os.getcwd(), 'augmentations_tuner', 'fastautoaugment',
+                                                        'FastAutoAugment', 'models', save_checkpoint_location)
                 if os.path.exists(save_checkpoint_location):
                     logger.info('overwriting checkpoint . . .')
                     os.remove(save_checkpoint_location)
                 torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
                 paths_ls.append(save_checkpoint_location)
-            augsearch = AugSearch(paths_ls=paths_ls) #TODO: calibrate between the model dictionaries
-            checkpointwithaugspath = 'final' + string1 + '.pt'
-            augsearch.retrain(save_path=checkpointwithaugspath)
-            tuner.add_to_oracle_trials(checkpointwithaugspath)
+            aug_policies = AugSearch(paths_ls=paths_ls)  # TODO: calibrate between the model dictionaries
+            best_trial = trials[sorted_trial_ids[0]]['hp_values']
+            metrics_and_checkpoint_dict = gun.launch_trial(hp_values=best_trial)
+            # no oracle to create trial with, must generate on our own
+            trial_id = generate_trial_id()
+            tuner.add_trial(trial_id=trial_id,
+                            metrics=metrics_and_checkpoint_dict['metrics'],
+                            checkpoint=metrics_and_checkpoint_dict['checkpoint'])
 
         sorted_trial_ids = tuner.get_sorted_trial_ids()
         save_best_checkpoint_location = 'best_checkpoint.pt'
-        logger.info('the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
+        logger.info(
+            'the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
         if os.path.exists(save_best_checkpoint_location):
             logger.info('overwriting checkpoint . . .')
             os.remove(save_best_checkpoint_location)
@@ -180,9 +188,11 @@ def maybe_do_deployment_stuff():
             configs = json.load(fp)
 
         configs_input = dl.FunctionIO(type='Json', name='configs', value=json.dumps(configs))
-        time_input = dl.FunctionIO(type='Json', name='time', value=3600*0.25)
+        time_input = dl.FunctionIO(type='Json', name='time', value=3600 * 0.25)
         test_dataset_input = dl.FunctionIO(type='Json', name='test_dataset_id', value='5eb7e0bdd4eb9434c77d80b5')
-        query_input = dl.FunctionIO(type='Json', name='query', value=json.dumps({"resource": "items", "sort": {}, "page": 0, "pageSize": 1000, "filter": {"$and": [{"dir": "/items/val*"}, {"hidden": False}, {"type": "file"}]}}))
+        query_input = dl.FunctionIO(type='Json', name='query', value=json.dumps(
+            {"resource": "items", "sort": {}, "page": 0, "pageSize": 1000,
+             "filter": {"$and": [{"dir": "/items/val*"}, {"hidden": False}, {"type": "file"}]}}))
         init_inputs = [configs_input, time_input, test_dataset_input, query_input]
         deploy_zazu_timer(package=global_package_obj,
                           init_inputs=init_inputs)

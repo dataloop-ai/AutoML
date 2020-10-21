@@ -12,6 +12,7 @@ class LocalTrialConnector():
     def __init__(self):
         self.logger = logginger(__name__)
 
+    # receives dict and saves checkpoint, adapter model only accepts checkpoints
     def run(self, inputs_dict):
         model_name = inputs_dict['model_specs']['name']
         # cls = getattr(import_module('.adapter', 'object_detecter.' + model_name), 'AdapterModel')

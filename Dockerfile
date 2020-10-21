@@ -45,8 +45,8 @@ RUN conda install -y -c pytorch \
 RUN conda install -c conda-forge pycocotools
 # Install HDF5 Python bindings
 
-RUN cd /root && git clone https://github.com/dataloop-ai/ZazuML-easy_AutoML.git \
-    && mv /root/ZazuML-easy_AutoML /root/ZazuML && cd /root/ZazuML
+RUN cd /root && git clone https://github.com/dataloop-ai/AutoML.git \
+    && mv /root/AutoML /root/ZazuML && cd /root/ZazuML
 
 RUN pip install -r /root/ZazuML/requirements.txt
 

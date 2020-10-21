@@ -23,6 +23,10 @@ class Tuner:
         self.oracle.update_metrics(self.ongoing_trials.trials)
         self.ongoing_trials.remove_trial()
 
+    def add_trial(self, trial_id, metrics, checkpoint):
+        self.oracle.trials[trial_id]['metrics'] = metrics
+        self.oracle.trials[trial_id]['checkpoint'] = checkpoint
+
     def search_hp(self):
 
         for _ in range(self.max_instances_at_once):

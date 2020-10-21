@@ -225,6 +225,7 @@ class AugSearch:
         self.final_policy_set = final_policy_set
         self.args = args
         self.paths_ls = paths_ls
+        return final_policy_set
 
     def search(self):
         pass

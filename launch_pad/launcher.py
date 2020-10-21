@@ -6,7 +6,7 @@ import logging
 import torch
 import glob
 import shutil
-from dataloop_services import LocalTrialConnector, LocalPredConnector
+from .trial_local import LocalTrialConnector
 from .thread_manager import ThreadManager
 from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
@@ -107,30 +107,18 @@ class Launcher:
     def eval(self):
         pass
 
-    def train_and_save_best_trial(self, best_trial, save_checkpoint_location):
-        if self.remote:
-            try:
-                path_to_tensorboard_dir = 'runs'
-                execution_obj = self._launch_remote_best_trial(best_trial)
-                if os.path.exists(save_checkpoint_location):
-                    logger.info('overwriting checkpoint.pt . . .')
-                    os.remove(save_checkpoint_location)
-                if os.path.exists(path_to_tensorboard_dir):
-                    logger.info('overwriting tenorboards runs . . .')
-                    os.rmdir(path_to_tensorboard_dir)
-                # download artifacts, should contain checkpoint and tensorboard logs
-                self.project.artifacts.download(package_name=self.package_name,
-                                                execution_id=execution_obj.id,
-                                                local_path=os.getcwd())
-            except Exception as e:
-                print(e)
+    def launch_trial(self, hp_values):
 
-        else:
-            checkpoint = self._launch_local_best_trial(best_trial)
-            if os.path.exists(save_checkpoint_location):
-                logger.info('overwriting checkpoint.pt . . .')
-                os.remove(save_checkpoint_location)
-            torch.save(checkpoint, save_checkpoint_location)
+        model_specs = self.optimal_model.unwrap()
+        inputs = {
+            'devices': {'gpu_index': 0},
+            'hp_values': hp_values,
+            'model_specs': model_specs,
+        }
+
+        checkpoint = self._run_trial_demo_execution(inputs)
+        return {'metrics': checkpoint['metrics'],
+                'checkpoint': checkpoint}
 
     def launch_trials(self):
         if self.ongoing_trials is None:
@@ -141,16 +129,6 @@ class Launcher:
 
             else:
                 self._launch_local_trials()
-
-    def _launch_local_best_trial(self, best_trial):
-        model_specs = self.optimal_model.unwrap()
-        inputs = {
-            'devices': {'gpu_index': 0},
-            'hp_values': best_trial['hp_values'],
-            'model_specs': model_specs,
-        }
-
-        return self._run_trial_demo_execution(inputs)
 
     def _launch_remote_best_trial(self, best_trial):
         model_specs = self.optimal_model.unwrap()
