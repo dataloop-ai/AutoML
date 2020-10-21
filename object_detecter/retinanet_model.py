@@ -11,7 +11,7 @@ from torchvision import transforms
 from . import csv_eval
 from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
     Augmenter, Normalizer
-from networks.retinanet import ret50
+from networks.retinanet import ret18, ret34, ret50, ret101, ret152
 
 from torch.utils.data import DataLoader
 
@@ -98,11 +98,11 @@ class RetinaModel:
               scales=[2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]):
         # Create the model
         if depth == 18:
-            retinanet = model.resnet18(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
+            retinanet = ret18(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 34:
-            retinanet = model.resnet34(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
+            retinanet = ret34(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 50:
@@ -110,11 +110,11 @@ class RetinaModel:
                                        weights_dir=self.weights_dir_path,
                                        pretrained=True)
         elif depth == 101:
-            retinanet = model.resnet101(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
+            retinanet = ret101(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                         weights_dir=self.weights_dir_path,
                                         pretrained=True)
         elif depth == 152:
-            retinanet = model.resnet152(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
+            retinanet = ret152(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
                                         weights_dir=self.weights_dir_path,
                                         pretrained=True)
         else:
