@@ -3,6 +3,25 @@ python:
   - "3.8"
 os: linux
 dist: bionic
-install:
+before_install:
   - sudo apt-get update
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  # - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION # --file requirements.txt
+  - conda activate test-environment
+  # - conda config --add channels conda-forge
+  # - conda config --set channel_priority strict
+install:
   - pip install -r requirements.txt
+  - conda install -c conda-forge -y mkl-fft==1.1.0 mkl-random==1.1.1 mkl-service==2.3.0
+script:
+  - echo "Done"
