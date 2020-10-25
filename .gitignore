@@ -300,7 +300,9 @@ ENV/
 env.bak/
 venv.bak/
 pip-selfcheck.json
-Lib/
+lib/
+lib64/
+bin/
 Scripts/
 .git
 ### h5 ###
