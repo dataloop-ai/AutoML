@@ -25,5 +25,8 @@ install:
   - pip install -r requirements.txt
   - conda install -y -c conda-forge mkl_fft>=1.1.0 mkl_random==1.1.1 mkl-service==2.3.0
 script:
-  - conda list
+  - mkdir data
+  - cd data
+  - git clone https://github.com/dataloop-ai/tiny_coco.git
+  - cd ..
   - python zazu.py --search || python3 zazu.py --search
