@@ -22,6 +22,6 @@ before_install:
   # - conda config --set channel_priority strict
 install:
   - pip install -r requirements.txt
-  - conda install -y -c intel mkl_fft==1.1.0 mkl_random==1.1.1 mkl-service==2.3.0
+  - conda install -y -c intel mkl_fft>=1.1.0 mkl_random==1.1.1 mkl-service==2.3.0
 script:
   - echo "Done"
