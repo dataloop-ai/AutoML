@@ -9,7 +9,7 @@ from theconf import Config as C
 import os
 from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_reduced_cifar10, fa_reduced_svhn, \
     fa_resnet50_rimagenet
-from .augmentations import *
+from dataloaders import Augmentation
 from .common import get_logger
 from .imagenet import ImageNet
 from networks.efficientnet_pytorch.model import EfficientNet
@@ -301,22 +301,6 @@ class CutoutDefault(object):
         mask = mask.expand_as(img)
         img *= mask
         return img
-
-
-class Augmentation(object):
-    def __init__(self, policies, detection=True):
-        self.policies = policies
-        self.detection = detection
-
-    def __call__(self, sample):
-        for _ in range(1):
-            policy = random.choice(self.policies)
-            for name, pr, level in policy:
-                if random.random() > pr:
-                    continue
-                sample = apply_augment(sample, name, level, self.detection)
-        return sample
-
 
 
 class EfficientNetRandomCrop:

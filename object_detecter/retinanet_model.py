@@ -7,10 +7,9 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 from torchvision import transforms
-
+import traceback
 from . import csv_eval
-from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
-    Augmenter, Normalizer
+from dataloaders import *
 from networks.retinanet import ret18, ret34, ret50, ret101, ret152
 
 from torch.utils.data import DataLoader
@@ -52,15 +51,19 @@ class RetinaModel:
         self.tb_writer = None
         self.retinanet = None
 
-    def preprocess(self, dataset='csv', csv_train=None, csv_val=None, csv_classes=None,
+    def preprocess(self, augment_policy=None, dataset='csv', csv_train=None, csv_val=None, csv_classes=None,
                    train_set_name='train2017', val_set_name='val2017', resize=608, batch=2):
         self.dataset = dataset
+        transform_train = transforms.Compose([Normalizer(), Augmenter(), Resizer(min_side=resize)])
+        transform_val = transforms.Compose([Normalizer(), Resizer(min_side=resize)])
+        if augment_policy is not None:
+            transform_train.transforms.insert(0, Augmentation(augment_policy, detection=True))
+
         if self.dataset == 'coco':
             self.dataset_train = CocoDataset(self.home_path, set_name=train_set_name,
-                                             transform=transforms.Compose(
-                                                 [Normalizer(), Augmenter(), Resizer(min_side=resize)]))
+                                             transform=transform_train)
             self.dataset_val = CocoDataset(self.home_path, set_name=val_set_name,
-                                           transform=transforms.Compose([Normalizer(), Resizer(min_side=resize)]))
+                                           transform=transform_val)
 
         elif self.dataset == 'csv':
             if csv_train is None:
@@ -151,33 +154,33 @@ class RetinaModel:
             pbar = tqdm(total=total_num_iterations)
 
             for iter_num in range(1, total_num_iterations + 1):
-                try:
-                    data = next(dataloader_iterator)
-                    self.optimizer.zero_grad()
-                    classification_loss, regression_loss = self.retinanet(
-                        [data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)])
-                    classification_loss = classification_loss.mean()
-                    regression_loss = regression_loss.mean()
-                    loss = classification_loss + regression_loss
-                    if bool(loss == 0):
-                        continue
-                    loss.backward()
-                    torch.nn.utils.clip_grad_norm_(self.retinanet.parameters(), 0.1)
-                    self.optimizer.step()
-                    loss_hist.append(float(loss))
-                    epoch_loss.append(float(loss))
-                    s = 'Trial {} -- Epoch: {}/{} | Iteration: {}/{}  | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
-                        self.save_trial_id[:3], epoch_num, epochs, iter_num, total_num_iterations,
-                        float(classification_loss),
-                        float(regression_loss), np.mean(loss_hist))
-                    pbar.set_description(s)
-                    pbar.update()
-                    del classification_loss
-                    del regression_loss
-                except Exception as e:
-                    logger.info(e)
-                    pbar.update()
+                # try:
+                data = next(dataloader_iterator)
+                self.optimizer.zero_grad()
+                classification_loss, regression_loss = self.retinanet(
+                    [data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)])
+                classification_loss = classification_loss.mean()
+                regression_loss = regression_loss.mean()
+                loss = classification_loss + regression_loss
+                if bool(loss == 0):
                     continue
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.retinanet.parameters(), 0.1)
+                self.optimizer.step()
+                loss_hist.append(float(loss))
+                epoch_loss.append(float(loss))
+                s = 'Trial {} -- Epoch: {}/{} | Iteration: {}/{}  | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
+                    self.save_trial_id[:3], epoch_num, epochs, iter_num, total_num_iterations,
+                    float(classification_loss),
+                    float(regression_loss), np.mean(loss_hist))
+                pbar.set_description(s)
+                pbar.update()
+                del classification_loss
+                del regression_loss
+                # except Exception as e:
+                #     logger.info(traceback.print_tb(e.__traceback__))
+                #     pbar.update()
+                #     continue
             pbar.close()
             self.scheduler.step(np.mean(epoch_loss))
             self.final_epoch = epoch_num == epochs

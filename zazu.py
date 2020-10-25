@@ -5,7 +5,7 @@ from spec import ConfigSpec, OptModel
 from spec import ModelsSpec
 from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict, \
     deploy_zazu_timer
-from augmentations_tuner.fastautoaugment import AugSearch
+from augmentations_tuner.fastautoaugment import augsearch
 import argparse
 import os
 import torch
@@ -80,8 +80,9 @@ class ZaZu:
                     os.remove(save_checkpoint_location)
                 torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
                 paths_ls.append(save_checkpoint_location)
-            aug_policies = AugSearch(paths_ls=paths_ls)  # TODO: calibrate between the model dictionaries
+            aug_policy = augsearch(paths_ls=paths_ls)  # TODO: calibrate between the model dictionaries
             best_trial = trials[sorted_trial_ids[0]]['hp_values']
+            best_trial.update({"augment_policy": aug_policy})
             metrics_and_checkpoint_dict = gun.launch_trial(hp_values=best_trial)
             # no oracle to create trial with, must generate on our own
             trial_id = generate_trial_id()

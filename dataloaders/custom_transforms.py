@@ -79,7 +79,7 @@ class Translate_Y(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 #TODO: Enhance this function so bounding boxes will account for change in actual object,
 # i.e. if the translateY bbox moves the object up, the lower limit of the bbox should move up
@@ -98,7 +98,7 @@ class Translate_Y_BBoxes(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Translate_X(object):
@@ -115,7 +115,7 @@ class Translate_X(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Translate_X_BBoxes(object):
@@ -133,7 +133,7 @@ class Translate_X_BBoxes(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class CutOut(object):
@@ -146,11 +146,11 @@ class CutOut(object):
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
             shape=img.shape)
-        aug = iaa.Cutout(nb_iterations=self.v, size=0.05, fill_mode="gaussian")
+        aug = iaa.Cutout(nb_iterations=int(round(self.v)), size=0.05, fill_mode="gaussian")
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class CutOut_BBoxes(object):
@@ -165,11 +165,11 @@ class CutOut_BBoxes(object):
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
             shape=img.shape)
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels,
-                                          foreground=iaa.Cutout(nb_iterations=self.v, size=0.05, fill_mode="gaussian"))
+                                          foreground=iaa.Cutout(nb_iterations=int(round(self.v)), size=0.05, fill_mode="gaussian"))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Rotate(object):
@@ -186,7 +186,7 @@ class Rotate(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 # TODO: Figure out how to make rotate just bboxes work correctly
 
@@ -225,7 +225,7 @@ class ShearX(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class ShearX_BBoxes(object):
@@ -244,7 +244,7 @@ class ShearX_BBoxes(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class ShearY(object):
@@ -261,7 +261,7 @@ class ShearY(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class ShearY_BBoxes(object):
@@ -280,7 +280,7 @@ class ShearY_BBoxes(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Equalize(object):
@@ -298,7 +298,7 @@ class Equalize(object):
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Equalize_BBoxes(object):
@@ -318,7 +318,7 @@ class Equalize_BBoxes(object):
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Solarize(object):
@@ -335,7 +335,7 @@ class Solarize(object):
         img_aug, bbs_aug = aug(image=(img * 2. - 1.), bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         img_aug = (img_aug + 1.) / 2
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Solarize_BBoxes(object):
@@ -355,7 +355,7 @@ class Solarize_BBoxes(object):
         img_aug = (img_aug + 1.) / 2
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Color(object):
@@ -373,7 +373,7 @@ class Color(object):
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class Color_BBoxes(object):
@@ -393,7 +393,7 @@ class Color_BBoxes(object):
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 
 class RandomRotate(object):
@@ -434,7 +434,7 @@ class FlipLR(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'image': img_aug, 'annot': annot_aug}
+        return {'img': img_aug, 'annot': annot_aug}
 
 # TODO: fix this later
 class RandomGaussianBlur(object):

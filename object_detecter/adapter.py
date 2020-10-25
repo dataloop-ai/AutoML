@@ -95,7 +95,8 @@ class AdapterModel:
                                            checkpoint)
 
     def train(self):
-        self.retinanet_model.preprocess(dataset=self.annotation_type,
+        self.retinanet_model.preprocess(augment_policy=self.configs['augment_policy'],
+                                        dataset=self.annotation_type,
                                         csv_train=self.annotations_train_filepath,
                                         csv_val=self.annotations_val_filepath,
                                         csv_classes=self.classes_filepath,

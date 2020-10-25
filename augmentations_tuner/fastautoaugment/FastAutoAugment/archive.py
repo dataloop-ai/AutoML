@@ -8,7 +8,7 @@ import os
 import sys
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
 # sys.path.insert(1, os.path.dirname(__file__))
-from .augmentations import get_augment, detection_augment_list
+from dataloaders import get_augment, detection_augment_list
 
 
 def arsaug_policy():

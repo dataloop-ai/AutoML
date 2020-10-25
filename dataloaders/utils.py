@@ -3,6 +3,7 @@ from PIL import Image
 import os
 from pycocotools.coco import COCO
 import numpy as np
+import cv2
 
 
 def change_coco_image_sizes_with_annotations(path_to_dataset, min_side):
@@ -40,4 +41,13 @@ def change_coco_image_sizes_with_annotations(path_to_dataset, min_side):
             json.dump(coco.dataset, fp)
 
 
-change_coco_image_sizes_with_annotations('/Users/noam/tiny_coco', min_side=2464)
+def draw_caption(image, box, caption):
+
+    b = np.array(box).astype(int)
+    cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (1, 1, 1), 2)
+
+def draw_bbox(img, bbox, label):
+
+    draw_caption(img, bbox, label)
+    x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+    cv2.rectangle(img, (x1, y1), (x2, y2), color=(0, 0, 1), thickness=2)

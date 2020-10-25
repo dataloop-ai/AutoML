@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /root/data && \
-    git clone https://github.com/dataloop-ai/tiny_coco.git
+    git clone https://github.com/NoamRosenberg/tiny_coco.git
 
 # Install Miniconda
 RUN wget \

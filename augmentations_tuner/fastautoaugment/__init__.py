@@ -1,1 +1,1 @@
-from .search import AugSearch
+from .search import augsearch
