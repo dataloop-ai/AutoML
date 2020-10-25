@@ -16,12 +16,13 @@ before_install:
   # - conda config --set always_yes yes --set changeps1 no
   - conda update -y -q conda
   - conda info -a
-  - conda create -y -q -n test-environment python=$TRAVIS_PYTHON_VERSION # --file requirements.txt
+  - conda create -y -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
   - conda config --add channels conda-forge
   # - conda config --set channel_priority strict
 install:
   - pip install -r requirements.txt
   - conda install -y -c intel mkl_fft>=1.1.0 mkl_random==1.1.1 mkl-service==2.3.0
+  - conda install -y -c conda-forge mkl_fft>=1.1.0 mkl_random==1.1.1 mkl-service==2.3.0
 script:
   - echo "Done"
