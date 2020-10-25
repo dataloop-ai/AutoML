@@ -14,7 +14,7 @@ before_install:
   - source "$HOME/miniconda/etc/profile.d/conda.sh"
   - hash -r
   # - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
+  - conda update -y -q conda
   - conda info -a
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION # --file requirements.txt
   - conda activate test-environment
