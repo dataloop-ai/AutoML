@@ -86,7 +86,7 @@ def detect(checkpoint, pred_on_path, output_path, threshold=0.5, visualize=False
                 if visualize:
                     draw_caption(img, (x1, y1, x2, y2), label_name)
                     if red_label in label_name:
-                        cv2.rectangle(img, (x1, y1), (x2, y2), color=(255, 0, 0), thickness=2)
+                        cv2.rectangle(img, (x1, y1), (x2, y2), color=(0, 0, 255), thickness=2)
                     else:
                         cv2.rectangle(img, (x1, y1), (x2, y2), color=(0, 255, 0), thickness=2)
                     print(label_name)

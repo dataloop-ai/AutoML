@@ -269,9 +269,9 @@ def get_data(dataset, dataroot, augment, resize=608, split=0.15, split_idx=0, mu
         transform_train.transforms.insert(0, Augmentation(policies, detection=True))
 
     if dataset == 'coco':
-        total_trainset = CocoDataset(dataroot, set_name='train2017',
+        total_trainset = CocoDataset(dataroot, set_name='train',
                                          transform=transform_train)
-        testset = CocoDataset(dataroot, set_name='val2017',
+        testset = CocoDataset(dataroot, set_name='val',
                                        transform=transform_test)
 
 
