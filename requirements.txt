@@ -123,6 +123,7 @@ tqdm==4.46.0
 urllib3==1.25.8
 validators==0.17.1
 git+https://github.com/ildoonet/pytorch-gradual-warmup-lr.git@v0.1  # warmup-scheduler==0.1
+git+https://github.com/wbaek/theconf@de32022f8c0651a043dc812d17194cdfd62066e8
 wcwidth==0.2.5
 webvtt-py==0.4.3
 Werkzeug==1.0.1
