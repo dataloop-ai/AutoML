@@ -4,7 +4,7 @@ First thing to do is . . .
 
 ### *pull & run the Docker Image*
 ```
-docker run --rm -it --gpus all  buffalonoam/zazu-image:0.7 bash
+docker run --rm -it --gpus all  buffalonoam/zazu-image:0.9 bash
 ```
 About the docker image: Should work over all Cuda 10.* systems, this API is for docker 19.03 +
 
