@@ -78,7 +78,9 @@ class Translate_Y(object):
         aug = iaa.geometric.TranslateY(percent=self.v)
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 #TODO: Enhance this function so bounding boxes will account for change in actual object,
@@ -97,7 +99,9 @@ class Translate_Y_BBoxes(object):
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels, foreground=iaa.geometric.TranslateY(percent=self.v))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -114,7 +118,9 @@ class Translate_X(object):
         aug = iaa.geometric.TranslateX(percent=self.v)
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -132,7 +138,9 @@ class Translate_X_BBoxes(object):
         aug = iaa.BlendAlphaBoundingBoxes(labels=unique_labels, foreground=iaa.geometric.TranslateX(percent=self.v))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -149,7 +157,9 @@ class CutOut(object):
         aug = iaa.Cutout(nb_iterations=int(round(self.v)), size=0.05, fill_mode="gaussian")
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -168,7 +178,9 @@ class CutOut_BBoxes(object):
                                           foreground=iaa.Cutout(nb_iterations=int(round(self.v)), size=0.05, fill_mode="gaussian"))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -185,7 +197,9 @@ class Rotate(object):
         aug = iaa.Rotate(rotate=self.v)
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 # TODO: Figure out how to make rotate just bboxes work correctly
@@ -224,7 +238,9 @@ class ShearX(object):
         aug = iaa.ShearX(self.v)
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -243,7 +259,9 @@ class ShearX_BBoxes(object):
                                           foreground=iaa.ShearX(self.v))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -260,7 +278,9 @@ class ShearY(object):
         aug = iaa.ShearY(self.v)
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -279,7 +299,9 @@ class ShearY_BBoxes(object):
                                           foreground=iaa.ShearY(self.v))
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -297,7 +319,9 @@ class Equalize(object):
         img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -317,7 +341,9 @@ class Equalize_BBoxes(object):
         img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -334,6 +360,9 @@ class Solarize(object):
         aug = iaa.pillike.Solarize(threshold=self.v)
         img_aug, bbs_aug = aug(image=(img * 2. - 1.), bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         img_aug = (img_aug + 1.) / 2
         return {'img': img_aug, 'annot': annot_aug}
 
@@ -354,7 +383,9 @@ class Solarize_BBoxes(object):
         img_aug, bbs_aug = aug(image=(img * 2. - 1.), bounding_boxes=bbs)
         img_aug = (img_aug + 1.) / 2
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -372,7 +403,9 @@ class Color(object):
         img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 
@@ -392,7 +425,9 @@ class Color_BBoxes(object):
         img_aug, bbs_aug = aug(image=(img * 255.).astype('uint8'), bounding_boxes=bbs)
         img_aug = img_aug.astype('float32') / 255.
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
-
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0,5))
         return {'img': img_aug, 'annot': annot_aug}
 
 

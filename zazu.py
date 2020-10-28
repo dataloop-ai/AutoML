@@ -64,7 +64,7 @@ class ZaZu:
             # starting next set of trials
             tuner.search_hp()
 
-        trials = tuner.get_trials()
+        trials = tuner.trials
         if self.opt_model.augmentation_search_method == 'fastautoaugment':
             sorted_trial_ids = tuner.get_sorted_trial_ids()
 
@@ -87,6 +87,7 @@ class ZaZu:
             # no oracle to create trial with, must generate on our own
             trial_id = generate_trial_id()
             tuner.add_trial(trial_id=trial_id,
+                            hp_values=best_trial,
                             metrics=metrics_and_checkpoint_dict['metrics'],
                             checkpoint=metrics_and_checkpoint_dict['checkpoint'])
 
