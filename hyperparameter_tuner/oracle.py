@@ -30,7 +30,8 @@ class Oracle:
             response = self._populate_space(trial_id)
             status = response['status']
             values = response['values'] if 'values' in response else None
-            self.trials[trial_id] = {'hp_values': values}
+            if values is not None:
+                self.trials[trial_id] = {'hp_values': values}
 
         return trial_id, values, status
 
