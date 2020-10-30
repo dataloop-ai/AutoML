@@ -89,12 +89,15 @@ class ZaZu:
             tuner.add_trial(trial_id=trial_id,
                             hp_values=best_trial,
                             metrics=metrics_and_checkpoint_dict['metrics'],
-                            checkpoint=metrics_and_checkpoint_dict['checkpoint'])
+                            meta_checkpoint=metrics_and_checkpoint_dict['meta_checkpoint'])
 
         sorted_trial_ids = tuner.get_sorted_trial_ids()
         save_best_checkpoint_location = 'best_checkpoint.pt'
         logger.info(
             'the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
+        temp_checkpoint = torch.load(trials[sorted_trial_ids[0]]['meta_checkpoint']['checkpoint_path'])
+        checkpoint = trials[sorted_trial_ids[0]]['meta_checkpoint']
+        checkpoint.update(temp_checkpoint)
         if os.path.exists(save_best_checkpoint_location):
             logger.info('overwriting checkpoint . . .')
             os.remove(save_best_checkpoint_location)

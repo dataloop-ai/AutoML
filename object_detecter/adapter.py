@@ -113,13 +113,16 @@ class AdapterModel:
         self.retinanet_model.train(epochs=self.configs['hyperparameter_tuner/epochs'],
                                    init_epoch=self.configs['hyperparameter_tuner/initial_epoch'])
 
-    def get_checkpoint(self):
+
+    def get_checkpoint_metadata(self):
         logger.info('getting best checkpoint')
         checkpoint = self.retinanet_model.get_best_checkpoint()
         logging.info('got best checkpoint')
         checkpoint['hp_values'] = self.hp_values
         checkpoint['model_specs'] = self.model_specs
         checkpoint['devices'] = self.devices
+        checkpoint['checkpoint_path'] = self.retinanet_model.save_best_checkpoint_path
+        checkpoint.pop('model')
         logging.info('checkpoint keys: ' + str(checkpoint.keys()))
         return checkpoint
 
@@ -127,30 +130,21 @@ class AdapterModel:
     def checkpoint_path(self):
         return self.retinanet_model.save_best_checkpoint_path
 
-    def save(self, save_path='checkpoint.pt'):
-        checkpoint = self.get_checkpoint()
-        torch.save(checkpoint, save_path)
-        return save_path
 
-    def upload_checkpoint(self, model_id=None, checkpoint_name='checkpoint'):
-        if model_id:
-            model = dl.models.get(model_id=model_id)
-            self.model = model
-        save_path = os.path.join(os.getcwd(), checkpoint_name + '.pt')
-        self.save(save_path)
-        self.model.checkpoints.upload(checkpoint_name=checkpoint_name, local_path=save_path)
 
-    def predict(self, output_dir='checkpoint0', checkpoint_path='checkpoint.pt', home_path=None):
-        try:
-            return detect(self.inference_checkpoint, output_dir, home_path=home_path, visualize=True)
-        except:
-            try:
-                self.load_inference(checkpoint_path)
-                return detect(checkpoint=self.inference_checkpoint, output_dir=output_dir, home_path=home_path,
-                              visualize=True)
-            except:
-                checkpoint = self.get_checkpoint()
-                return detect(checkpoint, output_dir)
+    #TODO have to redo this because get_checkpoint() no longer retrieves a checkpoint with model
+
+    # def predict(self, output_dir='checkpoint0', checkpoint_path='checkpoint.pt', home_path=None):
+    #     try:
+    #         return detect(self.inference_checkpoint, output_dir, home_path=home_path, visualize=True)
+    #     except:
+    #         try:
+    #             self.load_inference(checkpoint_path)
+    #             return detect(checkpoint=self.inference_checkpoint, output_dir=output_dir, home_path=home_path,
+    #                           visualize=True)
+    #         except:
+    #             checkpoint = self.get_checkpoint()
+    #             return detect(checkpoint, output_dir)
 
     def load_inference(self, checkpoint_path):
         if torch.cuda.is_available():

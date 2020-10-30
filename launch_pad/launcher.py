@@ -116,9 +116,9 @@ class Launcher:
             'model_specs': model_specs,
         }
 
-        checkpoint = self._run_trial_demo_execution(inputs)
-        return {'metrics': checkpoint['metrics'],
-                'checkpoint': checkpoint}
+        meta_checkpoint = self._run_trial_demo_execution(inputs)
+        return {'metrics': meta_checkpoint['metrics'],
+                'meta_checkpoint': meta_checkpoint}
 
     def launch_trials(self):
         if self.ongoing_trials is None:
@@ -221,7 +221,7 @@ class Launcher:
         if self.remote:
             try:
                 # checkpoint_path = 'best_' + trial_id + '.pt'
-                checkpoint_path = 'checkpoint.pt'
+                checkpoint_path = 'meta_checkpoint.pt'
                 path_to_tensorboard_dir = 'runs'
                 logger.info("trying to get execution objects")
                 execution_obj = self._run_trial_remote_execution(inputs_dict)
@@ -235,7 +235,7 @@ class Launcher:
                         raise Exception("plugin execution failed")
                 logger.info("execution object status is successful")
                 if os.path.exists(checkpoint_path):
-                    logger.info('overwriting checkpoint.pt . . .')
+                    logger.info('overwriting meta_checkpoint.pt . . .')
                     os.remove(checkpoint_path)
                 if os.path.exists(path_to_tensorboard_dir):
                     logger.info('overwriting tenorboards runs . . .')
@@ -245,20 +245,20 @@ class Launcher:
                 self.project.artifacts.download(package_name=self.package_name,
                                                 execution_id=execution_obj.id,
                                                 local_path=os.getcwd())
-                logger.info('going to load ' + checkpoint_path + ' into checkpoint')
+                logger.info('going to load ' + checkpoint_path + ' into meta_checkpoint')
                 if torch.cuda.is_available():
-                    checkpoint = torch.load(checkpoint_path)
+                    meta_checkpoint = torch.load(checkpoint_path)
                 else:
-                    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+                    meta_checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
                 os.remove(checkpoint_path)
 
             except Exception as e:
                 Exception('The thread ' + thread_name + ' had an exception: \n', repr(e))
         else:
-            checkpoint = self._run_trial_demo_execution(inputs_dict)
+            meta_checkpoint = self._run_trial_demo_execution(inputs_dict)
 
-        results_dict[trial_id] = {'metrics': checkpoint['metrics'],
-                'checkpoint': checkpoint}
+        results_dict[trial_id] = {'metrics': meta_checkpoint['metrics'],
+                'meta_checkpoint': meta_checkpoint}
         logger.info('finished thread: ' + thread_name)
 
 

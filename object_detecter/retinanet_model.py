@@ -4,6 +4,7 @@ import glob
 import shutil
 import numpy as np
 import torch
+import time
 import torch.optim as optim
 from tqdm import tqdm
 from torchvision import transforms
@@ -142,13 +143,12 @@ class RetinaModel:
         from torch.utils.tensorboard import SummaryWriter
         self.tb_writer = SummaryWriter(comment=self.save_trial_id[:3])
         for epoch_num in range(init_epoch + 1, epochs + 1):
-
+            st = time.time()
             print('total epochs: ', epochs)
             self.retinanet.train()
             self.retinanet.freeze_bn()
 
             epoch_loss = []
-            loss_hist = collections.deque(maxlen=500)
             total_num_iterations = len(self.dataloader_train)
             dataloader_iterator = iter(self.dataloader_train)
             pbar = tqdm(total=total_num_iterations)
@@ -167,16 +167,16 @@ class RetinaModel:
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.retinanet.parameters(), 0.1)
                 self.optimizer.step()
-                loss_hist.append(float(loss))
                 epoch_loss.append(float(loss))
-                s = 'Trial {} -- Epoch: {}/{} | Iteration: {}/{}  | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
+                s = 'Trial {} -- Epoch: {}/{} | Iteration: {}/{}  | Classification loss: {:1.5f} | Regression loss: {:1.5f}'.format(
                     self.save_trial_id[:3], epoch_num, epochs, iter_num, total_num_iterations,
                     float(classification_loss),
-                    float(regression_loss), np.mean(loss_hist))
+                    float(regression_loss)) #TODO: this isn't working, regresision loss running loss dont show up at all
                 pbar.set_description(s)
                 pbar.update()
                 del classification_loss
                 del regression_loss
+                torch.cuda.empty_cache()
                 # except Exception as e:
                 #     logger.info(traceback.print_tb(e.__traceback__))
                 #     pbar.update()
@@ -184,10 +184,10 @@ class RetinaModel:
             pbar.close()
             self.scheduler.step(np.mean(epoch_loss))
             self.final_epoch = epoch_num == epochs
-
+            print('time to train epoch: ', time.time() - st)
             mAP = csv_eval.evaluate(self.dataset_val, self.retinanet)
-            self._write_to_tensorboard(mAP, np.mean(loss_hist), epoch_num)
-
+            self._write_to_tensorboard(mAP, np.mean(epoch_loss), epoch_num)
+            del epoch_loss
             self._save_checkpoint(mAP, epoch_num)
             if self.final_epoch:
                 self._save_classes_for_inference()
