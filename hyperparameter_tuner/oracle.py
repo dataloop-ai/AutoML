@@ -37,7 +37,7 @@ class Oracle:
     def update_metrics(self, ongoing_trials):
         for trial_id, trial in ongoing_trials.items():
             self.trials[trial_id]['metrics'] = trial['metrics']
-            self.trials[trial_id]['checkpoint'] = trial['checkpoint']
+            self.trials[trial_id]['meta_checkpoint'] = trial['meta_checkpoint']
 
     def _populate_space(self, trial_id):
 
