@@ -20,7 +20,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         self.path_to_metrics = 'metrics.json'
         self.path_to_tensorboard_dir = 'runs'
         self.path_to_logs = 'logger.conf'
-        self.logger = init_logging(__name__, filename=self.path_to_logs)
+        self.logger = logginger(__name__, filename=self.path_to_logs)
         self.logger.info(self.package_name + ' initialized')
 
 
