@@ -18,13 +18,13 @@ import skimage.color
 import skimage
 
 from PIL import Image
-from .custom_transforms import TransformTr, TransformVal
-
+from .custom_transforms import *
+from .utils import draw_bbox
 
 class CocoDataset(Dataset):
     """Coco dataset."""
 
-    def __init__(self, root_dir, set_name='train2017', transform=None):
+    def __init__(self, root_dir, set_name='train', transform=None):
         """
         Args:
             root_dir (string): COCO directory.
@@ -89,7 +89,7 @@ class CocoDataset(Dataset):
 
 
     def load_annotations(self, image_index):
-        # get ground truth annotations
+        # get ground truth annotations in [x1, y1, x2, y2] format
         annotations_ids = self.coco.getAnnIds(imgIds=self.image_ids[image_index], iscrowd=False)
         annotations = np.zeros((0, 5))
 
@@ -116,11 +116,24 @@ class CocoDataset(Dataset):
 
         return annotations
 
+    # These two functions are so the network has every label from 0 - 80 consistently
     def coco_label_to_label(self, coco_label):
         return self.coco_labels_inverse[coco_label]
 
     def label_to_coco_label(self, label):
         return self.coco_labels[label]
+
+    def visualize(self, save_path):
+        for idx in range(len(self.image_ids)):
+            img = self.load_image(idx)
+            annot = self.load_annotations(idx)
+            for bbox in annot:
+                label = self.labels[bbox[4]]
+                draw_bbox(img, bbox[:4], label)
+            filename = self.coco.loadImgs(self.image_ids[idx])[0]['file_name']
+            os.makedirs(save_path, exist_ok=True)
+            save_img_path = os.path.join(save_path, filename)
+            skimage.io.imsave(save_img_path, img)
 
     def image_aspect_ratio(self, image_index):
         image = self.coco.loadImgs(self.image_ids[image_index])[0]
@@ -514,6 +527,60 @@ def collater(data):
     padded_imgs = padded_imgs.permute(0, 3, 1, 2)
 
     return {'img': padded_imgs, 'annot': annot_padded, 'scale': scales}
+
+def detection_augment_list():
+    l = [
+        (Translate_Y, -0.3, 0.3),
+        (Translate_Y_BBoxes, -0.3, 0.3),
+        (Translate_X, -0.3, 0.3),
+        (Translate_X_BBoxes, -0.3, 0.3),
+        (CutOut, 6, 20),
+        (CutOut_BBoxes, 6, 20),
+        (Rotate, -30, 30),
+        (ShearX, -30, 30),
+        (ShearX_BBoxes, -30, 30),
+        (ShearY, -30, 30),
+        (ShearY_BBoxes, -30, 30),
+        (Equalize, 0, 1),
+        (Equalize_BBoxes, 0, 1),
+        (Solarize, -1., 1.),
+        (Solarize_BBoxes, -1., 1.),
+        (Color, 0., 3.),
+        (Color_BBoxes, 0., 3.),
+        (FlipLR, 0, 1)
+    ]
+    return l
+
+detection_augment_dict = {fn.__name__: (fn, v1, v2) for fn, v1, v2 in detection_augment_list()}
+
+def get_augment(name, detection=False):
+    if detection:
+        return detection_augment_dict[name]
+    else:
+        pass
+
+
+def apply_augment(sample, name, level, detection=False):
+    augment_obj, low, high = get_augment(name, detection)
+    random_add = random.random() * 0.05
+    adjusted_level = (level + random_add) * (high - low) + low
+    augment_inst = augment_obj(adjusted_level)
+    return augment_inst(sample.copy())
+
+
+class Augmentation(object):
+    def __init__(self, policies, detection=True):
+        self.policies = policies
+        self.detection = detection
+
+    def __call__(self, sample):
+        for _ in range(1):
+            policy = random.choice(self.policies)
+            for name, pr, level in policy:
+                if random.random() > pr:
+                    continue
+                sample = apply_augment(sample, name, level, self.detection)
+        return sample
 
 
 class Resizer(object):

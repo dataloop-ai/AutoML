@@ -60,7 +60,7 @@ if args.train:
     model.preprocess()
     model.build()
     model.train()
-    model.get_checkpoint()
+    model.get_checkpoint_metadata()
     model.save()
 if args.predict:
     model.load_inference(checkpoint_path='checkpoint.pt')

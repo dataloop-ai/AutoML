@@ -1,5 +1,5 @@
 {
-  "max_trials": 4,
+  "max_trials": 2,
   "max_instances_at_once": 1,
   "model_priority_space": [
     10,
@@ -13,6 +13,6 @@
   "data": {
     "home_path": "../data/tiny_coco",
     "annotation_type": "coco",
-    "dataset_name": "2017"
+    "dataset_name": ""
   }
 }

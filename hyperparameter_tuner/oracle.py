@@ -28,16 +28,21 @@ class Oracle:
             values = None
         else:
             response = self._populate_space(trial_id)
-            status = response['status']
-            values = response['values'] if 'values' in response else None
-            self.trials[trial_id] = {'hp_values': values}
+            if response is None:
+                status = 'STOPPED'
+                values = None
+            else:
+                status = response['status']
+                values = response['values'] if 'values' in response else None
+                if values is not None:
+                    self.trials[trial_id] = {'hp_values': values}
 
         return trial_id, values, status
 
     def update_metrics(self, ongoing_trials):
         for trial_id, trial in ongoing_trials.items():
             self.trials[trial_id]['metrics'] = trial['metrics']
-            self.trials[trial_id]['checkpoint'] = trial['checkpoint']
+            self.trials[trial_id]['meta_checkpoint'] = trial['meta_checkpoint']
 
     def _populate_space(self, trial_id):
 

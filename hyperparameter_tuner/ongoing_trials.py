@@ -12,7 +12,7 @@ class OngoingTrials:
 
     def update_metrics(self, trial_id, metrics_and_checkpoint_dict):
         self.trials[trial_id]['metrics'] = metrics_and_checkpoint_dict['metrics']
-        self.trials[trial_id]['checkpoint'] = metrics_and_checkpoint_dict['checkpoint']
+        self.trials[trial_id]['meta_checkpoint'] = metrics_and_checkpoint_dict['meta_checkpoint']
 
     def remove_trial(self):
         # change status of trial object then

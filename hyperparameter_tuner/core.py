@@ -23,6 +23,10 @@ class Tuner:
         self.oracle.update_metrics(self.ongoing_trials.trials)
         self.ongoing_trials.remove_trial()
 
+    def add_trial(self, trial_id, hp_values, metrics, meta_checkpoint):
+        self.oracle.trials[trial_id] = {'hp_values': hp_values, 'metrics': metrics, 'meta_checkpoint': meta_checkpoint}
+
+
     def search_hp(self):
 
         for _ in range(self.max_instances_at_once):
@@ -32,7 +36,8 @@ class Tuner:
                 break
             self.ongoing_trials.update_trial_hp(trial_id, hp_values=hp_values)
 
-    def get_trials(self):
+    @property
+    def trials(self):
         return self.oracle.trials #TODO pop deleted last round hyperband models from trials
 
     def get_sorted_trial_ids(self):
