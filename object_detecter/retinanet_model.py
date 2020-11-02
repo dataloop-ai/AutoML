@@ -15,12 +15,11 @@ from networks.retinanet import ret18, ret34, ret50, ret101, ret152
 
 from torch.utils.data import DataLoader
 
-try:
-    from logging_utils import logginger
-    logger = logginger(__name__)
-except:
-    import logging
-    logger = logging.getLogger(__name__)
+
+from logging_utils import logginger, init_logging
+logger = logginger(__name__)
+mem_log = init_logging('GPU_Memory','mem_log.log')
+
 
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
@@ -193,7 +192,11 @@ class RetinaModel:
                 self._save_classes_for_inference()
                 # last epoch delete last checkpoint and leave the best checkpoint
                 os.remove(self.save_last_checkpoint_path)
-
+                
+        if self.tb_writer:
+            self.tb_writer.close()
+        mem_log.info(round(torch.cuda.memory_cached(0)/1024**2,0))
+        
     def get_best_checkpoint(self):
         return torch.load(self.save_best_checkpoint_path)
 

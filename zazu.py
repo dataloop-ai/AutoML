@@ -101,7 +101,7 @@ class ZaZu:
         if os.path.exists(save_best_checkpoint_location):
             logger.info('overwriting checkpoint . . .')
             os.remove(save_best_checkpoint_location)
-        torch.save(trials[sorted_trial_ids[0]]['checkpoint'], save_best_checkpoint_location)
+        torch.save(trials[sorted_trial_ids[0]]['meta_checkpoint'], save_best_checkpoint_location)
 
         logger.info('best trial: ' + str(trials[sorted_trial_ids[0]]['hp_values']) + '\nbest value: ' + str(
             trials[sorted_trial_ids[0]]['metrics']))
