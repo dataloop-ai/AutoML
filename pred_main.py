@@ -1,6 +1,7 @@
 from predictor import predict
 import argparse
 
+# This can run with only predictor dataloader and networks libraries
 
 
 if __name__ == '__main__':
