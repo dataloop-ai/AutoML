@@ -30,25 +30,11 @@ class ZaZu:
         models_spec_path = 'models.json'
         self.models = ModelsSpec(models_spec_path)
 
-    def find_best_model(self):
-        closest_model = find_model(self.opt_model, self.models)
-        logger.info(str(closest_model))
-
-        if os.path.exists(self.path_to_most_suitable_model):
-            logger.info('overwriting model.txt . . .')
-            os.remove(self.path_to_most_suitable_model)
-        with open(self.path_to_most_suitable_model, "w") as f:
-            f.write(closest_model)
-        self.update_optimal_model()
-
     def hp_search(self):
         if not self.remote:
             if self.opt_model.max_instances_at_once > torch.cuda.device_count():
                 print(torch.cuda.is_available())
                 raise Exception(''' 'max_instances_at_once' must be smaller or equal to the number of available gpus''')
-        if not hasattr(self.opt_model, 'name'):
-            logger.info("no 'update_optimal_model' method, checking for model.txt file . . . ")
-            self.update_optimal_model()
         # initialize hyperparameter_tuner and gun i.e.
         ongoing_trials = OngoingTrials()
         tuner = Tuner(self.opt_model, ongoing_trials)
@@ -115,16 +101,6 @@ class ZaZu:
             json.dump(best_trial, fp)
             logger.info('results saved to best_trial.json')
 
-    def update_optimal_model(self):
-        # this will update opt_model with chosen model
-        if not os.path.exists(self.path_to_most_suitable_model):
-            raise Exception('''model.txt file doesn't exist, you can run "find_best_model" method to get it''')
-        with open(self.path_to_most_suitable_model, "r") as f:
-            closest_model = f.read().strip()
-        self.opt_model.add_attr(closest_model, 'name')
-        self.opt_model.add_attr(self.models.spec_data[closest_model]['hp_search_space'], 'hp_space')
-        self.opt_model.add_attr(self.models.spec_data[closest_model]['training_configs'], 'training_configs')
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -145,18 +121,17 @@ if __name__ == '__main__':
     logger = init_logging(__name__)
     this_path = path = os.getcwd()
     configs_path = os.path.join(this_path, 'configs.json')
-    configs = ConfigSpec(configs_path)
-    opt_model = OptModel()
+    configs = ConfigSpec('configs.json')
+    opt_model = OptModel('models.json')
     opt_model.add_child_spec(configs, 'configs')
     zazu = ZaZu(opt_model, remote=args.remote)
     if args.search:
-        zazu.find_best_model()
         zazu.hp_search()
     if args.train:
         adapter = AdapterModel()
         adapter.load(checkpoint_path=args.checkpoint_path)
         adapter.train()
-        print('model is saved to: ', adapter.checkpoint_path)
+        print('model checkpoint is saved to: ', adapter.checkpoint_path)
     if args.predict:
         predict(pred_on_path=args.dataset_path, output_path=args.output_path,
                 checkpoint_path=args.checkpoint_path, threshold=0.5)

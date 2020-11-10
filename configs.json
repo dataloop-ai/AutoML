@@ -1,4 +1,5 @@
 {
+  "model_name": "retinanet",
   "max_trials": 2,
   "max_instances_at_once": 1,
   "model_priority_space": [
