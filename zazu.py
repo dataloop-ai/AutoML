@@ -1,17 +1,11 @@
-from model_selector import find_model
 from trial_launchpad import Launcher
 from hyperparameter_tuner import Tuner, OngoingTrials
 from spec import ConfigSpec, OptModel
-from spec import ModelsSpec
-from dataloop_services import deploy_model, deploy_zazu, push_package, update_service, get_dataset_obj, deploy_predict, \
-    deploy_zazu_timer
 from augmentations_tuner.fastautoaugment import augsearch
 import argparse
 import os
 import torch
 import json
-import dtlpy as dl
-import sys
 from hyperparameter_tuner.trial import generate_trial_id
 from logging_utils import init_logging, logginger
 from object_detecter.adapter import AdapterModel
@@ -27,8 +21,6 @@ class ZaZu:
         self.path_to_best_trial = 'best_trial.json'
         self.path_to_trials = 'trials.json'
         self.path_to_best_checkpoint = 'checkpoint.pt'
-        models_spec_path = 'models.json'
-        self.models = ModelsSpec(models_spec_path)
 
     def hp_search(self):
         if not self.remote:
