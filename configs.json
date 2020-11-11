@@ -2,11 +2,6 @@
   "model_name": "retinanet",
   "max_trials": 2,
   "max_instances_at_once": 1,
-  "model_priority_space": [
-    10,
-    0,
-    0
-  ],
   "task": "detection",
   "epochs": 2,
   "search_method": "random",

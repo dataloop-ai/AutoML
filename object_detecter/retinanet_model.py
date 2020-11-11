@@ -12,14 +12,13 @@ import traceback
 from . import csv_eval
 from dataloaders import *
 from networks.retinanet import ret18, ret34, ret50, ret101, ret152
-
+from networks import get_model
 from torch.utils.data import DataLoader
 
-
 from logging_utils import logginger, init_logging
-logger = logginger(__name__)
-mem_log = init_logging('GPU_Memory','mem_log.log')
 
+logger = logginger(__name__)
+mem_log = init_logging('GPU_Memory', 'mem_log.log')
 
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
@@ -29,7 +28,8 @@ class RetinaModel:
         if os.getcwd().split('/')[-1] == 'object_detecter':
             home_path = os.path.join('..', home_path)
         self.home_path = home_path
-        self.device = torch.device(type='cuda', index=device_index) if torch.cuda.is_available() else torch.device(type='cpu')
+        self.device = torch.device(type='cuda', index=device_index) if torch.cuda.is_available() else torch.device(
+            type='cpu')
         self.checkpoint = checkpoint
         this_path = os.getcwd()
         self.weights_dir_path = os.path.join(this_path, 'weights')
@@ -49,7 +49,7 @@ class RetinaModel:
 
         self.best_fitness = - float('inf')
         self.tb_writer = None
-        self.retinanet = None
+        self.model = None
 
     def preprocess(self, augment_policy=None, dataset='csv', csv_train=None, csv_val=None, csv_classes=None,
                    train_set_name='train2017', val_set_name='val2017', resize=608, batch=2):
@@ -100,35 +100,16 @@ class RetinaModel:
     def build(self, depth=50, learning_rate=1e-5, ratios=[0.5, 1, 2],
               scales=[2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]):
         # Create the model
-        if depth == 18:
-            retinanet = ret18(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
-                                       weights_dir=self.weights_dir_path,
-                                       pretrained=True)
-        elif depth == 34:
-            retinanet = ret34(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
-                                       weights_dir=self.weights_dir_path,
-                                       pretrained=True)
-        elif depth == 50:
-            retinanet = ret50(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
-                                       weights_dir=self.weights_dir_path,
-                                       pretrained=True)
-        elif depth == 101:
-            retinanet = ret101(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
-                                        weights_dir=self.weights_dir_path,
-                                        pretrained=True)
-        elif depth == 152:
-            retinanet = ret152(num_classes=self.dataset_train.num_classes, ratios=ratios, scales=scales,
-                                        weights_dir=self.weights_dir_path,
-                                        pretrained=True)
-        else:
-            raise ValueError('Unsupported model depth, must be one of 18, 34, 50, 101, 152')
-        self.retinanet = retinanet.to(device=self.device)
-        self.retinanet.training = True
-        self.optimizer = optim.Adam(self.retinanet.parameters(), lr=learning_rate)
+        model = get_model(name='retinanet', num_classes=self.dataset_train.num_classes, depth=depth, ratios=ratios,
+                          scales=scales, weights_dir=self.weights_dir_path, pretrained=True)
+
+        self.model = model.to(device=self.device)
+        self.model.training = True
+        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, patience=3, verbose=True)
 
         if self.checkpoint is not None:
-            self.retinanet.load_state_dict(self.checkpoint['model'])
+            self.model.load_state_dict(self.checkpoint['model'])
             self.optimizer.load_state_dict(self.checkpoint['optimizer'])
             self.scheduler.load_state_dict(self.checkpoint['scheduler'])  # TODO: test this, is it done right?
             # TODO is it right to resume_read_trial optimizer and schedular like this???
@@ -144,8 +125,8 @@ class RetinaModel:
         for epoch_num in range(init_epoch + 1, epochs + 1):
             st = time.time()
             print('total epochs: ', epochs)
-            self.retinanet.train()
-            self.retinanet.freeze_bn()
+            self.model.train()
+            self.model.freeze_bn()
 
             epoch_loss = []
             total_num_iterations = len(self.dataloader_train)
@@ -156,7 +137,7 @@ class RetinaModel:
                 # try:
                 data = next(dataloader_iterator)
                 self.optimizer.zero_grad()
-                classification_loss, regression_loss = self.retinanet(
+                classification_loss, regression_loss = self.model(
                     [data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)])
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
@@ -164,13 +145,14 @@ class RetinaModel:
                 if bool(loss == 0):
                     continue
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.retinanet.parameters(), 0.1)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.1)
                 self.optimizer.step()
                 epoch_loss.append(float(loss))
                 s = 'Trial {} -- Epoch: {}/{} | Iteration: {}/{}  | Classification loss: {:1.5f} | Regression loss: {:1.5f}'.format(
                     self.save_trial_id[:3], epoch_num, epochs, iter_num, total_num_iterations,
                     float(classification_loss),
-                    float(regression_loss)) #TODO: this isn't working, regresision loss running loss dont show up at all
+                    float(
+                        regression_loss))  # TODO: this isn't working, regresision loss running loss dont show up at all
                 pbar.set_description(s)
                 pbar.update()
                 del classification_loss
@@ -184,7 +166,7 @@ class RetinaModel:
             self.scheduler.step(np.mean(epoch_loss))
             self.final_epoch = epoch_num == epochs
             print('time to train epoch: ', time.time() - st)
-            mAP = csv_eval.evaluate(self.dataset_val, self.retinanet)
+            mAP = csv_eval.evaluate(self.dataset_val, self.model)
             self._write_to_tensorboard(mAP, np.mean(epoch_loss), epoch_num)
             del epoch_loss
             self._save_checkpoint(mAP, epoch_num)
@@ -192,18 +174,18 @@ class RetinaModel:
                 self._save_classes_for_inference()
                 # last epoch delete last checkpoint and leave the best checkpoint
                 os.remove(self.save_last_checkpoint_path)
-                
+
         if self.tb_writer:
             self.tb_writer.close()
-        mem_log.info(round(torch.cuda.memory_cached(0)/1024**2,0))
-        
+        mem_log.info(round(torch.cuda.memory_cached(0) / 1024 ** 2, 0))
+
     def get_best_checkpoint(self):
         return torch.load(self.save_best_checkpoint_path)
 
     def get_best_metrics(self):
         checkpoint = torch.load(self.save_best_checkpoint_path)
-        self.retinanet.load_state_dict(checkpoint['model'])
-        mAP = csv_eval.evaluate(self.dataset_val, self.retinanet)
+        self.model.load_state_dict(checkpoint['model'])
+        mAP = csv_eval.evaluate(self.dataset_val, self.model)
         return mAP.item()
 
     def get_best_metrics_and_checkpoint(self):
@@ -211,7 +193,7 @@ class RetinaModel:
                 'checkpoint': self.get_best_checkpoint()}
 
     def save(self):
-        torch.save(self.retinanet, 'model_final.pt')
+        torch.save(self.model, 'model_final.pt')
 
     def _save_classes_for_inference(self):
         classes_path = os.path.join(self.home_path, "d.names")
@@ -242,7 +224,7 @@ class RetinaModel:
         # Create checkpoint
         checkpoint = {'epoch': epoch,
                       'metrics': {'val_accuracy': results.item()},
-                      'model': self.retinanet.state_dict(),
+                      'model': self.model.state_dict(),
                       'optimizer': self.optimizer.state_dict(),
                       'scheduler': self.scheduler.state_dict(),
                       'labels': self.dataset_train.labels
@@ -267,5 +249,7 @@ class RetinaModel:
             except:
                 logger.info("Error while deleting file : " + file)
         shutil.rmtree(os.path.join(os.getcwd(), 'runs'))
+
+
 if __name__ == '__main__':
     pass

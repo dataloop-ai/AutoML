@@ -17,20 +17,18 @@ class ZaZu:
     def __init__(self, opt_model, remote=False):
         self.remote = remote
         self.opt_model = opt_model
-        self.path_to_most_suitable_model = 'model.txt'
         self.path_to_best_trial = 'best_trial.json'
-        self.path_to_trials = 'trials.json'
         self.path_to_best_checkpoint = 'checkpoint.pt'
 
     def hp_search(self):
-        if not self.remote:
-            if self.opt_model.max_instances_at_once > torch.cuda.device_count():
-                print(torch.cuda.is_available())
-                raise Exception(''' 'max_instances_at_once' must be smaller or equal to the number of available gpus''')
+
+        if self.opt_model.max_instances_at_once > torch.cuda.device_count():
+            print(torch.cuda.is_available())
+            raise Exception(''' 'max_instances_at_once' must be smaller or equal to the number of available gpus''')
         # initialize hyperparameter_tuner and gun i.e.
         ongoing_trials = OngoingTrials()
         tuner = Tuner(self.opt_model, ongoing_trials)
-        gun = Launcher(self.opt_model, ongoing_trials, remote=self.remote)
+        gun = Launcher(self.opt_model, ongoing_trials)
         logger.info('commencing hyper-parameter search . . . ')
         tuner.search_hp()
         gun.launch_trials()
