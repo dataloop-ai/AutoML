@@ -34,5 +34,5 @@ script:
   - cd data
   - git clone https://github.com/dataloop-ai/tiny_coco.git
   - cd ..
-  - flake8 AutoML
+  - flake8
   - python zazu.py --search || python3 zazu.py --search
