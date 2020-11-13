@@ -8,7 +8,7 @@ import os
 import sys
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
 # sys.path.insert(1, os.path.dirname(__file__))
-from .augmentations import get_augment, augment_list, detection_augment_list
+from dataloaders import get_augment, detection_augment_list
 
 
 def arsaug_policy():
@@ -299,23 +299,23 @@ def fa_reduced_svhn():
 def policy_decoder(augment, num_policy, num_op):
     op_list = detection_augment_list()
     policies = []
-    # for i in range(num_policy):
-    #     ops = []
-    #     for j in range(num_op):
-    #         op_idx = augment['policy_%d_%d' % (i, j)]
-    #         op_prob = augment['prob_%d_%d' % (i, j)]
-    #         op_level = augment['level_%d_%d' % (i, j)]
-    #         ops.append((op_list[op_idx][0].__name__, op_prob, op_level))
-    #     policies.append(ops)
-    # temp for prototyping
-    import numpy as np
-
     for i in range(num_policy):
         ops = []
         for j in range(num_op):
-            op_idx = np.random.randint(0,len(op_list))
-            op_prob = np.random.uniform()
-            op_level = np.random.uniform()
+            op_idx = augment['policy_%d_%d' % (i, j)]
+            op_prob = augment['prob_%d_%d' % (i, j)]
+            op_level = augment['level_%d_%d' % (i, j)]
             ops.append((op_list[op_idx][0].__name__, op_prob, op_level))
         policies.append(ops)
+    # temp for prototyping
+    # import numpy as np
+    #
+    # for i in range(num_policy):
+    #     ops = []
+    #     for j in range(num_op):
+    #         op_idx = np.random.randint(0,len(op_list))
+    #         op_prob = np.random.uniform()
+    #         op_level = np.random.uniform()
+    #         ops.append((op_list[op_idx][0].__name__, op_prob, op_level))
+    #     policies.append(ops)
     return policies

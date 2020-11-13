@@ -319,7 +319,7 @@ def resnet18(num_classes, ratios, scales, weights_dir=None, pretrained=False, **
         model.load_state_dict(model_zoo.load_url(model_urls['resnet18'], model_dir=weights_dir), strict=False)
     return model
 
-
+#TODO: BLOCKS ARE THE SAME AS 50 BACKBONE????
 def resnet34(num_classes, ratios, scales, weights_dir=None, pretrained=False, **kwargs):
     """Constructs a ResNet-34 model.
     Args:

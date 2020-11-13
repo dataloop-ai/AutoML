@@ -1,27 +1,15 @@
 import logging
-
-import numpy as np
-import os
-
-import math
-import random
-import torch
 import torchvision
-from PIL import Image
 from augmentations_tuner.fastautoaugment.FastAutoAugment.archive import policy_decoder
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
 import torch.distributed as dist
 from torchvision.transforms import transforms
 from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
-# from theconf import Config as C
+from theconf import Config as C
 import os
-import sys
-# sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
-# sys.path.insert(1, os.path.dirname(__file__))
-from pycocotools.coco import COCO
 from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_reduced_cifar10, fa_reduced_svhn, \
     fa_resnet50_rimagenet
-from .augmentations import *
+from dataloaders import Augmentation
 from .common import get_logger
 from .imagenet import ImageNet
 from networks.efficientnet_pytorch.model import EfficientNet
@@ -281,9 +269,9 @@ def get_data(dataset, dataroot, augment, resize=608, split=0.15, split_idx=0, mu
         transform_train.transforms.insert(0, Augmentation(policies, detection=True))
 
     if dataset == 'coco':
-        total_trainset = CocoDataset(dataroot, set_name='train2017',
+        total_trainset = CocoDataset(dataroot, set_name='train',
                                          transform=transform_train)
-        testset = CocoDataset(dataroot, set_name='val2017',
+        testset = CocoDataset(dataroot, set_name='val',
                                        transform=transform_test)
 
 
@@ -313,22 +301,6 @@ class CutoutDefault(object):
         mask = mask.expand_as(img)
         img *= mask
         return img
-
-
-class Augmentation(object):
-    def __init__(self, policies, detection=True):
-        self.policies = policies
-        self.detection = detection
-
-    def __call__(self, sample):
-        for _ in range(1):
-            policy = random.choice(self.policies)
-            for name, pr, level in policy:
-                if random.random() > pr:
-                    continue
-                sample = apply_augment(sample, name, level, self.detection)
-        return sample
-
 
 
 class EfficientNetRandomCrop:

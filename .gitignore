@@ -8,6 +8,7 @@ dataloop_dataset/*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.vs
 
 ### Images ###
 # JPEG

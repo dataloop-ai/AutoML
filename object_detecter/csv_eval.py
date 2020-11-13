@@ -3,7 +3,7 @@ from __future__ import print_function
 import numpy as np
 import json
 import os
-
+import time
 import torch
 import logging
 logger = logging.getLogger('launcher')
@@ -79,7 +79,7 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
     all_detections = [[None for i in range(dataset.num_classes)] for j in range(len(dataset))]
     device = [p.device for p in retinanet.parameters()][0]
     retinanet.eval()
-    
+    st = time.time()
     with torch.no_grad():
 
         for index in range(len(dataset)):
@@ -93,6 +93,7 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
             scale = data['scale']
 
             # run network
+            #TODO: why is this permuted?
             scores, labels, boxes = retinanet(data['img'].permute(2, 0, 1).to(device=device).float().unsqueeze(dim=0))
             scores = scores.cpu().numpy()
             labels = labels.cpu().numpy()
@@ -125,7 +126,7 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
                     all_detections[index][label] = np.zeros((0, 5))
 
             print('{}/{}'.format(index + 1, len(dataset)), end='\r')
-
+    print('time to get detections during eval: ', time.time() - st)
     return all_detections
 
 

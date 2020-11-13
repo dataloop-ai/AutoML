@@ -19,14 +19,20 @@ before_install:
   - conda info -a
   - conda create -y -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
-  - conda config --add channels conda-forge
+  # - conda config --add channels conda-forge
   # - conda config --set channel_priority strict
 install:
   - pip install -r requirements.txt
-  - conda install -y -c conda-forge mkl_fft>=1.1.0 mkl_random==1.1.1 mkl-service==2.3.0
+  - conda install -y -c intel mkl_fft>=1.1.0 mkl_random==1.1.1 mkl-service==2.3.0
+cache:
+  pip
+  # directories:
+  #     - ""
 script:
+  # follows DOCS/GETTINGSTARTED.md; not working; needs updating.
   - mkdir data
   - cd data
   - git clone https://github.com/dataloop-ai/tiny_coco.git
   - cd ..
+  - flake8 AutoML
   - python zazu.py --search || python3 zazu.py --search

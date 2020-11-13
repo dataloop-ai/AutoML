@@ -18,7 +18,7 @@ colorama==0.4.3
 colorful==0.5.4
 #conda==4.8.3
 #conda-package-handling==1.7.0
-cryptography==2.9.2
+cryptography==3.2
 cycler==0.10.0
 Cython==0.29.21
 decorator==4.4.2
@@ -28,6 +28,7 @@ dtlpy==1.17.12
 easydict==1.9
 enum34==1.1.10
 filelock==3.0.12
+flake8
 future==0.18.2
 fuzzyfinder==2.1.0
 gast==0.3.3
@@ -84,6 +85,7 @@ pycocotools==2.0.1
 pycosat==0.6.3
 pycparser==2.20
 PyJWT==1.7.1
+pylint
 pyOpenSSL==19.1.0
 pyparsing==2.4.7
 pyrsistent==0.16.0
@@ -123,6 +125,7 @@ tqdm==4.46.0
 urllib3==1.25.8
 validators==0.17.1
 git+https://github.com/ildoonet/pytorch-gradual-warmup-lr.git@v0.1  # warmup-scheduler==0.1
+git+https://github.com/wbaek/theconf@de32022f8c0651a043dc812d17194cdfd62066e8
 wcwidth==0.2.5
 webvtt-py==0.4.3
 Werkzeug==1.0.1
