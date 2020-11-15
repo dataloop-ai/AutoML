@@ -141,10 +141,9 @@ class ModelTrainer:
                 data = next(dataloader_iterator)
                 time_to_load_data.append(time.time() - st_loader)
                 self.optimizer.zero_grad()
-                img, annot = data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)
                 st_loss = time.time()
                 classification_loss, regression_loss = self.model(
-                    [img, annot])
+                    [data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)])
                 time_to_compute_loss.append(time.time() - st_loss)
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
