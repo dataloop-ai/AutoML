@@ -18,7 +18,7 @@ from .efficientnet_pytorch import EfficientNet, RoutingFn
 # from tf_port.tpu_bn import TpuBatchNormalization
 
 
-def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weights_dir=None, pretrained=True, local_rank=0):
+def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weights_dir=None, pretrained=True):
 
 
     if name == 'retinanet':
@@ -114,8 +114,8 @@ def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weight
     # model = model.to(device)
     # model = DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
 
-
-    cudnn.benchmark = True
+    # THIS CAN SUBSTANTIALLY SLOW DOWN THE FIRST EPOCH WHEN TIMES ARE DIFFERENT
+    # cudnn.benchmark = True
     return model
 
 
