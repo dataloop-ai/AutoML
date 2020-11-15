@@ -3,7 +3,7 @@ import os
 import sys
 
 # sys.path.insert(1, os.path.dirname(__file__))
-from .retinanet_model import RetinaModel
+from .model_trainer import ModelTrainer
 from .predict import detect, detect_single_image
 
 from copy import deepcopy
@@ -91,60 +91,45 @@ class AdapterModel:
             self.classes_filepath = os.path.join(self.output_path, 'classes.txt')
             self.annotations_train_filepath = os.path.join(self.output_path, 'annotations_train.txt')
             self.annotations_val_filepath = os.path.join(self.output_path, 'annotations_val.txt')
-        self.retinanet_model = RetinaModel(devices['gpu_index'], self.home_path, new_trial_id, past_trial_id,
-                                           checkpoint)
+        self.model_trainer = ModelTrainer(devices['gpu_index'], self.home_path, new_trial_id, past_trial_id,
+                                          checkpoint)
 
     def train(self):
-        self.retinanet_model.preprocess(augment_policy=self.configs['augment_policy'],
-                                        dataset=self.annotation_type,
-                                        csv_train=self.annotations_train_filepath,
-                                        csv_val=self.annotations_val_filepath,
-                                        csv_classes=self.classes_filepath,
-                                        train_set_name='train' + self.dataset_name,
-                                        val_set_name='val' + self.dataset_name,
-                                        resize=self.configs['input_size'],
-                                        batch=self.configs['batch'])
+        self.model_trainer.preprocess(augment_policy=self.configs['augment_policy'],
+                                      dataset=self.annotation_type,
+                                      csv_train=self.annotations_train_filepath,
+                                      csv_val=self.annotations_val_filepath,
+                                      csv_classes=self.classes_filepath,
+                                      train_set_name='train' + self.dataset_name,
+                                      val_set_name='val' + self.dataset_name,
+                                      resize=self.configs['input_size'],
+                                      batch=self.configs['batch'])
 
-        self.retinanet_model.build(depth=self.configs['depth'],
-                                   learning_rate=self.configs['learning_rate'],
-                                   ratios=self.configs['anchor_ratios'],
-                                   scales=self.configs['anchor_scales'])
+        self.model_trainer.build(depth=self.configs['depth'],
+                                 learning_rate=self.configs['learning_rate'],
+                                 ratios=self.configs['anchor_ratios'],
+                                 scales=self.configs['anchor_scales'])
 
-        self.retinanet_model.train(epochs=self.configs['hyperparameter_tuner/epochs'],
-                                   init_epoch=self.configs['hyperparameter_tuner/initial_epoch'])
+        self.model_trainer.train(epochs=self.configs['hyperparameter_tuner/epochs'],
+                                 init_epoch=self.configs['hyperparameter_tuner/initial_epoch'])
 
 
     def get_checkpoint_metadata(self):
         logger.info('getting best checkpoint')
-        checkpoint = self.retinanet_model.get_best_checkpoint()
+        checkpoint = self.model_trainer.get_best_checkpoint()
         logging.info('got best checkpoint')
         checkpoint['hp_values'] = self.hp_values
         checkpoint['model_specs'] = self.model_specs
         checkpoint['devices'] = self.devices
-        checkpoint['checkpoint_path'] = self.retinanet_model.save_best_checkpoint_path
+        checkpoint['checkpoint_path'] = self.model_trainer.save_best_checkpoint_path
         checkpoint.pop('model')
         logging.info('checkpoint keys: ' + str(checkpoint.keys()))
         return checkpoint
 
     @property
     def checkpoint_path(self):
-        return self.retinanet_model.save_best_checkpoint_path
+        return self.model_trainer.save_best_checkpoint_path
 
-
-
-    #TODO have to redo this because get_checkpoint() no longer retrieves a checkpoint with model
-
-    # def predict(self, output_dir='checkpoint0', checkpoint_path='checkpoint.pt', home_path=None):
-    #     try:
-    #         return detect(self.inference_checkpoint, output_dir, home_path=home_path, visualize=True)
-    #     except:
-    #         try:
-    #             self.load_inference(checkpoint_path)
-    #             return detect(checkpoint=self.inference_checkpoint, output_dir=output_dir, home_path=home_path,
-    #                           visualize=True)
-    #         except:
-    #             checkpoint = self.get_checkpoint()
-    #             return detect(checkpoint, output_dir)
 
     def load_inference(self, checkpoint_path):
         if torch.cuda.is_available():
@@ -193,4 +178,4 @@ class AdapterModel:
         return dirname
 
     def delete_stuff(self):
-        self.retinanet_model.delete_stuff()
+        self.model_trainer.delete_stuff()

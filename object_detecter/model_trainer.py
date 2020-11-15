@@ -11,7 +11,6 @@ from torchvision import transforms
 import traceback
 from . import csv_eval
 from dataloaders import *
-from networks.retinanet import ret18, ret34, ret50, ret101, ret152
 from networks import get_model
 from torch.utils.data import DataLoader
 
@@ -23,7 +22,7 @@ mem_log = init_logging('GPU_Memory', 'mem_log.log')
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 
-class RetinaModel:
+class ModelTrainer:
     def __init__(self, device_index, home_path, save_trial_id, resume_trial_id=None, checkpoint=None):
         if os.getcwd().split('/')[-1] == 'object_detecter':
             home_path = os.path.join('..', home_path)
@@ -129,22 +128,32 @@ class RetinaModel:
             self.model.freeze_bn()
 
             epoch_loss = []
+            time_to_load_data = []
+            time_to_compute_loss = []
+            time_to_compute_backprop = []
             total_num_iterations = len(self.dataloader_train)
             dataloader_iterator = iter(self.dataloader_train)
             pbar = tqdm(total=total_num_iterations)
 
             for iter_num in range(1, total_num_iterations + 1):
                 # try:
+                st_loader = time.time()
                 data = next(dataloader_iterator)
+                time_to_load_data.append(time.time() - st_loader)
                 self.optimizer.zero_grad()
+                img, annot = data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)
+                st_loss = time.time()
                 classification_loss, regression_loss = self.model(
-                    [data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)])
+                    [img, annot])
+                time_to_compute_loss.append(time.time() - st_loss)
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
                 loss = classification_loss + regression_loss
                 if bool(loss == 0):
                     continue
+                st_backprop = time.time()
                 loss.backward()
+                time_to_compute_backprop.append(time.time() - st_backprop)
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.1)
                 self.optimizer.step()
                 epoch_loss.append(float(loss))
@@ -166,6 +175,9 @@ class RetinaModel:
             self.scheduler.step(np.mean(epoch_loss))
             self.final_epoch = epoch_num == epochs
             print('time to train epoch: ', time.time() - st)
+            print('avg time to load data: ', np.mean(time_to_load_data))
+            print('avg time to compute loss: ', np.mean(time_to_compute_loss))
+            print('avg time to compute backprop: ', np.mean(time_to_compute_backprop))
             mAP = csv_eval.evaluate(self.dataset_val, self.model)
             self._write_to_tensorboard(mAP, np.mean(epoch_loss), epoch_num)
             del epoch_loss

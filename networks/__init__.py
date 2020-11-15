@@ -22,28 +22,33 @@ def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weight
 
 
     if name == 'retinanet':
-        if depth == 18:
-            model = ret18(num_classes=num_classes, ratios=ratios, scales=scales,
+        retinanet = {18: ret18, 34: ret34, 50: ret50, 101: ret101, 152: ret152}
+        model = retinanet[depth](num_classes=num_classes, ratios=ratios, scales=scales,
                                        weights_dir=weights_dir,
                                        pretrained=pretrained)
-        elif depth == 34:
-            model = ret34(num_classes=num_classes, ratios=ratios, scales=scales,
-                                       weights_dir=weights_dir,
-                                       pretrained=pretrained)
-        elif depth == 50:
-            model = ret50(num_classes=num_classes, ratios=ratios, scales=scales,
-                                       weights_dir=weights_dir,
-                                       pretrained=pretrained)
-        elif depth == 101:
-            model = ret101(num_classes=num_classes, ratios=ratios, scales=scales,
-                                       weights_dir=weights_dir,
-                                       pretrained=pretrained)
-        elif depth == 152:
-            model = ret152(num_classes=num_classes, ratios=ratios, scales=scales,
-                                       weights_dir=weights_dir,
-                                       pretrained=pretrained)
-        else:
-            raise ValueError('Unsupported model depth, must be one of 18, 34, 50, 101, 152')
+        #
+        # if depth == 18:
+        #     model = ret18(num_classes=num_classes, ratios=ratios, scales=scales,
+        #                                weights_dir=weights_dir,
+        #                                pretrained=pretrained)
+        # elif depth == 34:
+        #     model = ret34(num_classes=num_classes, ratios=ratios, scales=scales,
+        #                                weights_dir=weights_dir,
+        #                                pretrained=pretrained)
+        # elif depth == 50:
+        #     model = ret50(num_classes=num_classes, ratios=ratios, scales=scales,
+        #                                weights_dir=weights_dir,
+        #                                pretrained=pretrained)
+        # elif depth == 101:
+        #     model = ret101(num_classes=num_classes, ratios=ratios, scales=scales,
+        #                                weights_dir=weights_dir,
+        #                                pretrained=pretrained)
+        # elif depth == 152:
+        #     model = ret152(num_classes=num_classes, ratios=ratios, scales=scales,
+        #                                weights_dir=weights_dir,
+        #                                pretrained=pretrained)
+        # else:
+        #     raise ValueError('Unsupported model depth, must be one of 18, 34, 50, 101, 152')
 
     elif name == 'resnet50':
         model = ResNet(dataset='imagenet', depth=50, num_classes=num_classes, bottleneck=True)
@@ -105,8 +110,8 @@ def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weight
         raise NameError('no model named, %s' % name)
 
 
-    device = torch.device('cuda', local_rank)
-    model = model.to(device)
+    # device = torch.device('cuda', local_rank)
+    # model = model.to(device)
     # model = DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
 
 
