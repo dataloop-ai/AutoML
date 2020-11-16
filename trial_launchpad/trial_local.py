@@ -6,7 +6,7 @@ from importlib import import_module
 import threading
 
 
-class LocalTrialConnector():
+class TrialConnector():
 
     def __init__(self):
         self.logger = logginger(__name__)
@@ -15,7 +15,7 @@ class LocalTrialConnector():
     def run(self, inputs_dict):
         model_name = inputs_dict['model_specs']['name']
         # cls = getattr(import_module('.adapter', 'object_detecter.' + model_name), 'AdapterModel')
-        cls = getattr(import_module('.adapter', 'object_detecter'), 'AdapterModel')#TODO: reapropriate the model choosing to networks
+        cls = getattr(import_module('.adapter', 'object_detecter'), 'AdapterModel') #TODO: reapropriate the model choosing to networks
         checkpoint_path = 'meta_checkpoint.pt'
         torch.save(inputs_dict, checkpoint_path)
         adapter = cls()

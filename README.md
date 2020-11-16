@@ -14,7 +14,7 @@ An ML Pipeline taylor made for simple integration into your project or code.
 
 | *Augmentations Search* | *Hyper-Parameter Search* | *Architecture Search*
 | :----:         |     :----:      |    :----:      |
-|  <ul><li>Fast-Autoaugment</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | <ul><li>EfficientDet</li><li>EndToEndTransformers</li></ul>  |
+|  <ul><li>Fast-Autoaugment</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | <ul><li>Your Model</li></ul>  |
 ### *Super EASY to use!*
 
 ![](./images/running_zazu_search2.gif)  
