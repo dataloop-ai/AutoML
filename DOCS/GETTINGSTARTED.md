@@ -13,8 +13,8 @@ About the docker image: Should work over all Cuda 10.* systems, this API is for 
 git clone https://github.com/dataloop-ai/ZazuML.git
 mkdir data
 cd data
-git clone https://github.com/NoamRosenberg/tiny_coco.git
-cd ../ZazuML
+git clone https://github.com/dataloop-ai/tiny_coco.git
+cd ../
 ```
 
 ### *model & hyper-parameter search*

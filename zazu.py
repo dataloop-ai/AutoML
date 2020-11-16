@@ -21,10 +21,12 @@ class ZaZu:
         self.path_to_best_checkpoint = 'checkpoint.pt'
 
     def hp_search(self):
+        if not self.remote:
+            if self.opt_model.max_instances_at_once > torch.cuda.device_count():
+                print(torch.cuda.is_available())
+                raise Exception(
+                    ''' 'max_instances_at_once' must be smaller or equal to the number of available gpus' ''')
 
-        if self.opt_model.max_instances_at_once > torch.cuda.device_count():
-            print(torch.cuda.is_available())
-            raise Exception(''' 'max_instances_at_once' must be smaller or equal to the number of available gpus''')
         # initialize hyperparameter_tuner and gun i.e.
         ongoing_trials = OngoingTrials()
         tuner = Tuner(self.opt_model, ongoing_trials)
@@ -49,18 +51,22 @@ class ZaZu:
             paths_ls = []
             for i in range(len(sorted_trial_ids[:5])):
                 save_checkpoint_location = string1 + str(i) + '.pt'
-                logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
+                logger.info(
+                    'trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
                 save_checkpoint_location = os.path.join(os.getcwd(), 'augmentations_tuner', 'fastautoaugment',
                                                         'FastAutoAugment', 'models', save_checkpoint_location)
                 if os.path.exists(save_checkpoint_location):
                     logger.info('overwriting checkpoint . . .')
                     os.remove(save_checkpoint_location)
-                torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
+                torch.save(trials[sorted_trial_ids[i]]
+                           ['checkpoint'], save_checkpoint_location)
                 paths_ls.append(save_checkpoint_location)
-            aug_policy = augsearch(paths_ls=paths_ls)  # TODO: calibrate between the model dictionaries
+            # TODO: calibrate between the model dictionaries
+            aug_policy = augsearch(paths_ls=paths_ls)
             best_trial = trials[sorted_trial_ids[0]]['hp_values']
             best_trial.update({"augment_policy": aug_policy})
-            metrics_and_checkpoint_dict = gun.launch_trial(hp_values=best_trial)
+            metrics_and_checkpoint_dict = gun.launch_trial(
+                hp_values=best_trial)
             # no oracle to create trial with, must generate on our own
             trial_id = generate_trial_id()
             tuner.add_trial(trial_id=trial_id,
@@ -72,13 +78,15 @@ class ZaZu:
         save_best_checkpoint_location = 'best_checkpoint.pt'
         logger.info(
             'the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
-        temp_checkpoint = torch.load(trials[sorted_trial_ids[0]]['meta_checkpoint']['checkpoint_path'])
+        temp_checkpoint = torch.load(
+            trials[sorted_trial_ids[0]]['meta_checkpoint']['checkpoint_path'])
         checkpoint = trials[sorted_trial_ids[0]]['meta_checkpoint']
         checkpoint.update(temp_checkpoint)
         if os.path.exists(save_best_checkpoint_location):
             logger.info('overwriting checkpoint . . .')
             os.remove(save_best_checkpoint_location)
-        torch.save(trials[sorted_trial_ids[0]]['meta_checkpoint'], save_best_checkpoint_location)
+        torch.save(trials[sorted_trial_ids[0]]
+                   ['meta_checkpoint'], save_best_checkpoint_location)
 
         logger.info('best trial: ' + str(trials[sorted_trial_ids[0]]['hp_values']) + '\nbest value: ' + str(
             trials[sorted_trial_ids[0]]['metrics']))
@@ -101,7 +109,8 @@ if __name__ == '__main__':
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     parser.add_argument("--zazu_timer", action='store_true', default=False)
-    parser.add_argument("--checkpoint_path", type=str, default='/home/noam/ZazuML/best_checkpoint.pt')
+    parser.add_argument("--checkpoint_path", type=str,
+                        default='/home/noam/ZazuML/best_checkpoint.pt')
     parser.add_argument("--dataset_path", type=str, default='')
     parser.add_argument("--output_path", type=str, default='')
     args = parser.parse_args()
@@ -125,4 +134,3 @@ if __name__ == '__main__':
     if args.predict:
         predict(pred_on_path=args.dataset_path, output_path=args.output_path,
                 checkpoint_path=args.checkpoint_path, threshold=0.5)
-

@@ -28,6 +28,7 @@ dtlpy==1.17.12
 easydict==1.9
 enum34==1.1.10
 filelock==3.0.12
+flake8
 future==0.18.2
 fuzzyfinder==2.1.0
 gast==0.3.3
@@ -56,9 +57,9 @@ kiwisolver==1.2.0
 Markdown==3.2.2
 MarkupSafe==1.1.1
 matplotlib==3.3.0
-mkl-fft>=1.1.0
-mkl-random==1.1.1
-mkl-service==2.3.0
+# mkl_fft>=1.1.0
+# mkl_random==1.1.1
+# mkl-service==2.3.0
 msgpack==1.0.0
 multidict==4.7.6
 networkx==2.4
@@ -84,6 +85,7 @@ pycocotools==2.0.1
 pycosat==0.6.3
 pycparser==2.20
 PyJWT==1.7.1
+pylint
 pyOpenSSL==19.1.0
 pyparsing==2.4.7
 pyrsistent==0.16.0

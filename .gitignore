@@ -8,6 +8,7 @@ dataloop_dataset/*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.vs
 
 ### Images ###
 # JPEG
@@ -300,7 +301,10 @@ ENV/
 env.bak/
 venv.bak/
 pip-selfcheck.json
-
+lib/
+lib64/
+bin/
+Scripts/
 .git
 ### h5 ###
 *.h5
