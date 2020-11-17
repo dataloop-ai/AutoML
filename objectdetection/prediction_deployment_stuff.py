@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(1, os.path.dirname(__file__))
-from .adapter import AdapterModel
+from .trial_adapter import TrialAdapter
 from dataloop_services import push_package, deploy_predict_item, create_trigger
 import argparse
 import dtlpy as dl
@@ -54,7 +54,7 @@ if args.deploy:
 if args.trigger:
     create_trigger()
 
-model = AdapterModel()
+model = TrialAdapter()
 if args.train:
     model.load('example_checkpoint.pt')
     model.preprocess()

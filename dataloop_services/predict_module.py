@@ -28,7 +28,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         self.logger.info('data downloaded')
         assert isinstance(dataset, dl.entities.Dataset)
         project = dl.projects.get(project_id=dataset.projects[0])
-        cls = getattr(import_module('.adapter', 'object_detecter.' + model_specs['name']), 'AdapterModel')
+        cls = getattr(import_module('.adapter', 'objectdetection.' + model_specs['name']), 'AdapterModel')
 
         home_path = model_specs['data']['home_path']
 

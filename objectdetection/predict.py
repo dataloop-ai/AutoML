@@ -26,7 +26,7 @@ def detect(checkpoint, output_dir, home_path=None, visualize=False):
     device = torch.device(type='cuda') if torch.cuda.is_available() else torch.device(type='cpu')
     if home_path is None:
         home_path = checkpoint['model_specs']['data']['home_path']
-    if os.getcwd().split('/')[-1] == 'object_detecter':
+    if os.getcwd().split('/')[-1] == 'objectdetection':
         home_path = os.path.join('..', home_path)
     # must have a file to predictor on called "predict_on"
     pred_on_path = os.path.join(home_path, 'predict_on')

@@ -25,7 +25,7 @@ import json
 from pystopwatch2 import PyStopwatch
 from easydict import EasyDict as edict
 w = PyStopwatch()
-from object_detecter.csv_eval import evaluate
+from objectdetection.csv_eval import evaluate
 top1_valid_by_cv = defaultdict(lambda: list)
 
 

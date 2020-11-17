@@ -33,7 +33,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         project = dl.projects.get(project_id=dataset.projects[0])
 
         # start tune
-        cls = getattr(import_module('.adapter', 'object_detecter.' + model_specs['name']), 'AdapterModel')
+        cls = getattr(import_module('.adapter', 'objectdetection.' + model_specs['name']), 'AdapterModel')
         #TODO: without roberto work with path / or github
         inputs_dict = {'devices': {'gpu_index': 0}, 'model_specs': model_specs, 'hp_values': hp_values}
         #json save

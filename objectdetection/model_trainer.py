@@ -24,7 +24,7 @@ print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 class ModelTrainer:
     def __init__(self, device_index, home_path, save_trial_id, resume_trial_id=None, checkpoint=None):
-        if os.getcwd().split('/')[-1] == 'object_detecter':
+        if os.getcwd().split('/')[-1] == 'objectdetection':
             home_path = os.path.join('..', home_path)
         self.home_path = home_path
         self.device = torch.device(type='cuda', index=device_index) if torch.cuda.is_available() else torch.device(
@@ -96,10 +96,10 @@ class ModelTrainer:
             raise Exception('num val images is 0!')
         print('Num val images: {}'.format(len(self.dataset_val)))
 
-    def build(self, depth=50, learning_rate=1e-5, ratios=[0.5, 1, 2],
+    def build(self, model_name='retinanet', depth=50, learning_rate=1e-5, ratios=[0.5, 1, 2],
               scales=[2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]):
         # Create the model
-        model = get_model(name='retinanet', num_classes=self.dataset_train.num_classes, depth=depth, ratios=ratios,
+        model = get_model(name=model_name, num_classes=self.dataset_train.num_classes, depth=depth, ratios=ratios,
                           scales=scales, weights_dir=self.weights_dir_path, pretrained=True)
 
         self.model = model.to(device=self.device)

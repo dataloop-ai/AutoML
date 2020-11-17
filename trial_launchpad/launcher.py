@@ -6,7 +6,7 @@ import logging
 import torch
 import glob
 import shutil
-from .trial_local import TrialConnector
+from .local_trial_connecter import TrialConnector
 from .thread_manager import ThreadManager
 from dataloop_services.plugin_utils import get_dataset_obj
 import dtlpy as dl
@@ -34,7 +34,7 @@ class Launcher:
             'model_specs': model_specs,
         }
 
-        meta_checkpoint = self._run_trial_demo_execution(inputs)
+        meta_checkpoint = self.trial_connector.run(inputs)
         return {'metrics': meta_checkpoint['metrics'],
                 'meta_checkpoint': meta_checkpoint}
 
@@ -42,31 +42,28 @@ class Launcher:
         if self.ongoing_trials is None:
             raise Exception('for this method ongoing_trials object must be passed during the init')
         if self.ongoing_trials.num_trials > 0:
-            self._launch_local_trials()
+            self.trial_connector = TrialConnector()
+            threads = ThreadManager()
+            model_specs = self.optimal_model.unwrap()
+            logger.info('launching new set of trials')
+            device = 0
+            for trial_id, trial in self.ongoing_trials.trials.items():
+                logger.info('launching trial_' + trial_id + ': ' + str(trial))
+                inputs = {
+                    'devices': {'gpu_index': device},
+                    'hp_values': trial['hp_values'],
+                    'model_specs': model_specs
+                }
 
-    def _launch_local_trials(self):
-        self.trial_connector = TrialConnector()
-        threads = ThreadManager()
-        model_specs = self.optimal_model.unwrap()
-        logger.info('launching new set of trials')
-        device = 0
-        for trial_id, trial in self.ongoing_trials.trials.items():
-            logger.info('launching trial_' + trial_id + ': ' + str(trial))
-            inputs = {
-                'devices': {'gpu_index': device},
-                'hp_values': trial['hp_values'],
-                'model_specs': model_specs
-            }
+                threads.new_thread(target=self._collect_metrics,
+                                   inputs=inputs,
+                                   trial_id=trial_id)
+                device = device + 1
 
-            threads.new_thread(target=self._collect_metrics,
-                               inputs=inputs,
-                               trial_id=trial_id)
-            device = device + 1
-
-        threads.wait()
-        ongoing_trials_results = threads.results
-        for trial_id, metrics_and_checkpoint_dict in ongoing_trials_results.items():
-            self.ongoing_trials.update_metrics(trial_id, metrics_and_checkpoint_dict)
+            threads.wait()
+            ongoing_trials_results = threads.results
+            for trial_id, metrics_and_checkpoint_dict in ongoing_trials_results.items():
+                self.ongoing_trials.update_metrics(trial_id, metrics_and_checkpoint_dict)
 
     def _collect_metrics(self, inputs_dict, trial_id, results_dict):
         thread_name = threading.currentThread().getName()

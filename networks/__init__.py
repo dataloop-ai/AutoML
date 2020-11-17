@@ -1,12 +1,7 @@
 import torch
 
 from torch import nn
-from torch.nn import DataParallel
-from torch.nn.parallel import DistributedDataParallel
-import torch.backends.cudnn as cudnn
-# from torchvision import models
 import numpy as np
-import os
 
 from .retinanet import ret18, ret34, ret50, ret101, ret152
 from .resnet import ResNet
@@ -26,30 +21,6 @@ def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weight
         model = retinanet[depth](num_classes=num_classes, ratios=ratios, scales=scales,
                                        weights_dir=weights_dir,
                                        pretrained=pretrained)
-        #
-        # if depth == 18:
-        #     model = ret18(num_classes=num_classes, ratios=ratios, scales=scales,
-        #                                weights_dir=weights_dir,
-        #                                pretrained=pretrained)
-        # elif depth == 34:
-        #     model = ret34(num_classes=num_classes, ratios=ratios, scales=scales,
-        #                                weights_dir=weights_dir,
-        #                                pretrained=pretrained)
-        # elif depth == 50:
-        #     model = ret50(num_classes=num_classes, ratios=ratios, scales=scales,
-        #                                weights_dir=weights_dir,
-        #                                pretrained=pretrained)
-        # elif depth == 101:
-        #     model = ret101(num_classes=num_classes, ratios=ratios, scales=scales,
-        #                                weights_dir=weights_dir,
-        #                                pretrained=pretrained)
-        # elif depth == 152:
-        #     model = ret152(num_classes=num_classes, ratios=ratios, scales=scales,
-        #                                weights_dir=weights_dir,
-        #                                pretrained=pretrained)
-        # else:
-        #     raise ValueError('Unsupported model depth, must be one of 18, 34, 50, 101, 152')
-
     elif name == 'resnet50':
         model = ResNet(dataset='imagenet', depth=50, num_classes=num_classes, bottleneck=True)
     elif name == 'resnet200':
