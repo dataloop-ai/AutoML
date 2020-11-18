@@ -25,34 +25,18 @@ class OptModel(Spec):
         return None
 
     @property
-    def data(self):
+    def home_path(self):
         for dic in self.spec_data.values():
-            if self.dataloop:
-                return {'home_path': os.path.join('..', 'data', self.dataloop['dataset']), 'annotation_type': 'coco', 'dataset_name': ''}
-            elif 'data' in dic:
-                return dic['data']
-            else:
-                return None
+            if 'home_path' in dic:
+                return dic['home_path']
+
+        return None
 
     @property
-    def dataloop(self):
+    def annotation_type(self):
         for dic in self.spec_data.values():
-            if 'dataloop' in dic:
-                try:
-                    dic['dataloop']['project']
-                    dic['dataloop']['dataset']
-                except:
-                    project_id = dic['dataloop']['project_id']
-                    dataset_id = dic['dataloop']['dataset_id']
-                    project = dl.projects.get(project_id=project_id)
-                    dataset = project.datasets.get(dataset_id=dataset_id)
-                    project_name = project.name
-                    dataset_name = dataset.name
-                    dic['dataloop']['project'] = project_name
-                    dic['dataloop']['dataset'] = dataset_name
-                return dic['dataloop']
-
-
+            if 'annotation_type' in dic:
+                return dic['annotation_type']
 
         return None
 
@@ -116,9 +100,3 @@ class OptModel(Spec):
 
         return None
 
-    def unwrap(self):
-        return {
-            'name': self.name,
-            'training_configs': self.training_configs,
-            'data': self.data
-        }

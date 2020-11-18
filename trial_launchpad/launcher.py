@@ -18,20 +18,23 @@ logger = logginger(__name__)
 
 
 class Launcher:
-    def __init__(self, optimal_model, ongoing_trials=None):
-        self.optimal_model = optimal_model
+    def __init__(self, ongoing_trials, model_fn, training_configs, home_path, annotation_type):
         self.ongoing_trials = ongoing_trials
         self.num_available_devices = torch.cuda.device_count()
-        self.home_path = optimal_model.data['home_path']
-
+        self.home_path = home_path
+        self.annotation_type = annotation_type
+        self.model_fn = model_fn
+        self.training_configs = training_configs
 
     def launch_trial(self, hp_values):
 
-        model_specs = self.optimal_model.unwrap()
         inputs = {
             'devices': {'gpu_index': 0},
             'hp_values': hp_values,
-            'model_specs': model_specs,
+            'model_fn': self.model_fn,
+            'training_configs': self.training_configs,
+            'home_path': self.home_path,
+            'annotation_type': self.annotation_type
         }
 
         meta_checkpoint = self.trial_connector.run(inputs)
@@ -44,7 +47,6 @@ class Launcher:
         if self.ongoing_trials.num_trials > 0:
             self.trial_connector = TrialConnector()
             threads = ThreadManager()
-            model_specs = self.optimal_model.unwrap()
             logger.info('launching new set of trials')
             device = 0
             for trial_id, trial in self.ongoing_trials.trials.items():
@@ -52,7 +54,10 @@ class Launcher:
                 inputs = {
                     'devices': {'gpu_index': device},
                     'hp_values': trial['hp_values'],
-                    'model_specs': model_specs
+                    'model_fn': self.model_fn,
+                    'training_configs': self.training_configs,
+                    'home_path': self.home_path,
+                    'annotation_type': self.annotation_type
                 }
 
                 threads.new_thread(target=self._collect_metrics,

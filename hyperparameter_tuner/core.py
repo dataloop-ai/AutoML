@@ -1,23 +1,19 @@
 from .oracle import Oracle
 from .hyperband import HyperBand
-import pandas as pd
 
 
 class Tuner:
 
-    def __init__(self, optimal_model, ongoing_trials):
+    def __init__(self, search_method, epochs, max_trials, max_instances_at_once, hp_space):
 
-        if optimal_model.search_method == "hyperband":
-            self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=optimal_model.epochs, augment=False)
-        elif optimal_model.search_method == "hyperaugment":
-            self.oracle = HyperBand(space=optimal_model.hp_space, max_epochs=optimal_model.epochs, augment=True)
-        elif optimal_model.search_method == "random":
-            self.oracle = Oracle(space=optimal_model.hp_space, max_epochs=optimal_model.epochs, max_trials=optimal_model.max_trials)
+        if search_method == "hyperband":
+            self.oracle = HyperBand(space=hp_space, max_epochs=epochs, augment=False)
+        elif search_method == "random":
+            self.oracle = Oracle(space=hp_space, max_epochs=epochs, max_trials=max_trials)
         else:
             raise Exception('have not defined proper search_method param in configs.json')
 
-        self.ongoing_trials = ongoing_trials
-        self.max_instances_at_once = optimal_model.max_instances_at_once
+        self.max_instances_at_once = max_instances_at_once
 
     def end_trial(self):
         self.oracle.update_metrics(self.ongoing_trials.trials)

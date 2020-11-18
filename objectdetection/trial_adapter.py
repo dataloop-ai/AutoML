@@ -23,26 +23,22 @@ class TrialAdapter(ModelTrainer):
     def _unpack_trial_checkpoint(self, trial_checkpoint):
         self.hp_values = trial_checkpoint['hp_values'] if 'hp_values' in trial_checkpoint else {}
         self.hp_values['hyperparameter_tuner/initial_epoch'] = trial_checkpoint[
-            'epoch'] if 'model' and 'epoch' in trial_checkpoint else self.hp_values[
+            'epoch'] if 'model_fn' and 'epoch' in trial_checkpoint else self.hp_values[
             'hyperparameter_tuner/initial_epoch']
-        self.annotation_type = trial_checkpoint['model_specs']['data']['annotation_type']
-        self.model_func = trial_checkpoint['model_specs']['name']
-        trial_checkpoint['model_specs']['training_configs'].update(self.hp_values)
-        self.configs = trial_checkpoint['model_specs']['training_configs']
+        self.annotation_type = trial_checkpoint['annotation_type']
+        self.model_func = trial_checkpoint['model_fn']
+        trial_checkpoint['training_configs'].update(self.hp_values)
+        self.configs = trial_checkpoint['training_configs']
+        self.data = trial_checkpoint['data']
 
+        new_trial_id = self.configs['hyperparameter_tuner/new_trial_id']
         past_trial_id = self.configs[
             'hyperparameter_tuner/past_trial_id'] if 'hyperparameter_tuner/past_trial_id' in self.configs else None
-        try:
-            new_trial_id = self.configs['hyperparameter_tuner/new_trial_id']
-        except Exception as e:
-            raise Exception('make sure a new trial id was passed, got this error: ' + repr(e))
-
-        data_path = trial_checkpoint['model_specs']['data']['home_path']
-        self.model_specs = trial_checkpoint['model_specs']
+        data_path = trial_checkpoint['home_path']
         checkpoint = None
         if 'model' in trial_checkpoint:
             checkpoint = deepcopy(trial_checkpoint)
-            for x in ['model_specs', 'hp_values', 'epoch']:
+            for x in ['model_fn', 'training_configs', 'data', 'hp_values', 'epoch']:
                 checkpoint.pop(x)
         # return checkpoint with just
         return data_path, new_trial_id, past_trial_id, checkpoint
@@ -56,8 +52,6 @@ class TrialAdapter(ModelTrainer):
     def train(self):
         super().preprocess(augment_policy=self.configs['augment_policy'],
                            dataset=self.annotation_type,
-                           train_set_name='train',
-                           val_set_name='val',
                            resize=self.configs['input_size'],
                            batch=self.configs['batch'])
 
@@ -75,7 +69,9 @@ class TrialAdapter(ModelTrainer):
         checkpoint = super().get_best_checkpoint()
         logging.info('got best checkpoint')
         checkpoint['hp_values'] = self.hp_values
-        checkpoint['model_specs'] = self.model_specs
+        checkpoint['model_fn'] = self.model_fn
+        checkpoint['training_configs'] = self.configs
+        checkpoint['data'] = self.data
         checkpoint['checkpoint_path'] = super().save_best_checkpoint_path
         checkpoint.pop('model')
         logging.info('checkpoint keys: ' + str(checkpoint.keys()))

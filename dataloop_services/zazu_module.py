@@ -28,7 +28,7 @@ class ServiceRunner(dl.BaseServiceRunner):
         opt_model.add_child_spec(configs, 'configs')
         zazu = ZaZu(opt_model, remote=True)
         zazu.find_best_model()
-        zazu.hp_search()
+        zazu.search()
         checkpoint_paths_list = glob.glob('*checkpoint*.pt')
         save_info = {
             'package_name': self.package_name,

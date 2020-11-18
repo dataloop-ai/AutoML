@@ -14,38 +14,43 @@ from predictor import predict
 logger = logginger(__name__)
 
 
-class ZaZu:
-    def __init__(self, opt_model, remote=False):
-        self.remote = remote
-        self.opt_model = opt_model
+class ZaZu(OptModel):
+    def __init__(self, model_name, home_path="../data/tiny_coco", annotation_type="coco"):
         self.path_to_best_trial = 'best_trial.json'
         self.path_to_best_checkpoint = 'checkpoint.pt'
-        if self.opt_model.max_instances_at_once > torch.cuda.device_count():
-            print('cuda is available: ', torch.cuda.is_available())
-            raise Exception(''' 'max_instances_at_once' must be smaller or equal to the number of available gpus''')
-        # initialize hyperparameter_tuner and gun i.e.
-        self.ongoing_trials = OngoingTrials()
-        self.tuner = Tuner(self.opt_model, self.ongoing_trials)
-        self.gun = Launcher(self.opt_model, self.ongoing_trials)
+        self.name = model_name
+        self.home_path = home_path
+        self.annotation_type = annotation_type
+        super().__init__('models.json')
 
-    def hp_search(self):
+    def search(self, search_method='random', epochs=2, max_trials=1,
+               max_instances_at_once=1, augmentation_search_method='regular'):
+        """
+        max_trials: maximum number of trials before hard stop, is not used in hyperband algorithm
+        """
+        ongoing_trials = OngoingTrials()
+        tuner = Tuner(ongoing_trials, search_method=search_method, epochs=epochs, max_trials=max_trials,
+                      max_instances_at_once=max_instances_at_once, hp_space=opt_model.hp_space)
+        gun = Launcher(ongoing_trials, model_fn=self.name, training_configs=self.training_configs,
+                       home_path=self.home_path, annotation_type=self.annotation_type)
+
         logger.info('commencing hyper-parameter search . . . ')
-        self.tuner.search_hp()
-        self.gun.launch_trials()
-        self.tuner.end_trial()
+        tuner.search_hp()
+        gun.launch_trials()
+        tuner.end_trial()
         # starting second set of trials
-        self.tuner.search_hp()
-        while self.ongoing_trials.status is not 'STOPPED':
-            self.gun.launch_trials()
-            self.tuner.end_trial()
+        tuner.search_hp()
+        while ongoing_trials.status is not 'STOPPED':
+            gun.launch_trials()
+            tuner.end_trial()
             # starting next set of trials
-            self.tuner.search_hp()
+            tuner.search_hp()
 
-        trials = self.tuner.trials
-        if self.opt_model.augmentation_search_method == 'fastautoaugment':
-            self._searchaugs_retrain_push(trials)
+        trials = tuner.trials
+        if augmentation_search_method == 'fastautoaugment':
+            self._searchaugs_retrain_push(trials, tuner, gun)
 
-        sorted_trial_ids = self.tuner.get_sorted_trial_ids()
+        sorted_trial_ids = tuner.get_sorted_trial_ids()
         save_best_checkpoint_location = 'best_checkpoint.pt'
         logger.info(
             'the best trial, trial ' + sorted_trial_ids[0] + '\tval: ' + str(trials[sorted_trial_ids[0]]['metrics']))
@@ -68,9 +73,9 @@ class ZaZu:
             json.dump(best_trial, fp)
             logger.info('results saved to best_trial.json')
 
-    def _searchaugs_retrain_push(self, trials):
+    def _searchaugs_retrain_push(self, trials, tuner, gun):
         # search augs, retrain and upload
-        sorted_trial_ids = self.tuner.get_sorted_trial_ids()
+        sorted_trial_ids = tuner.get_sorted_trial_ids()
 
         string1 = self.path_to_best_checkpoint.split('.')[0]
         paths_ls = []
@@ -87,17 +92,18 @@ class ZaZu:
         aug_policy = augsearch(paths_ls=paths_ls)  # TODO: calibrate between the model dictionaries
         best_trial = trials[sorted_trial_ids[0]]['hp_values']
         best_trial.update({"augment_policy": aug_policy})
-        metrics_and_checkpoint_dict = self.gun.launch_trial(hp_values=best_trial)
+        metrics_and_checkpoint_dict = gun.launch_trial(hp_values=best_trial)
         # no oracle to create trial with, must generate on our own
         trial_id = generate_trial_id()
-        self.tuner.add_trial(trial_id=trial_id,
-                             hp_values=best_trial,
-                             metrics=metrics_and_checkpoint_dict['metrics'],
-                             meta_checkpoint=metrics_and_checkpoint_dict['meta_checkpoint'])
+        tuner.add_trial(trial_id=trial_id,
+                        hp_values=best_trial,
+                        metrics=metrics_and_checkpoint_dict['metrics'],
+                        meta_checkpoint=metrics_and_checkpoint_dict['meta_checkpoint'])
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("--configs-file", action='store_true', default=False)
     parser.add_argument("--remote", action='store_true', default=False)
     parser.add_argument("--deploy", action='store_true', default=False)
     parser.add_argument("--update", action='store_true', default=False)
@@ -113,14 +119,11 @@ if __name__ == '__main__':
     with open('configs.json', 'r') as fp:
         configs = json.load(fp)
     logger = init_logging(__name__)
-    this_path = path = os.getcwd()
-    configs_path = os.path.join(this_path, 'configs.json')
-    configs = ConfigSpec('configs.json')
-    opt_model = OptModel('models.json')
-    opt_model.add_child_spec(configs, 'configs')
-    zazu = ZaZu(opt_model, remote=args.remote)
+
+    zazu = ZaZu(configs['model_name'], configs['home_path'], configs['annotation_type'])
     if args.search:
-        zazu.hp_search()
+        zazu.search(configs['search_method'], configs['epochs'], configs['max_trials'],
+                    configs['max_instances_at_once'], configs['augmentation_search_method'])
     if args.train:
         adapter = TrialAdapter(0)
         adapter.load(checkpoint_path=args.checkpoint_path)

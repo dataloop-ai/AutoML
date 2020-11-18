@@ -48,7 +48,7 @@ class ModelTrainer:
         self.tb_writer = None
 
     def preprocess(self, augment_policy=None, dataset='csv', csv_train=None, csv_val=None, csv_classes=None,
-                   train_set_name='train2017', val_set_name='val2017', resize=608, batch=2):
+                   train_set_name='train', val_set_name='val', resize=608, batch=2):
         self.dataset = dataset
         transform_train = transforms.Compose([Normalizer(), Augmenter(), Resizer(min_side=resize)])
         transform_val = transforms.Compose([Normalizer(), Resizer(min_side=resize)])

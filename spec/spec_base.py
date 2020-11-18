@@ -29,7 +29,10 @@ class Spec:
             json.dump(state, f)
 
     def add_child_spec(self, obj, name):
-        self.spec_data[name] = obj.spec_data
+        if callable(obj):
+            self.spec_data[name] = obj.spec_data
+        else:
+            self.spec_data[name] = obj['spec_data']
 
     def add_attr(self, value, name):
         setattr(self, name, value)

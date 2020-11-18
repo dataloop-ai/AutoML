@@ -5,8 +5,6 @@
   "epochs": 2,
   "search_method": "random",
   "augmentation_search_method": "regular",
-  "data": {
-    "home_path": "../data/tiny_coco",
-    "annotation_type": "coco"
-  }
+  "home_path": "../data/tiny_coco",
+  "annotation_type": "coco"
 }

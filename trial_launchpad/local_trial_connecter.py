@@ -13,7 +13,7 @@ class TrialConnector():
         self.task_to_model = {'objectdetection': ('retinanet', 'yolov4', 'fasterrcnn', 'mobilenet')}
     # receives dict and saves checkpoint, adapter model only accepts checkpoints
     def run(self, inputs_dict):
-        task = [key for key, val in self.task_to_model.items() if inputs_dict['model_specs']['name'] in val][0]
+        task = [key for key, val in self.task_to_model.items() if inputs_dict['model_fn'] in val][0]
         Trial = getattr(import_module('.trial_adapter', task), 'TrialAdapter')
         checkpoint_path = 'meta_checkpoint.pt'
         device_index = inputs_dict['devices']['gpu_index']
