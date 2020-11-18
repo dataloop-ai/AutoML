@@ -42,7 +42,7 @@ class TrialAdapter(ModelTrainer):
         checkpoint = None
         if 'model' in trial_checkpoint:
             checkpoint = deepcopy(trial_checkpoint)
-            for x in ['devices', 'model_specs', 'hp_values', 'epoch']:
+            for x in ['model_specs', 'hp_values', 'epoch']:
                 checkpoint.pop(x)
         # return checkpoint with just
         return data_path, new_trial_id, past_trial_id, checkpoint
@@ -76,7 +76,6 @@ class TrialAdapter(ModelTrainer):
         logging.info('got best checkpoint')
         checkpoint['hp_values'] = self.hp_values
         checkpoint['model_specs'] = self.model_specs
-        checkpoint['devices'] = self.devices
         checkpoint['checkpoint_path'] = super().save_best_checkpoint_path
         checkpoint.pop('model')
         logging.info('checkpoint keys: ' + str(checkpoint.keys()))
@@ -108,5 +107,3 @@ class TrialAdapter(ModelTrainer):
 
         return dirname
 
-    def delete_stuff(self):
-        super().delete_stuff()
