@@ -13,40 +13,40 @@ from .efficientnet_pytorch import EfficientNet, RoutingFn
 # from tf_port.tpu_bn import TpuBatchNormalization
 
 
-def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weights_dir=None, pretrained=True):
+def get_model(model_name, num_classes=10, depth=None, ratios=None, scales=None, weights_dir=None, pretrained=True):
 
 
-    if name == 'retinanet':
+    if model_name == 'retinanet':
         retinanet = {18: ret18, 34: ret34, 50: ret50, 101: ret101, 152: ret152}
         model = retinanet[depth](num_classes=num_classes, ratios=ratios, scales=scales,
                                        weights_dir=weights_dir,
                                        pretrained=pretrained)
-    elif name == 'resnet50':
+    elif model_name == 'resnet50':
         model = ResNet(dataset='imagenet', depth=50, num_classes=num_classes, bottleneck=True)
-    elif name == 'resnet200':
+    elif model_name == 'resnet200':
         model = ResNet(dataset='imagenet', depth=200, num_classes=num_classes, bottleneck=True)
-    elif name == 'wresnet40_2':
+    elif model_name == 'wresnet40_2':
         model = WideResNet(40, 2, dropout_rate=0.0, num_classes=num_classes)
-    elif name == 'wresnet28_10':
+    elif model_name == 'wresnet28_10':
         model = WideResNet(28, 10, dropout_rate=0.0, num_classes=num_classes)
 
-    elif name == 'shakeshake26_2x32d':
+    elif model_name == 'shakeshake26_2x32d':
         model = ShakeResNet(26, 32, num_classes)
-    elif name == 'shakeshake26_2x64d':
+    elif model_name == 'shakeshake26_2x64d':
         model = ShakeResNet(26, 64, num_classes)
-    elif name == 'shakeshake26_2x96d':
+    elif model_name == 'shakeshake26_2x96d':
         model = ShakeResNet(26, 96, num_classes)
-    elif name == 'shakeshake26_2x112d':
+    elif model_name == 'shakeshake26_2x112d':
         model = ShakeResNet(26, 112, num_classes)
 
-    elif name == 'shakeshake26_2x96d_next':
+    elif model_name == 'shakeshake26_2x96d_next':
         model = ShakeResNeXt(26, 96, 4, num_classes)
 
-    elif name == 'pyramid':
+    elif model_name == 'pyramid':
         model = PyramidNet('cifar10', depth=conf['depth'], alpha=conf['alpha'], num_classes=num_classes, bottleneck=conf['bottleneck'])
 
-    elif 'efficientnet' in name:
-        model = EfficientNet.from_name(name, condconv_num_expert=conf['condconv_num_expert'], norm_layer=None)  # TpuBatchNormalization
+    elif 'efficientnet' in model_name:
+        model = EfficientNet.from_name(model_name, condconv_num_expert=conf['condconv_num_expert'], norm_layer=None)  # TpuBatchNormalization
         if local_rank >= 0:
             model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         def kernel_initializer(module):
@@ -78,7 +78,7 @@ def get_model(name, num_classes=10, depth=None, ratios=None, scales=None, weight
                     torch.nn.init.constant_(module.bias, val=0.)
         model.apply(kernel_initializer)
     else:
-        raise NameError('no model named, %s' % name)
+        raise NameError('no model named, %s' % model_name)
 
 
     # device = torch.device('cuda', local_rank)

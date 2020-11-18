@@ -16,8 +16,10 @@ class TrialConnector():
         task = [key for key, val in self.task_to_model.items() if inputs_dict['model_specs']['name'] in val][0]
         Trial = getattr(import_module('.trial_adapter', task), 'TrialAdapter')
         checkpoint_path = 'meta_checkpoint.pt'
+        device_index = inputs_dict['devices']['gpu_index']
+        inputs_dict.pop('devices')
         torch.save(inputs_dict, checkpoint_path)
-        trial = Trial()
+        trial = Trial(device_index)
         trial.load(checkpoint_path=checkpoint_path)
         self.logger.info('commencing training . . . ')
         trial.train()

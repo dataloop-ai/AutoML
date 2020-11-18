@@ -7,7 +7,6 @@
   "augmentation_search_method": "regular",
   "data": {
     "home_path": "../data/tiny_coco",
-    "annotation_type": "coco",
-    "dataset_name": ""
+    "annotation_type": "coco"
   }
 }

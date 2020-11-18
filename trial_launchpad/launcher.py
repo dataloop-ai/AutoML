@@ -23,7 +23,7 @@ class Launcher:
         self.ongoing_trials = ongoing_trials
         self.num_available_devices = torch.cuda.device_count()
         self.home_path = optimal_model.data['home_path']
-        self.dataset_name = optimal_model.data['dataset_name']
+
 
     def launch_trial(self, hp_values):
 

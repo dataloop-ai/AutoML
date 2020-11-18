@@ -20,69 +20,48 @@ def generate_trial_id():
 
 class TrialAdapter(ModelTrainer):
 
-    def __init__(self):
-        pass
+    def _unpack_trial_checkpoint(self, trial_checkpoint):
+        self.hp_values = trial_checkpoint['hp_values'] if 'hp_values' in trial_checkpoint else {}
+        self.hp_values['hyperparameter_tuner/initial_epoch'] = trial_checkpoint[
+            'epoch'] if 'model' and 'epoch' in trial_checkpoint else self.hp_values[
+            'hyperparameter_tuner/initial_epoch']
+        self.annotation_type = trial_checkpoint['model_specs']['data']['annotation_type']
+        self.model_func = trial_checkpoint['model_specs']['name']
+        trial_checkpoint['model_specs']['training_configs'].update(self.hp_values)
+        self.configs = trial_checkpoint['model_specs']['training_configs']
 
-    def load(self, checkpoint_path='checkpoint.pt'):
-        # the only necessary keys for load are ['devices', 'model_specs']
-        trial_checkpoint = torch.load(checkpoint_path)
-
-        try:
-            hp_values = trial_checkpoint['hp_values']
-        except:
-            hp_values = {}
-        checkpoint = None
-        if 'model' in trial_checkpoint.keys():
-            checkpoint = deepcopy(trial_checkpoint)
-            for x in ['devices', 'model_specs', 'hp_values']:
-                checkpoint.pop(x)
-            epoch = checkpoint['epoch']
-            hp_values['hyperparameter_tuner/initial_epoch'] = epoch
-
-        self.devices = trial_checkpoint['devices']
-        self.model_specs = trial_checkpoint['model_specs']
-        self.hp_values = hp_values
-
-        self.annotation_type = self.model_specs['data']['annotation_type']
-        self.path = os.getcwd()
-        self.output_path = os.path.join(self.path, 'output')
-
-        self.model_specs['training_configs'].update(hp_values)
-        self.configs = self.model_specs['training_configs']
-
-        self.classes_filepath = None
-        self.annotations_train_filepath = None
-        self.annotations_val_filepath = None
-        self.home_path = None
-        try:
-            past_trial_id = self.configs['hyperparameter_tuner/past_trial_id']
-        except:
-            past_trial_id = None
+        past_trial_id = self.configs[
+            'hyperparameter_tuner/past_trial_id'] if 'hyperparameter_tuner/past_trial_id' in self.configs else None
         try:
             new_trial_id = self.configs['hyperparameter_tuner/new_trial_id']
         except Exception as e:
             raise Exception('make sure a new trial id was passed, got this error: ' + repr(e))
-        if 'hyperparameter_tuner/initial_epoch' not in self.configs.keys():
-            self.configs['hyperparameter_tuner/initial_epoch'] = 0
 
-        if self.annotation_type == 'coco':
-            self.home_path = self.model_specs['data']['home_path']
-            self.dataset_name = self.model_specs['data']['dataset_name']
+        data_path = trial_checkpoint['model_specs']['data']['home_path']
+        self.model_specs = trial_checkpoint['model_specs']
+        checkpoint = None
+        if 'model' in trial_checkpoint:
+            checkpoint = deepcopy(trial_checkpoint)
+            for x in ['devices', 'model_specs', 'hp_values', 'epoch']:
+                checkpoint.pop(x)
+        # return checkpoint with just
+        return data_path, new_trial_id, past_trial_id, checkpoint
 
-        super().__init__(self.devices['gpu_index'], self.home_path, new_trial_id, past_trial_id, checkpoint)
+    def load(self, checkpoint_path='checkpoint.pt'):
+        # the only necessary keys for load are ['model_specs']
+        trial_checkpoint = torch.load(checkpoint_path)
+        data_path, new_trial_id, past_trial_id, checkpoint = self._unpack_trial_checkpoint(trial_checkpoint)
+        super().load(data_path, new_trial_id, past_trial_id, checkpoint)
 
     def train(self):
         super().preprocess(augment_policy=self.configs['augment_policy'],
                            dataset=self.annotation_type,
-                           csv_train=self.annotations_train_filepath,
-                           csv_val=self.annotations_val_filepath,
-                           csv_classes=self.classes_filepath,
-                           train_set_name='train' + self.dataset_name,
-                           val_set_name='val' + self.dataset_name,
+                           train_set_name='train',
+                           val_set_name='val',
                            resize=self.configs['input_size'],
                            batch=self.configs['batch'])
 
-        super().build(model_name=self.model_specs['name'],
+        super().build(model=self.model_func,
                       depth=self.configs['depth'],
                       learning_rate=self.configs['learning_rate'],
                       ratios=self.configs['anchor_ratios'],

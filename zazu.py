@@ -122,7 +122,7 @@ if __name__ == '__main__':
     if args.search:
         zazu.hp_search()
     if args.train:
-        adapter = TrialAdapter()
+        adapter = TrialAdapter(0)
         adapter.load(checkpoint_path=args.checkpoint_path)
         adapter.train()
         print('model checkpoint is saved to: ', adapter.checkpoint_path)

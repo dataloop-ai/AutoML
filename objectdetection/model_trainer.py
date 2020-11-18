@@ -1,14 +1,9 @@
-import collections
-import os
+
 import glob
 import shutil
-import numpy as np
-import torch
 import time
 import torch.optim as optim
 from tqdm import tqdm
-from torchvision import transforms
-import traceback
 from . import csv_eval
 from dataloaders import *
 from networks import get_model
@@ -23,12 +18,15 @@ print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 
 class ModelTrainer:
-    def __init__(self, device_index, home_path, save_trial_id, resume_trial_id=None, checkpoint=None):
-        if os.getcwd().split('/')[-1] == 'objectdetection':
-            home_path = os.path.join('..', home_path)
-        self.home_path = home_path
+    def __init__(self, device_index):
         self.device = torch.device(type='cuda', index=device_index) if torch.cuda.is_available() else torch.device(
             type='cpu')
+
+    def load(self, data_path, save_trial_id, resume_trial_id=None, checkpoint=None):
+        if os.getcwd().split('/')[-1] == 'objectdetection':
+            data_path = os.path.join('..', data_path)
+        self.data_path = data_path
+
         self.checkpoint = checkpoint
         this_path = os.getcwd()
         self.weights_dir_path = os.path.join(this_path, 'weights')
@@ -48,7 +46,6 @@ class ModelTrainer:
 
         self.best_fitness = - float('inf')
         self.tb_writer = None
-        self.model = None
 
     def preprocess(self, augment_policy=None, dataset='csv', csv_train=None, csv_val=None, csv_classes=None,
                    train_set_name='train2017', val_set_name='val2017', resize=608, batch=2):
@@ -59,9 +56,9 @@ class ModelTrainer:
             transform_train.transforms.insert(0, Augmentation(augment_policy, detection=True))
 
         if self.dataset == 'coco':
-            self.dataset_train = CocoDataset(self.home_path, set_name=train_set_name,
+            self.dataset_train = CocoDataset(self.data_path, set_name=train_set_name,
                                              transform=transform_train)
-            self.dataset_val = CocoDataset(self.home_path, set_name=val_set_name,
+            self.dataset_val = CocoDataset(self.data_path, set_name=val_set_name,
                                            transform=transform_val)
 
         elif self.dataset == 'csv':
@@ -96,11 +93,12 @@ class ModelTrainer:
             raise Exception('num val images is 0!')
         print('Num val images: {}'.format(len(self.dataset_val)))
 
-    def build(self, model_name='retinanet', depth=50, learning_rate=1e-5, ratios=[0.5, 1, 2],
+    def build(self, model='retinanet', depth=50, learning_rate=1e-5, ratios=[0.5, 1, 2],
               scales=[2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]):
-        # Create the model
-        model = get_model(name=model_name, num_classes=self.dataset_train.num_classes, depth=depth, ratios=ratios,
-                          scales=scales, weights_dir=self.weights_dir_path, pretrained=True)
+        # model must be string or a model class
+        if not callable(model):
+            model = get_model(model_name=model, num_classes=self.dataset_train.num_classes, depth=depth, ratios=ratios,
+                              scales=scales, weights_dir=self.weights_dir_path, pretrained=True)
 
         self.model = model.to(device=self.device)
         self.model.training = True
@@ -110,14 +108,13 @@ class ModelTrainer:
         if self.checkpoint is not None:
             self.model.load_state_dict(self.checkpoint['model'])
             self.optimizer.load_state_dict(self.checkpoint['optimizer'])
-            self.scheduler.load_state_dict(self.checkpoint['scheduler'])  # TODO: test this, is it done right?
-            # TODO is it right to resume_read_trial optimizer and schedular like this???
+            self.scheduler.load_state_dict(self.checkpoint['scheduler'])
         self.ratios = ratios
         self.scales = scales
         self.depth = depth
 
     def train(self, epochs=100, init_epoch=0):
-
+        # must use build before train
         # Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/
         from torch.utils.tensorboard import SummaryWriter
         self.tb_writer = SummaryWriter(comment=self.save_trial_id[:3])
@@ -207,7 +204,7 @@ class ModelTrainer:
         torch.save(self.model, 'model_final.pt')
 
     def _save_classes_for_inference(self):
-        classes_path = os.path.join(self.home_path, "d.names")
+        classes_path = os.path.join(self.data_path, "d.names")
         if os.path.exists(classes_path):
             os.remove(classes_path)
         print("saving classes to be used later for inference at ", classes_path)
