@@ -1,9 +1,10 @@
+import sys
+import os
 from trial_launchpad import Launcher
 from hyperparameter_tuner import Tuner, OngoingTrials
-from spec import ConfigSpec, OptModel
+from spec import OptModel
 from augmentations_tuner.fastautoaugment import augsearch
 import argparse
-import os
 import torch
 import json
 from hyperparameter_tuner.trial import generate_trial_id
@@ -40,7 +41,7 @@ class ZaZu(OptModel):
         tuner.end_trial()
         # starting second set of trials
         tuner.search_hp()
-        while ongoing_trials.status is not 'STOPPED':
+        while ongoing_trials.status != 'STOPPED':
             gun.launch_trials()
             tuner.end_trial()
             # starting next set of trials

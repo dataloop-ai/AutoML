@@ -1,7 +1,7 @@
 import os
 # sys.path.insert(1, os.path.dirname(__file__))
 from .model_trainer import ModelTrainer
-from .predict import detect, detect_single_image
+from predictor.pred_utils import detect, detect_single_image
 
 from copy import deepcopy
 import random

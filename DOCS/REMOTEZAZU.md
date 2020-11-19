@@ -36,7 +36,6 @@ python zazu.py --predict --remote
 ## *Run in PYTHON*
 ```
 import json
-import dtlpy as dl
 
 
 # Load the configs file

@@ -7,7 +7,6 @@ import glob
 import os
 import threading
 import logging
-import dtlpy as dlp
 from pycocotools.coco import COCO
 from plotmetriclib.plot_curve import precision_recall_compute
 import torch

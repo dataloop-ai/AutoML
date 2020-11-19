@@ -97,7 +97,7 @@ class ModelTrainer:
               scales=[2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]):
         # model must be string or a model class
         if not callable(model):
-            model = get_model(model_name=model, num_classes=self.dataset_train.num_classes, depth=depth, ratios=ratios,
+            model = get_model(model_name=model, num_classes=self.dataset_train.num_classes, backbone_depth=depth, ratios=ratios,
                               scales=scales, weights_dir=self.weights_dir_path, pretrained=True)
 
         self.model = model.to(device=self.device)

@@ -9,7 +9,6 @@ import shutil
 from .local_trial_connecter import TrialConnector
 from .thread_manager import ThreadManager
 from dataloop_services.plugin_utils import get_dataset_obj
-import dtlpy as dl
 from logging_utils import logginger
 from copy import deepcopy
 

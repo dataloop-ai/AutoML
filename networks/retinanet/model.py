@@ -3,6 +3,7 @@ import torch
 import math
 import numpy as np
 import torch.utils.model_zoo as model_zoo
+
 if __package__ == '':
     from utils import BasicBlock, Bottleneck, BBoxTransform, ClipBoxes
     from anchors import Anchors
@@ -32,7 +33,7 @@ def nms(dets, thresh):
     if torch.cuda.is_available():
         return gpu_nms(dets, thresh)
     else:
-        #TODO: make sure this is implemented correctly
+        # TODO: make sure this is implemented correctly
         return cpu_nms(dets, thresh)
 
 
@@ -319,6 +320,7 @@ def resnet18(num_classes, ratios, scales, weights_dir=None, pretrained=False, **
         model.load_state_dict(model_zoo.load_url(model_urls['resnet18'], model_dir=weights_dir), strict=False)
     return model
 
+
 # Number of blocks is THE SAME AS 50 BACKBONE but Block type is different
 def resnet34(num_classes, ratios, scales, weights_dir=None, pretrained=False, **kwargs):
     """Constructs a ResNet-34 model.
@@ -362,3 +364,10 @@ def resnet152(num_classes, ratios, scales, weights_dir=None, pretrained=False, *
     if pretrained:
         model.load_state_dict(model_zoo.load_url(model_urls['resnet152'], model_dir=weights_dir), strict=False)
     return model
+
+
+def retinanet(depth, num_classes, ratios, scales, weights_dir=None, pretrained=False, **kwargs):
+    retdic = {18: resnet18, 34: resnet34, 50: resnet50, 101: resnet101, 152: resnet152}
+    return retdic[depth](num_classes=num_classes, ratios=ratios, scales=scales,
+                         weights_dir=weights_dir,
+                         pretrained=pretrained)

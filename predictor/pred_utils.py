@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from copy import deepcopy
 
-from networks.retinanet import ret50
+from networks.retinanet import retinanet
 from dataloaders import PredDataset, collater, Resizer, Normalizer, UnNormalizer
 
 try:
@@ -37,15 +37,15 @@ def detect(checkpoint, pred_on_path, output_path, threshold=0.5, visualize=False
     labels = checkpoint['labels']
     logger.info('labels are: ' + str(labels))
     num_classes = len(labels)
-    configs = deepcopy(checkpoint['model_specs']['training_configs'])
+    configs = deepcopy(checkpoint['training_configs'])
     configs.update(checkpoint['hp_values'])
     logger.info('initializing object_detection model')
-    retinanet = ret50(num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
+    model = retinanet(depth=checkpoint['depth'], num_classes=num_classes, scales=configs['anchor_scales'], ratios=configs['anchor_ratios']) #TODO: make depth an input parameter
     logger.info('loading weights')
-    retinanet.load_state_dict(checkpoint['model'])
-    retinanet = retinanet.to(device=device)
+    model.load_state_dict(checkpoint['model'])
+    model = model.to(device=device)
     logger.info('model to device: ' + str(device))
-    retinanet.eval()
+    model.eval()
     unnormalize = UnNormalizer()
 
     def draw_caption(image, box, caption):
@@ -57,7 +57,7 @@ def detect(checkpoint, pred_on_path, output_path, threshold=0.5, visualize=False
         scale = data['scale'][0]
         with torch.no_grad():
             st = time.time()
-            scores, classification, transformed_anchors = retinanet(data['img'].to(device=device).float())
+            scores, classification, transformed_anchors = model(data['img'].to(device=device).float())
             elapsed_time = time.time() - st
             print('Elapsed time: {}'.format(elapsed_time))
             inference_times.append(elapsed_time)

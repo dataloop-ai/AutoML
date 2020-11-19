@@ -1,6 +1,5 @@
 from .spec_base import Spec
 import os
-import dtlpy as dl
 import json
 class OptModel(Spec):
 

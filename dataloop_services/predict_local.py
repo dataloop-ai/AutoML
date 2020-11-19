@@ -1,4 +1,3 @@
-import dtlpy as dl
 import logging
 import json
 import torch
