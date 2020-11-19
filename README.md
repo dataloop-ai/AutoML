@@ -17,7 +17,7 @@ An ML Pipeline taylor made for simple integration into your project or code.
 |  <ul><li>Fast-Autoaugment</li></ul>    | <ul><li>Random Search</li><li>HyperBand</li></ul>     | <ul><li>Your Model</li></ul>  |
 ### *Super EASY to use!*
 
-![](./images/new_zazu_tool.mp4)  
+![](./images/new_zazu_tool.gif)  
 
 ## *Why ZazuML?*
 You might be building an ML pipeline to avoid model performance degeneration, or maybe you're just too lazy to download, 
