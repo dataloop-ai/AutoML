@@ -24,13 +24,13 @@ class ZaZu(OptModel):
         super().__init__('models.json')
 
     def search(self, search_method='random', epochs=2, max_trials=1,
-               max_instances_at_once=1, augmentation_search_method='regular'):
+               max_instances_at_once=1, augmentation_search=False):
         """
         max_trials: maximum number of trials before hard stop, is not used in hyperband algorithm
         """
         ongoing_trials = OngoingTrials()
         tuner = Tuner(ongoing_trials, search_method=search_method, epochs=epochs, max_trials=max_trials,
-                      max_instances_at_once=max_instances_at_once, hp_space=opt_model.hp_space)
+                      max_instances_at_once=max_instances_at_once, hp_space=self.hp_space)
         gun = Launcher(ongoing_trials, model_fn=self.name, training_configs=self.training_configs,
                        home_path=self.home_path, annotation_type=self.annotation_type)
 
@@ -47,7 +47,7 @@ class ZaZu(OptModel):
             tuner.search_hp()
 
         trials = tuner.trials
-        if augmentation_search_method == 'fastautoaugment':
+        if augmentation_search:
             self._searchaugs_retrain_push(trials, tuner, gun)
 
         sorted_trial_ids = tuner.get_sorted_trial_ids()
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     zazu = ZaZu(configs['model_name'], configs['home_path'], configs['annotation_type'])
     if args.search:
         zazu.search(configs['search_method'], configs['epochs'], configs['max_trials'],
-                    configs['max_instances_at_once'], configs['augmentation_search_method'])
+                    configs['max_instances_at_once'], configs['augmentation_search'])
     if args.train:
         adapter = TrialAdapter(0)
         adapter.load(checkpoint_path=args.checkpoint_path)

@@ -29,25 +29,25 @@ class TrialAdapter(ModelTrainer):
         self.model_func = trial_checkpoint['model_fn']
         trial_checkpoint['training_configs'].update(self.hp_values)
         self.configs = trial_checkpoint['training_configs']
-        self.data = trial_checkpoint['data']
+
 
         new_trial_id = self.configs['hyperparameter_tuner/new_trial_id']
         past_trial_id = self.configs[
             'hyperparameter_tuner/past_trial_id'] if 'hyperparameter_tuner/past_trial_id' in self.configs else None
-        data_path = trial_checkpoint['home_path']
+        self.data_path = trial_checkpoint['home_path']
         checkpoint = None
         if 'model' in trial_checkpoint:
             checkpoint = deepcopy(trial_checkpoint)
             for x in ['model_fn', 'training_configs', 'data', 'hp_values', 'epoch']:
                 checkpoint.pop(x)
         # return checkpoint with just
-        return data_path, new_trial_id, past_trial_id, checkpoint
+        return new_trial_id, past_trial_id, checkpoint
 
     def load(self, checkpoint_path='checkpoint.pt'):
         # the only necessary keys for load are ['model_specs']
         trial_checkpoint = torch.load(checkpoint_path)
-        data_path, new_trial_id, past_trial_id, checkpoint = self._unpack_trial_checkpoint(trial_checkpoint)
-        super().load(data_path, new_trial_id, past_trial_id, checkpoint)
+        new_trial_id, past_trial_id, checkpoint = self._unpack_trial_checkpoint(trial_checkpoint)
+        super().load(self.data_path, new_trial_id, past_trial_id, checkpoint)
 
     def train(self):
         super().preprocess(augment_policy=self.configs['augment_policy'],
@@ -71,7 +71,8 @@ class TrialAdapter(ModelTrainer):
         checkpoint['hp_values'] = self.hp_values
         checkpoint['model_fn'] = self.model_fn
         checkpoint['training_configs'] = self.configs
-        checkpoint['data'] = self.data
+        checkpoint['data_path'] = self.data_path
+        checkpoint['annotation_type'] = self.annotation_type
         checkpoint['checkpoint_path'] = super().save_best_checkpoint_path
         checkpoint.pop('model')
         logging.info('checkpoint keys: ' + str(checkpoint.keys()))

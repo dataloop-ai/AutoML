@@ -4,8 +4,8 @@ from .hyperband import HyperBand
 
 class Tuner:
 
-    def __init__(self, search_method, epochs, max_trials, max_instances_at_once, hp_space):
-
+    def __init__(self, ongoing_trials, search_method, epochs, max_trials, max_instances_at_once, hp_space):
+        self.ongoing_trials = ongoing_trials
         if search_method == "hyperband":
             self.oracle = HyperBand(space=hp_space, max_epochs=epochs, augment=False)
         elif search_method == "random":

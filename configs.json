@@ -4,7 +4,7 @@
   "max_instances_at_once": 1,
   "epochs": 2,
   "search_method": "random",
-  "augmentation_search_method": "regular",
+  "augmentation_search": false,
   "home_path": "../data/tiny_coco",
   "annotation_type": "coco"
 }
