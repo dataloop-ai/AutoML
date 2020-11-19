@@ -8,8 +8,6 @@ An ML Pipeline taylor made for simple integration into your project or code.
 <br></br>
 <br></br>
 
-![](./images/zazu_eng.png)
-
 ### *Algorithms*
 
 | *Augmentations Search* | *Hyper-Parameter Search* | *Architecture Search*
