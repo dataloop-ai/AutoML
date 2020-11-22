@@ -117,6 +117,7 @@ if __name__ == '__main__':
     parser.add_argument("--output_path", type=str, default='')
     args = parser.parse_args()
 
+
     with open('configs.json', 'r') as fp:
         configs = json.load(fp)
     logger = init_logging(__name__)
