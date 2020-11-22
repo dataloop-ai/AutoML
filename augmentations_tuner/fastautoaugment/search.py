@@ -188,20 +188,6 @@ def augsearch(args=None, paths_ls=None):
     return final_policy_set
 
 
-
-    def search(self):
-        pass
-
-    def retrain(self, save_path=None):
-        if save_path is None:
-            augment_path = _get_path(self.args['dataset'], self.args['model'], 'ratio%.1f_augment%d' % (self.args.cv_ratio, 0))
-
-        logger.info('getting results...')
-        final_results = train_model(copy.deepcopy(self.copied_args), self.args.dataroot, self.final_policy_set, 0.0, 0,
-                                    save_path=save_path)
-        logger.info(w)
-        return final_results
-
 if __name__ == '__main__':
 
     augsearch = AugSearch()

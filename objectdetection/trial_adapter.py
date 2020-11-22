@@ -26,7 +26,7 @@ class TrialAdapter(ModelTrainer):
             'epoch'] if 'model_fn' and 'epoch' in trial_checkpoint else self.hp_values[
             'hyperparameter_tuner/initial_epoch']
         self.annotation_type = trial_checkpoint['annotation_type']
-        self.model_func = trial_checkpoint['model_fn']
+        self.model_fn = trial_checkpoint['model_fn']
         trial_checkpoint['training_configs'].update(self.hp_values)
         self.configs = trial_checkpoint['training_configs']
 
@@ -55,7 +55,7 @@ class TrialAdapter(ModelTrainer):
                            resize=self.configs['input_size'],
                            batch=self.configs['batch'])
 
-        super().build(model=self.model_func,
+        super().build(model=self.model_fn,
                       depth=self.configs['depth'],
                       learning_rate=self.configs['learning_rate'],
                       ratios=self.configs['anchor_ratios'],
@@ -73,7 +73,7 @@ class TrialAdapter(ModelTrainer):
         checkpoint['training_configs'] = self.configs
         checkpoint['data_path'] = self.data_path
         checkpoint['annotation_type'] = self.annotation_type
-        checkpoint['checkpoint_path'] = super().save_best_checkpoint_path
+        checkpoint['checkpoint_path'] = self.save_best_checkpoint_path
         checkpoint.pop('model')
         logging.info('checkpoint keys: ' + str(checkpoint.keys()))
         return checkpoint
