@@ -82,13 +82,15 @@ class ZaZu(OptModel):
         paths_ls = []
         for i in range(len(sorted_trial_ids[:5])):
             save_checkpoint_location = string1 + str(i) + '.pt'
-            logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(self.trials[sorted_trial_ids[i]]['metrics']))
+            logger.info('trial ' + sorted_trial_ids[i] + '\tval: ' + str(trials[sorted_trial_ids[i]]['metrics']))
             save_checkpoint_location = os.path.join(os.getcwd(), 'augmentations_tuner', 'fastautoaugment',
                                                     'FastAutoAugment', 'models', save_checkpoint_location)
             if os.path.exists(save_checkpoint_location):
                 logger.info('overwriting checkpoint . . .')
                 os.remove(save_checkpoint_location)
-            torch.save(trials[sorted_trial_ids[i]]['checkpoint'], save_checkpoint_location)
+            model_state = torch.load(trials[sorted_trial_ids[i]]['meta_checkpoint']['checkpoint_path'])
+            trials[sorted_trial_ids[i]]['meta_checkpoint'].update(model_state)
+            torch.save(trials[sorted_trial_ids[i]]['meta_checkpoint'], save_checkpoint_location)
             paths_ls.append(save_checkpoint_location)
         aug_policy = augsearch(paths_ls=paths_ls)  # TODO: calibrate between the model dictionaries
         best_trial = trials[sorted_trial_ids[0]]['hp_values']
@@ -116,7 +118,6 @@ if __name__ == '__main__':
     parser.add_argument("--dataset_path", type=str, default='')
     parser.add_argument("--output_path", type=str, default='')
     args = parser.parse_args()
-
 
     with open('configs.json', 'r') as fp:
         configs = json.load(fp)
