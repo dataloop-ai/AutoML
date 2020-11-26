@@ -18,7 +18,7 @@ print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 
 class ModelTrainer:
-    def __init__(self, device_index):
+    def __init__(self, device_index=0):
         self.device = torch.device(type='cuda', index=device_index) if torch.cuda.is_available() else torch.device(
             type='cpu')
 
@@ -133,7 +133,6 @@ class ModelTrainer:
             pbar = tqdm(total=total_num_iterations)
 
             for iter_num in range(1, total_num_iterations + 1):
-                # try:
                 st_loader = time.time()
                 data = next(dataloader_iterator)
                 time_to_load_data.append(time.time() - st_loader)
@@ -163,10 +162,6 @@ class ModelTrainer:
                 del classification_loss
                 del regression_loss
                 torch.cuda.empty_cache()
-                # except Exception as e:
-                #     logger.info(traceback.print_tb(e.__traceback__))
-                #     pbar.update()
-                #     continue
             pbar.close()
             self.scheduler.step(np.mean(epoch_loss))
             self.final_epoch = epoch_num == epochs
