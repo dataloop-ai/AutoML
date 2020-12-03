@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     nano \
     vim \
     python3-numpy \
+    openssh-server \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /root/data && \
@@ -51,3 +52,13 @@ RUN cd /root && git clone https://github.com/dataloop-ai/AutoML.git \
 RUN pip install -r /root/ZazuML/requirements.txt
 
 WORKDIR /root/ZazuML
+
+
+# Add ssh in container 
+# Set SSH(root) Password
+ENV PASSWORD=mikumiku
+RUN echo root:${PASSWORD} | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN service ssh start
+EXPOSE 22
+ENTRYPOINT service ssh restart && bash
