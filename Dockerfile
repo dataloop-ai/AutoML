@@ -56,9 +56,10 @@ WORKDIR /root/ZazuML
 
 # Add ssh in container 
 # Set SSH(root) Password
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 ARG PASSWORD=mikumiku
 RUN echo root:${PASSWORD} | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN service ssh start
 EXPOSE 22
-ENTRYPOINT service ssh restart && bash
+ENTRYPOINT ["/entrypoint.sh"]
