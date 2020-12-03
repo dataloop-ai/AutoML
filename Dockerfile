@@ -56,7 +56,7 @@ WORKDIR /root/ZazuML
 
 # Add ssh in container 
 # Set SSH(root) Password
-ENV PASSWORD=mikumiku
+ARG PASSWORD=mikumiku
 RUN echo root:${PASSWORD} | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN service ssh start
