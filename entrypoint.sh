@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Start the ssh server
-/etc/init.d/ssh restart
+service ssh start
 
 # Execute the CMD
 exec "$@"
