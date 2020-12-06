@@ -1,4 +1,5 @@
-
+import os
+import psutil
 import glob
 import shutil
 import time
@@ -12,7 +13,7 @@ from torch.utils.data import DataLoader
 from logging_utils import logginger, init_logging
 
 logger = logginger(__name__)
-mem_log = init_logging('GPU_Memory', 'mem_log.log')
+mem_log = init_logging('Memory', 'mem_log.log')
 
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
@@ -180,7 +181,11 @@ class ModelTrainer:
 
         if self.tb_writer:
             self.tb_writer.close()
-        mem_log.info(round(torch.cuda.memory_cached(0) / 1024 ** 2, 0))
+        if torch.cuda.is_available():
+            mem_log.info(round(torch.cuda.memory_cached(0) / 1024 ** 2, 0)) # GPU Memory
+        else:
+            process = psutil.Process(os.getpid())
+            mem_log.info(round(process.memory_info().rss / 1024 ** 2, 0))   # Memory
 
     def get_best_checkpoint(self):
         return torch.load(self.save_best_checkpoint_path)
