@@ -36,28 +36,10 @@
 from data import available_argumentations, CustomDataset
 
     dataset = CustomDataset("your/data/folder/path", "yolo", [Rotate(),Resize()], available_argumentations[0,4])
-    print(len(dataset))
-    print(dataset[5])
-    print(available_argumentations[0,4])
-    
     dataloader_iterator = iter(dataset)
     data = next(dataloader_iterator)
-    print(data)
-    data = next(dataloader_iterator)
-    print(data)
 	
 ```
-#### [Out]:
-```
-5123
-{"img":img, "ann":ann, "scale": scale}  #dataset[5]
-array([[ 1, 2, 3, 4],
-       [ 5, 6, 7, 8],
-       [ 9, 10, 11, 12],
-       [ 13, 14, 15, 16]])
-{"img":img, "ann":ann, "scale": scale}  #dataset[0]
-{"img":img, "ann":ann, "scale": scale}  #dataset[1]
 
-```
 
 
