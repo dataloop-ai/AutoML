@@ -87,7 +87,6 @@ class CocoDataset(Dataset):
                 'id']) + ' caused the following error ' + repr(e))
 
 
-
     def load_annotations(self, image_index):
         # get ground truth annotations in [x1, y1, x2, y2] format
         annotations_ids = self.coco.getAnnIds(imgIds=self.image_ids[image_index], iscrowd=False)
