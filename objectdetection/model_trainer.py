@@ -6,7 +6,8 @@ import time
 import torch.optim as optim
 from tqdm import tqdm
 from . import csv_eval
-from dataloaders import *
+from dataloader import *
+
 from networks import get_model
 from torch.utils.data import DataLoader
 
@@ -57,9 +58,9 @@ class ModelTrainer:
             transform_train.transforms.insert(0, Augmentation(augment_policy, detection=True))
 
         if self.dataset == 'coco':
-            self.dataset_train = CocoDataset(self.data_path, set_name=train_set_name,
-                                             transform=transform_train)
-            self.dataset_val = CocoDataset(self.data_path, set_name=val_set_name,
+            self.dataset_train = CustomDataset(self.data_path, data_format="coco",
+                                             function_transforms=transform_train)
+            self.dataset_val = CustomDataset(self.data_path, data_format="coco",
                                            transform=transform_val)
 
         elif self.dataset == 'csv':
@@ -140,7 +141,7 @@ class ModelTrainer:
                 self.optimizer.zero_grad()
                 st_loss = time.time()
                 classification_loss, regression_loss = self.model(
-                    [data['img'].to(device=self.device).float(), data['annot'].to(device=self.device)])
+                    [data.image.float(), data.annotation.to(device=self.device)])
                 time_to_compute_loss.append(time.time() - st_loss)
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
