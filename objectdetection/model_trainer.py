@@ -61,7 +61,7 @@ class ModelTrainer:
             self.dataset_train = CustomDataset(self.data_path, data_format="coco",
                                              function_transforms=transform_train)
             self.dataset_val = CustomDataset(self.data_path, data_format="coco",
-                                           transform=transform_val)
+                                           function_transforms=transform_val)
 
         elif self.dataset == 'csv':
             if csv_train is None:
@@ -140,8 +140,9 @@ class ModelTrainer:
                 time_to_load_data.append(time.time() - st_loader)
                 self.optimizer.zero_grad()
                 st_loss = time.time()
+                # data.annotation
                 classification_loss, regression_loss = self.model(
-                    [data.image.float(), data.annotation.to(device=self.device)])
+                    [data['img'].float(), data['annot'].to(device=self.device)])
                 time_to_compute_loss.append(time.time() - st_loss)
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
