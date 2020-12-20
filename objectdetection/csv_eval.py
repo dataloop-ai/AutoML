@@ -90,7 +90,7 @@ def _get_detections(dataset, retinanet, score_threshold=0.05, max_detections=100
                     all_detections[index][label] = np.zeros((0, 5))
                 continue
 
-            scale = data['scale']
+            scale = data.scale
 
             # run network
             #TODO: why is this permuted?

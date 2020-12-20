@@ -114,7 +114,7 @@ if __name__ == '__main__':
     parser.add_argument("--train", action='store_true', default=False)
     parser.add_argument("--predict", action='store_true', default=False)
     parser.add_argument("--zazu_timer", action='store_true', default=False)
-    parser.add_argument("--checkpoint_path", type=str, default='/home/noam/ZazuML/best_checkpoint.pt')
+    parser.add_argument("--checkpoint_path", type=str, default='/root/ZazuML/best_checkpoint.pt')
     parser.add_argument("--dataset_path", type=str, default='')
     parser.add_argument("--output_path", type=str, default='')
     args = parser.parse_args()
@@ -123,6 +123,8 @@ if __name__ == '__main__':
         configs = json.load(fp)
     logger = init_logging(__name__)
 
+    from dataloaders import CocoDataset
+    CocoDataset("../data/tiny_coco")
     zazu = ZaZu(configs['model_name'], configs['home_path'], configs['annotation_type'])
     if args.search:
         zazu.search(configs['search_method'], configs['epochs'], configs['max_trials'],
