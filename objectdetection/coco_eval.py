@@ -25,7 +25,7 @@ def evaluate_coco(dataset, model, threshold=0.05):
 
             # run network
             #TODO: question, why is this permuted bellow?
-            scores, labels, boxes = model(data['img'].permute(2, 0, 1).to(device=device).float().unsqueeze(dim=0))
+            scores, labels, boxes = model(data.image.permute(2, 0, 1).to(device=device).float().unsqueeze(dim=0))
             scores = scores.cpu()
             labels = labels.cpu()
             boxes  = boxes.cpu()
