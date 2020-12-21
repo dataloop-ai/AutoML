@@ -699,7 +699,7 @@ def collater(data):
 
     max_num_annots = max(annot.shape[0] for annot in annots)
 
-    if max_num_annots > 0:
+    if max_num_annots > 0:  
 
         annot_padded = torch.ones((len(annots), max_num_annots, 5)) * -1
 
@@ -713,7 +713,9 @@ def collater(data):
 
     padded_imgs = padded_imgs.permute(0, 3, 1, 2)
 
-    return {'img': padded_imgs, 'annot': annot_padded, 'scale': scales}
+    image_data = ImageData(padded_imgs, annot_padded,scales)
+
+    return image_data
 
 def detection_augment_list():
     l = [
