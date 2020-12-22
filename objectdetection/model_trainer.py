@@ -140,8 +140,6 @@ class ModelTrainer:
                 time_to_load_data.append(time.time() - st_loader)
                 self.optimizer.zero_grad()
                 st_loss = time.time()
-                # data.annotation
-                # new module can visualize
                 classification_loss, regression_loss = self.model(
                     [data.image.float().to(device=self.device), data.annot.to(device=self.device)])
                 time_to_compute_loss.append(time.time() - st_loss)
