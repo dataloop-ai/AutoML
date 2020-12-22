@@ -142,7 +142,7 @@ class ModelTrainer:
                 st_loss = time.time()
                 # data.annotation
                 classification_loss, regression_loss = self.model(
-                    [data.image.float(), data.annot.to(device=self.device)])
+                    [data.image.float().to(device=self.device), data.annot.to(device=self.device)])
                 time_to_compute_loss.append(time.time() - st_loss)
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
