@@ -9,7 +9,7 @@
 
 ```
 class customDataset(Dataset):
-    def __init__(self, img_path, format, function_transforms=None, built_in_transform=None):
+    def __init__(self, img_path, format, functions_transforms="None", built_in_augmentations="None"):
 
     def __getitem__(self, index):
 
@@ -24,7 +24,7 @@ class customDataset(Dataset):
 
 - *format* is string of yolo or coco.
 - *_functions_of_transform_* is a list with single/variety of transform functions.
-- *_built_in_transform_* is a list of string with single/variety of augmentations in the library.
+- *_built_in_args_* is a list of string with single/variety of augmentations in the library.
 
 ##
 * __**\_\_init\_\_**__: Initaialize dataset path, transforms.

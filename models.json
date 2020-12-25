@@ -34,12 +34,12 @@
     ],
     "training_configs": {
       "hyperparameter_tuner/epochs": 30,
-      "depth": 50,
+      "depth": 18,
       "input_size": 608,
       "learning_rate": 1e-5,
       "anchor_scales": [1.0, 1.2599210498948732, 1.5874010519681994],
       "anchor_ratios": [0.5, 1.0, 2.0],
-      "batch": 2,
+      "batch": 1,
       "augment_policy": null
     }
   }

@@ -12,7 +12,7 @@ from torchvision import transforms
 from copy import deepcopy
 
 from networks.retinanet import retinanet
-from dataloaders import PredDataset, collater, Resizer, Normalizer, UnNormalizer
+from dataloader import PredDataset, collater, Resizer, Normalizer, UnNormalizer
 
 try:
     from logging_utils import logginger

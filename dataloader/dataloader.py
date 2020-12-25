@@ -1,24 +1,56 @@
+import copy
 import csv
 import glob
 import os
+import random
 import sys
 
 import cv2
-import numpy
+import numpy as np
+import torch
+from PIL.Image import Image
+
+
 import skimage
 import skimage.color
 import skimage.io
 import skimage.transform
+from pycocotools import coco
 from pycocotools.coco import COCO
 from torch.utils.data import Dataset, Sampler
-from .custom_transforms import *
+
 from .utils import draw_bbox
 from importlib import import_module
 from .image import ImageData
+from .custom_transforms import *
+import pandas as pd
+
+
+np.set_printoptions(suppress=True)
+
+augmentations = ['Translate_Y',
+                     'Translate_Y_BBoxes',
+                     'Translate_X',
+                     'Translate_X_BBoxes',
+                     'CutOut',
+                     'CutOut_BBoxes',
+                     'Rotate',
+                     'ShearX',
+                     'ShearX_BBoxes',
+                     'ShearY',
+                     'ShearY_BBoxes',
+                     'Equalize',
+                     'Equalize_BBoxes',
+                     'Solarize',
+                     'Solarize_BBoxes',
+                     'Color',
+                     'Color_BBoxes',
+                     'FlipLR'
+                     ]
 
 
 class CustomDataset(Dataset):
-    def __init__(self, img_path, data_format, function_transforms=None, built_in_transforms=None):
+    def __init__(self, image_path, data_format, annotation_path=None, function_transforms=None, built_in_transforms=None):
         """
         Args:
             img_path: the dataset path
@@ -28,34 +60,44 @@ class CustomDataset(Dataset):
 
         """
 
-        self.img_path = img_path
+        self.img_path = image_path
         self.data_format = data_format
+        self.annot_path = annotation_path
         self.function_transforms = function_transforms
         self.built_in_transforms = built_in_transforms
 
 
+        self.img = []
+        self.annot = []
+
         self.ann_path_list = []
         if self.data_format == 'yolo':
-            # get image list
-            self.img_path_list = glob.glob(img_path + '/' + '*.jpg')
-            # get annotation list
-            self.ann_path_list = glob.glob(img_path + '/'+'*.txt')
+        # get image list
+            self.img_path_list = glob.glob(image_path + '/' + '*.jpg')+glob.glob(image_path + '/' + '*.jpeg')+glob.glob(image_path + '/' + '*.png')
+            if self.annot_path is None:
+                # get annotation list
+                self.ann_path_list = glob.glob(image_path + '/'+'*.txt')
+            else:
+                self.ann_path_list = glob.glob(annotation_path + '/' + '*.txt')
+
             self.classes_set = set()
             self.calculate_classes()
-            self.img_path_list.sort()
-            self.ann_path_list.sort()
+
 
         elif self.data_format == 'coco':
             self.set_name = 'train'
-            self.img_path_list = glob.glob(img_path + '/images/' + self.set_name + '/'+'*.jpg')
-            self.coco = COCO(os.path.join(self.img_path, 'annotations', 'instances_' + self.set_name + '.json'))
+            self.img_path_list = glob.glob(image_path + '/images/' + self.set_name + '/'+'*.jpg')
+
+            if self.annot_path is None:
+                self.coco = COCO(os.path.join(self.img_path, 'annotations', 'instances_' + self.set_name + '.json'))
+            else:
+                self.coco = COCO(glob.glob(annotation_path + '/' + '*.json')[0])
             self.image_ids = self.coco.getImgIds()
-            self.img_path_list.sort()
+
 
             self.load_classes()
-        # if built_in_transforms is not None:
-        #     for b in self.built_in_transforms:
-        #         importlib.import_module(b)
+        self.img_path_list.sort()
+        self.ann_path_list.sort()
 
     def load_classes(self):
         # load class names (name -> label)
@@ -77,47 +119,44 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
 
-
-
+        filename = self.img_path_list[index].split("/")[-1]
+        mask_category = []
+        scale = None
 
         if self.data_format == 'yolo':
-            img = self.load_image_yolo(index)
-            dh, dw, _ = img.shape
-            annot = self.load_annotations_yolo(index, dh, dw)
-
-            sample = {'img': img, 'annot': annot}
-
-            if self.function_transforms is not None:
-                for tsfm in self.function_transforms:
-                    sample = tsfm(sample)
-
-            elif self.built_in_transforms is not None:
-                sample = self.add_module(sample)
-
-            if 'scale' in sample:
-                image_data = ImageData(sample['img'], sample['annot'], sample['scale'])
-            else:
-                image_data = ImageData(sample['img'], sample['annot'])
-            return image_data
+            path = self.img_path_list[index]
+            self.img = self.load_image(index,path)
+            dh, dw, _ = self.img.shape
+            self.annot = self.load_annotations_yolo(index, dh, dw)
+            mask_category = None
 
         elif self.data_format == 'coco':
-            img = self.load_image(index)
-            annot = self.load_annotations(index)
+            image_info = self.coco.loadImgs(self.image_ids[index])[0]
+            path = os.path.join(self.img_path, 'images', self.set_name, image_info['file_name'])
 
-            sample = {'img': img, 'annot': annot}
-        
+            self.img = self.load_image(index, path)
+            self.annot = self.load_annotations(index)
 
-            if self.function_transforms is not None:
-                for tsfm in [self.function_transforms]:
-                    sample = tsfm(sample)
-            elif self.built_in_transforms is not None:
-                sample = self.add_module(sample)
+            ann_id = self.coco.getAnnIds(imgIds=self.image_ids[index])
+            coco_annotations = self.coco.loadAnns(ann_id)
 
-            if 'scale' in sample:
-                image_data = ImageData(sample['img'], sample['annot'], sample['scale'])
-            else:
-                image_data = ImageData(sample['img'], sample['annot'])
-            return image_data
+            for ann in coco_annotations:
+                if ann['segmentation'] is not None:
+                    mask = self.coco.annToMask(ann)
+                    category = ann['category_id']
+                    mask_category.append((mask, category))
+
+        image_data = ImageData(self.img, self.annot, filename, scale, masks_and_category=mask_category)
+
+        if self.function_transforms is not None:
+            for tsfm in [self.function_transforms]:
+                image_data.image, image_data.annot,image_data.scale = tsfm(image_data)
+
+        elif self.built_in_transforms is not None:
+            aug = Augmentation(self.built_in_transforms)
+            image_data.image, image_data.annot = aug(image_data)
+
+        return image_data
 
     def __len__(self):
         if self.data_format == 'yolo':
@@ -125,13 +164,27 @@ class CustomDataset(Dataset):
         elif self.data_format == 'coco':
             return len(self.image_ids)
 
-    def add_module(self, sample):
-        for module in self.built_in_transforms:
-            m1 = getattr(import_module('dataloader'), module)
-            result = m1()(sample)
-        return result
 
-    def visualize(self, save_path):
+
+    def add_built_in_aug(self, sample, tuple_list):
+
+        aug_name_list = []
+        pr_list = []
+        level_list =[]
+
+        for tuple in tuple_list:
+            aug_name_list.append(tuple[0])
+            pr_list.append((tuple[1]))
+            level_list.append((tuple[2]))
+
+
+        for index in range(len(aug_name_list)):
+            aug_class= getattr(__import__(aug_name_list[index]), aug_name_list[index])
+            sample = aug_class()(sample)
+
+
+
+    def visualize(self,save_path):
         if self.data_format == 'yolo':
             sample_list = []
             file = []
@@ -215,7 +268,9 @@ class CustomDataset(Dataset):
                     skimage.io.imsave(save_img_path, img)
             else:
                 for idx in range(len(self.image_ids)):
-                    img = self.load_image(idx)
+                    image_info = self.coco.loadImgs(self.image_ids[idx])[0]
+                    path = os.path.join(self.img_path, 'images', self.set_name, image_info['file_name'])
+                    img = self.load_image(idx,path)
                     annot = self.load_annotations(idx)
                     for bbox in annot:
                         label = self.labels[bbox[4]]
@@ -225,8 +280,10 @@ class CustomDataset(Dataset):
                     save_img_path = os.path.join(save_path, filename)
                     skimage.io.imsave(save_img_path, img)
 
-    def load_image_yolo(self,image_index):
-        path = self.img_path_list[image_index]
+
+
+    def load_image(self,image_index,path):
+
         try:
             img = skimage.io.imread(path)
             if len(img.shape) == 2:
@@ -236,19 +293,6 @@ class CustomDataset(Dataset):
         except Exception as e:
             print(e)
 
-    def load_image(self, image_index):
-        image_info = self.coco.loadImgs(self.image_ids[image_index])[0]
-        path = os.path.join(self.img_path, 'images', self.set_name, image_info['file_name'])
-        try:
-            img = skimage.io.imread(path)
-            if len(img.shape) == 2:
-                img = skimage.color.gray2rgb(img)
-            return img.astype(np.float32) / 255.0
-
-        except Exception as e:
-
-            raise Exception('image name: ' + image_info['file_name'] + ', id: ' + str(image_info[
-                'id']) + ' caused the following error ' + repr(e))
 
     def load_annotations_yolo(self, index, dh, dw):
 
@@ -272,10 +316,11 @@ class CustomDataset(Dataset):
                 bottom = dh - 1
 
             temp_ann = [left, top, right, bottom, c]
+
             ann.append(temp_ann)
 
         fl.close()
-        return numpy.asarray(ann)
+        return np.array(ann)
 
     def load_annotations(self, image_index):
         # get ground truth annotations in [x1, y1, x2, y2] format
@@ -327,6 +372,45 @@ class CustomDataset(Dataset):
             return len(self.classes_set)
         elif self.data_format == 'coco':
             return len(self.classes)
+
+class TrainFile():
+
+    def __init__(self, file_path , file_format):
+        self.file_path = file_path
+        self.file_format = file_format
+        self.data = self.load_file()
+
+    def __str__(self):
+        return "%s" % (self.data)
+
+    def load_file(self,):
+        if self.file_format =='csv':
+            self.file_path_list = glob.glob(self.file_path + '/' + '*.csv')
+            data = pd.read_csv(self.file_path_list[0],header=None)
+
+            return data
+
+
+        if self.file_format =='txt':
+            column_zero = []
+            column_one = []
+            self.file_path_list = glob.glob(self.file_path + '/' + '*.txt')
+            with open(self.file_path_list[0]) as f:
+                for line in f.readlines():
+                    line = line.strip('\n')
+                    split_list = line.split(" ")
+                    column_zero.append(split_list.pop(0))
+                    column_one.append(split_list)
+
+
+            dict = {'0':column_zero,'1':column_one}
+            data=pd.DataFrame(dict)
+
+
+
+
+            return data
+
 
 
 class PredDataset(Dataset):
@@ -485,7 +569,6 @@ class PredDataset(Dataset):
     def label_to_name(self, label):
         return self.labels[label]
 
-    
     def num_classes(self):
         return len(self.classes)
 
@@ -596,6 +679,9 @@ class CSVDataset(Dataset):
         return img.astype(np.float32) / 255.0
 
     def load_annotations(self, image_index):
+
+
+
         # get ground truth annotations
         annotation_list = self.image_data[self.image_names[image_index]]
         annotations = np.zeros((0, 5))
@@ -694,12 +780,11 @@ def collater(data):
 
     for i in range(batch_size):
         img = imgs[i]
-        
         padded_imgs[i, :int(img.shape[0]), :int(img.shape[1]), :] = img
 
     max_num_annots = max(annot.shape[0] for annot in annots)
 
-    if max_num_annots > 0:  
+    if max_num_annots > 0:
 
         annot_padded = torch.ones((len(annots), max_num_annots, 5)) * -1
 
@@ -713,7 +798,7 @@ def collater(data):
 
     padded_imgs = padded_imgs.permute(0, 3, 1, 2)
 
-    image_data = ImageData(padded_imgs, annot_padded,scales)
+    image_data = ImageData(padded_imgs, annot_padded, scales)
 
     return image_data
 
@@ -754,7 +839,7 @@ def apply_augment(sample, name, level, detection=False):
     random_add = random.random() * 0.05
     adjusted_level = (level + random_add) * (high - low) + low
     augment_inst = augment_obj(adjusted_level)
-    return augment_inst(sample.copy())
+    return augment_inst(copy.copy(sample))
 
 
 class Augmentation(object):
@@ -765,10 +850,12 @@ class Augmentation(object):
     def __call__(self, sample):
         for _ in range(1):
             policy = random.choice(self.policies)
-            for name, pr, level in policy:
+            print("policy: ", policy)
+            for name, pr, level in [policy]:
                 if random.random() > pr:
                     continue
                 sample = apply_augment(sample, name, level, self.detection)
+
         return sample
 
 
@@ -780,7 +867,8 @@ class Resizer(object):
         self.max_side = max_side
 
     def __call__(self, sample):
-        image, annots = sample['img'], sample['annot']
+        image, annots = sample[0] ,sample[1]
+        
 
         rows, cols, cns = image.shape
 
@@ -808,7 +896,7 @@ class Resizer(object):
 
         annots[:, :4] *= scale
 
-        return {'img': torch.from_numpy(new_image), 'annot': torch.from_numpy(annots), 'scale': scale}
+        return  torch.from_numpy(new_image), torch.from_numpy(annots), scale
 
 
 
@@ -817,11 +905,12 @@ class Augmenter(object):
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample, flip_x=0.5):
+        img, annots = sample[0], sample[1]
         if np.random.rand() < flip_x:
-            image, annots = sample['img'], sample['annot']
-            image = image[:, ::-1, :]
+            
+            img = img[:, ::-1, :]
 
-            rows, cols, channels = image.shape
+            rows, cols, channels = img.shape
 
             x1 = annots[:, 0].copy()
             x2 = annots[:, 2].copy()
@@ -831,9 +920,9 @@ class Augmenter(object):
             annots[:, 0] = cols - x2
             annots[:, 2] = cols - x_tmp
 
-            sample = {'img': image, 'annot': annots}
+            
 
-        return sample
+        return img, annots
 
 
 class Normalizer(object):
@@ -843,9 +932,10 @@ class Normalizer(object):
         self.std = np.array([[[0.229, 0.224, 0.225]]])
 
     def __call__(self, sample):
-        image, annots = sample['img'], sample['annot']
+        image, annots = sample.image, sample.annot
+         
 
-        return {'img': ((image.astype(np.float32) - self.mean) / self.std), 'annot': annots}
+        return  ((image.astype(np.float32) - self.mean) / self.std),  annots
 
 
 class UnNormalizer(object):
@@ -902,77 +992,6 @@ class AspectRatioBasedSampler(Sampler):
 
 
 
-
-
-def test1():
-    # yolo with function_transforms
-    y = CustomDataset('/Users/yi-chu/Downloads/mask_dataset','yolo')
-    print("before: ", y[3])
-    print("image : ", y[3].img.shape)
-    print("image type:", type(y[3].img))
-
-    print("image : ", y[3].annot.shape)
-    print("image type:", type(y[3].annot))
-    y[3].visualize()
-
-
-    y = CustomDataset('/Users/yi-chu/Downloads/mask_dataset', 'yolo', function_transforms=[CutOut(10), ])
-    print("after: ", y[3])
-
-    print("image shape: ", y[3].img.shape)
-    print("annotation type:", type(y[3].img))
-
-    print("image shape: ", y[3].annot.shape)
-    print("annotation type:", type(y[3].annot))
-    y[3].visualize()
-
-
-def test2():
-
-    y = CustomDataset('/root/data/car_dataset/train', 'coco' )
-    print("before: ", y[3])
-    print("image shape: ", y[3].img.shape)
-    print("annotation type:", type(y[3].img))
-
-    print("image : ", y[3].annot.shape)
-    print("image type:", type(y[3].annot))
-
-
-    y = CustomDataset('/root/data/car_dataset/train', 'coco', function_transforms=[CutOut(10), ])
-    print("after: ", y[3])
-
-    print("image shape: ", y[3].img.shape)
-    print("annotation type:", type(y[3].img))
-
-    print("image shape: ", y[3].annot.shape)
-    print("annotation type:", type(y[3].annot))
-
-
-def test3():
-
-    #visualize
-    c = CustomDataset('/root/data/car_dataset/train', 'coco')
-    c[6].visualize('/root/dataloader/')
-    c = CustomDataset('/root/data/car_dataset/train', 'coco', function_transforms=[CutOut(10), ])
-    c[6].visualize()
-
-def test4():
-
-    # buil in transform  before and after
-    y = CustomDataset('/root/data/mask_dataset', 'yolo')
-    y[4].visualize()
-    y = CustomDataset('/root/data/mask_dataset', 'yolo',built_in_transforms=['Resizer'])
-    y[4].visualize()
-    print(y[4])
-
-if __name__=='__main__':
-
-
-    test3()
-    test4()
-
-    test1()
-    test2()
 
 
 

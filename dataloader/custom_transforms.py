@@ -8,7 +8,9 @@ import torchvision.transforms as transforms
 from imgaug import BoundingBox, BoundingBoxesOnImage
 import imgaug.augmenters as iaa
 from PIL import Image, ImageOps, ImageFilter
-
+import albumentations as A
+import cv2
+from .image import *
 
 
 
@@ -24,16 +26,15 @@ class Normalize(object):
         self.std = std
 
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img = sample.image
+        mask = sample.annot
         img = np.array(img).astype(np.float32)
         mask = np.array(mask).astype(np.float32)
         img /= 255.0
         img -= self.mean
         img /= self.std
 
-        return {'img': img,
-                'annot': mask}
+        return img, mask
 
 
 class ToTensor(object):
@@ -43,28 +44,25 @@ class ToTensor(object):
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-        img = sample['img']
-        mask = sample['annot']
+        img, mask = sample.image, sample.annot
+
         img = np.array(img).astype(np.float32).transpose((2, 0, 1))
         mask = np.array(mask).astype(np.float32)
 
         img = torch.from_numpy(img).float()
         mask = torch.from_numpy(mask).float()
 
-        return {'img': img,
-                'annot': mask}
+        return img, mask
 
 
 class RandomHorizontalFlip(object):
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img, mask = sample.image, sample.annot
         if random.random() < 0.5:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
             mask = mask.transpose(Image.FLIP_LEFT_RIGHT)
 
-        return {'img': img,
-                'annot': mask}
+        return img, mask
 
 
 class Translate_Y(object):
@@ -72,7 +70,7 @@ class Translate_Y(object):
         self.v = v # -0.3 - 0.3 ??
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -83,7 +81,7 @@ class Translate_Y(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 #TODO: Enhance this function so bounding boxes will account for change in actual object,
 # i.e. if the translateY bbox moves the object up, the lower limit of the bbox should move up
@@ -92,7 +90,7 @@ class Translate_Y_BBoxes(object):
         self.v = v
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -104,7 +102,7 @@ class Translate_Y_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug,annot_aug
 
 
 class Translate_X(object):
@@ -112,7 +110,7 @@ class Translate_X(object):
         self.v = v
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -123,7 +121,7 @@ class Translate_X(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Translate_X_BBoxes(object):
@@ -131,7 +129,7 @@ class Translate_X_BBoxes(object):
         self.v = v
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -143,7 +141,7 @@ class Translate_X_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class CutOut(object):
@@ -151,7 +149,7 @@ class CutOut(object):
         self.v = v # between 6 - 20
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -162,7 +160,7 @@ class CutOut(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class CutOut_BBoxes(object):
@@ -170,7 +168,7 @@ class CutOut_BBoxes(object):
         self.v = v #self.v should be between 6 - 20
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -183,7 +181,7 @@ class CutOut_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Rotate(object):
@@ -191,7 +189,11 @@ class Rotate(object):
         self.v = v # between -30 - 30
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot   #, sample['mask_category']
+        # masks=[]
+        # if mask_category is not None:
+        #     for index in mask_category:
+        #         masks.append(index[0])
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -202,7 +204,19 @@ class Rotate(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        # if masks is not None:
+        #     for mask in masks:
+        #         mask= A.Rotate.apply_to_mask(A.Rotate,mask,angle=self.v)
+        #
+        # if mask_category is not None:
+        #     for index in range(len(mask_category)):
+        #         mask_category[index][0]=mask[index]
+
+
+
+        return img_aug, annot_aug
+
+
 
 # TODO: Figure out how to make rotate just bboxes work correctly
 
@@ -232,7 +246,7 @@ class ShearX(object):
         self.v = v # between -30 - 30
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -243,7 +257,7 @@ class ShearX(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class ShearX_BBoxes(object):
@@ -251,7 +265,7 @@ class ShearX_BBoxes(object):
         self.v = v #self.v should be between -30 - 30
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -264,7 +278,7 @@ class ShearX_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class ShearY(object):
@@ -272,7 +286,7 @@ class ShearY(object):
         self.v = v # between -30 - 30
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -283,7 +297,7 @@ class ShearY(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return  img_aug, annot_aug
 
 
 class ShearY_BBoxes(object):
@@ -291,7 +305,7 @@ class ShearY_BBoxes(object):
         self.v = v #self.v should be between -30 - 30
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -304,7 +318,7 @@ class ShearY_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Equalize(object):
@@ -312,7 +326,7 @@ class Equalize(object):
         self.v = v # not applied
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -324,7 +338,7 @@ class Equalize(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Equalize_BBoxes(object):
@@ -332,7 +346,7 @@ class Equalize_BBoxes(object):
         self.v = v #not applied
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -346,7 +360,7 @@ class Equalize_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Solarize(object):
@@ -354,7 +368,7 @@ class Solarize(object):
         self.v = v # -1 - 1.
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -366,7 +380,7 @@ class Solarize(object):
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
         img_aug = (img_aug + 1.) / 2
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Solarize_BBoxes(object):
@@ -374,7 +388,7 @@ class Solarize_BBoxes(object):
         self.v = v #-1 - 1
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -388,7 +402,7 @@ class Solarize_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Color(object):
@@ -396,7 +410,7 @@ class Color(object):
         self.v = v # 0.0 - 3.0
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -408,7 +422,7 @@ class Color(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class Color_BBoxes(object):
@@ -416,7 +430,7 @@ class Color_BBoxes(object):
         self.v = v #not applied?
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         bbs = BoundingBoxesOnImage(
@@ -430,7 +444,7 @@ class Color_BBoxes(object):
         # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0,5))
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
 
 
 class RandomRotate(object):
@@ -438,7 +452,7 @@ class RandomRotate(object):
         self.degree = degree
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
         unique_labels = np.unique(annot[:, 4].astype('int').astype('str')).tolist()
 
         rotate_degree = random.uniform(-1 * self.degree, self.degree)
@@ -453,8 +467,7 @@ class RandomRotate(object):
         # img = img.rotate(rotate_degree, Image.BILINEAR)
         # mask = mask.rotate(rotate_degree, Image.NEAREST)
 
-        return {'img': img,
-                'annot': mask}
+        return img, annot
 
 # FLIP LR BBOXES ONLY DOESNT SEEM to WORK WITH THIS LIBRARY SO FAR
 class FlipLR(object):
@@ -462,7 +475,7 @@ class FlipLR(object):
         self.v = v #ignore ??
 
     def __call__(self, sample):
-        img, annot = sample['img'], sample['annot']
+        img, annot = sample.image, sample.annot
 
         bbs = BoundingBoxesOnImage(
             [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3], label=str(int(ann[4]))) for ann in annot],
@@ -471,7 +484,10 @@ class FlipLR(object):
         img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
         annot_aug = np.array([[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
 
-        return {'img': img_aug, 'annot': annot_aug}
+        return img_aug, annot_aug
+
+
+
 
 # TODO: fix this later
 class RandomGaussianBlur(object):
@@ -479,14 +495,12 @@ class RandomGaussianBlur(object):
         pass
 
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img, mask = sample.image, sample.annot
         if random.random() < 0.5:
             img = img.filter(ImageFilter.GaussianBlur(
                 radius=random.random()))
 
-        return {'img': img,
-                'annot': mask}
+        return img, mask
 
 
 class RandomScaleCrop(object):
@@ -496,8 +510,7 @@ class RandomScaleCrop(object):
         self.fill = fill
 
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img, mask = sample.image, sample.annot
         # random scale (short edge)
         short_size = random.randint(int(self.base_size * 0.5), int(self.base_size * 2.0))
         w, h = img.size
@@ -522,8 +535,7 @@ class RandomScaleCrop(object):
         img = img.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
         mask = mask.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
 
-        return {'img': img,
-                'annot': mask}
+        return img, mask
 
 
 class FixScaleCrop(object):
@@ -531,8 +543,7 @@ class FixScaleCrop(object):
         self.crop_size = crop_size
 
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img, mask= sample.image, sample.annot
         w, h = img.size
         if w > h:
             oh = self.crop_size
@@ -549,8 +560,7 @@ class FixScaleCrop(object):
         img = img.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
         mask = mask.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
 
-        return {'img': img,
-                'annot': mask}
+        return img, mask
 
 
 # resize to 512*1024
@@ -561,8 +571,7 @@ class FixedResize(object):
         self.size1 = resize  # size= 512
 
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img, mask = sample.image, sample.annot
         assert img.size == mask.size
 
         w, h = img.size
@@ -574,8 +583,7 @@ class FixedResize(object):
             oh = int(1.0 * h * ow / w)
         img = img.resize((ow, oh), Image.BILINEAR)
         mask = mask.resize((ow, oh), Image.NEAREST)
-        return {'img': img,
-                'annot': mask}
+        return img, mask
 
 
 # random crop 321*321
@@ -584,15 +592,13 @@ class RandomCrop(object):
         self.crop_size = crop_size
 
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img, mask = sample.image, sample.annot
         w, h = img.size
         x1 = random.randint(0, w - self.crop_size)
         y1 = random.randint(0, h - self.crop_size)
         img = img.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
         mask = mask.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
-        return {'img': img,
-                'annot': mask}
+        return img,mask
 
 
 class RandomScale(object):
@@ -600,13 +606,13 @@ class RandomScale(object):
         self.scales = scales
 
     def __call__(self, sample):
-        img = sample['img']
-        mask = sample['annot']
+        img, mask = sample.image, sample.annot
         w, h = img.size
         scale = random.choice(self.scales)
         w, h = int(w * scale), int(h * scale)
-        return {'img': img,
-                'annot': mask}
+
+        return img, mask
+
 
 
 class TransformTr(object):

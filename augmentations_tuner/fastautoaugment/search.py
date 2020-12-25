@@ -15,7 +15,7 @@ from ray import tune
 # sys.path.insert(1, os.path.dirname(os.path.dirname(__file__)))
 # sys.path.insert(1, os.path.dirname(__file__))
 from augmentations_tuner.fastautoaugment.FastAutoAugment.archive import remove_deplicates, policy_decoder
-from dataloaders import detection_augment_list
+from dataloader import detection_augment_list
 from augmentations_tuner.fastautoaugment.FastAutoAugment.common import get_logger, add_filehandler
 from augmentations_tuner.fastautoaugment.FastAutoAugment.data import get_data
 from networks import get_model, num_class
@@ -84,7 +84,7 @@ def eval_tta(config, augment):
 
 def augsearch(args=None, paths_ls=None):
     if args is None:
-        d = yaml.load(open('/home/noam/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'), Loader=yaml.FullLoader)
+        d = yaml.load(open('/root/ZazuML/augmentations_tuner/fastautoaugment/confs/resnet50.yaml'), Loader=yaml.FullLoader)
         # from argparse import Namespace
         # args = Namespace(**d)
         args = edict(d)
