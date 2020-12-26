@@ -123,8 +123,8 @@ if __name__ == '__main__':
         configs = json.load(fp)
     logger = init_logging(__name__)
 
-    from dataloaders import CocoDataset
-    CocoDataset("../data/tiny_coco")
+    from dataloader import CustomDataset
+    CustomDataset("../data/tiny_coco",'coco')
     zazu = ZaZu(configs['model_name'], configs['home_path'], configs['annotation_type'])
     if args.search:
         zazu.search(configs['search_method'], configs['epochs'], configs['max_trials'],

@@ -1,0 +1,10 @@
+[2020-12-21 02:03:32,085] [Fast AutoAugment] [INFO] initialize ray...
+[2020-12-21 02:03:33,884] [Fast AutoAugment] [INFO] search augmentation policies, dataset=cifar10 model=resnet50
+[2020-12-21 02:03:33,884] [Fast AutoAugment] [INFO] ----- Train without Augmentations ratio(test)=0.4 -----
+[2020-12-21 02:03:33,885] [Fast AutoAugment] [INFO] processed in 0.0000 secs
+[2020-12-21 02:03:33,885] [Fast AutoAugment] [INFO] ----- Search Test-Time Augmentation Policies -----
+[2020-12-21 02:31:29,723] [Fast AutoAugment] [INFO] initialize ray...
+[2020-12-21 02:31:31,987] [Fast AutoAugment] [INFO] search augmentation policies, dataset=cifar10 model=resnet50
+[2020-12-21 02:31:31,988] [Fast AutoAugment] [INFO] ----- Train without Augmentations ratio(test)=0.4 -----
+[2020-12-21 02:31:31,988] [Fast AutoAugment] [INFO] processed in 0.0000 secs
+[2020-12-21 02:31:31,989] [Fast AutoAugment] [INFO] ----- Search Test-Time Augmentation Policies -----

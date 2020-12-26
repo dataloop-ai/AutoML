@@ -9,11 +9,11 @@ from theconf import Config as C
 import os
 from .archive import arsaug_policy, autoaug_policy, autoaug_paper_cifar10, fa_reduced_cifar10, fa_reduced_svhn, \
     fa_resnet50_rimagenet
-from dataloaders import Augmentation
+from dataloader import Augmentation
 from .common import get_logger
 from .imagenet import ImageNet
 from networks.efficientnet_pytorch.model import EfficientNet
-from dataloaders import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
+from dataloader import CustomDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, \
     Augmenter, Normalizer
 from torch.utils.data import DataLoader
 logger = get_logger('Fast AutoAugment')
