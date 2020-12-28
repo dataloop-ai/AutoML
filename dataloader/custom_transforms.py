@@ -8,7 +8,6 @@ import torchvision.transforms as transforms
 from imgaug import BoundingBox, BoundingBoxesOnImage
 import imgaug.augmenters as iaa
 from PIL import Image, ImageOps, ImageFilter
-import albumentations as A
 import cv2
 from .image import *
 
