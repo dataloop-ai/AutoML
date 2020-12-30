@@ -29,75 +29,121 @@ import pandas as pd
 np.set_printoptions(suppress=True)
 
 augmentations = ['Translate_Y',
-                     'Translate_Y_BBoxes',
-                     'Translate_X',
-                     'Translate_X_BBoxes',
-                     'CutOut',
-                     'CutOut_BBoxes',
-                     'Rotate',
-                     'ShearX',
-                     'ShearX_BBoxes',
-                     'ShearY',
-                     'ShearY_BBoxes',
-                     'Equalize',
-                     'Equalize_BBoxes',
-                     'Solarize',
-                     'Solarize_BBoxes',
-                     'Color',
-                     'Color_BBoxes',
-                     'FlipLR'
-                     ]
+                 'Translate_Y_BBoxes',
+                 'Translate_X',
+                 'Translate_X_BBoxes',
+                 'CutOut',
+                 'CutOut_BBoxes',
+                 'Rotate',
+                 'ShearX',
+                 'ShearX_BBoxes',
+                 'ShearY',
+                 'ShearY_BBoxes',
+                 'Equalize',
+                 'Equalize_BBoxes',
+                 'Solarize',
+                 'Solarize_BBoxes',
+                 'Color',
+                 'Color_BBoxes',
+                 'FlipLR'
+                 ]
 
 
 class CustomDataset(Dataset):
-    def __init__(self, image_path, data_format, annotation_path=None, function_transforms=None, built_in_transforms=None):
+    def __init__(self, dir_path, data_format, annotation_path=None, function_transforms=None, built_in_transforms=None, dataset="train"):
         """
         Args:
-            img_path: the dataset path
+            dir_path: the dataset path, if the annotation_path is None, then it will search all the files, if the annotation is not None, it will search the images.
             data_format: dataset format. i.e. CoCo or Yolo.
+            annotation_path: if has, input the .json or txt annotation path directly
             functions_of_transform" is a list of string with single/variety of transform functions.
             built_in_augmentations: is a list of string with single/variety of augmentations in the library.
-
+            dataset is train or test
         """
 
-        self.img_path = image_path
+        self.dir_path = dir_path
         self.data_format = data_format
         self.annot_path = annotation_path
         self.function_transforms = function_transforms
         self.built_in_transforms = built_in_transforms
-
-
+        self.dataset = dataset
+        self.img_path_list = []
+        self.img_file_list = []
         self.img = []
         self.annot = []
 
         self.ann_path_list = []
         if self.data_format == 'yolo':
-        # get image list
-            self.img_path_list = glob.glob(image_path + '/' + '*.jpg')+glob.glob(image_path + '/' + '*.jpeg')+glob.glob(image_path + '/' + '*.png')
+            # get image list
+            self.img_path_list = glob.glob(dir_path + '/' + '*.jpg')+glob.glob(
+                dir_path + '/' + '*.jpeg')+glob.glob(dir_path + '/' + '*.png')
             if self.annot_path is None:
                 # get annotation list
-                self.ann_path_list = glob.glob(image_path + '/'+'*.txt')
+                self.ann_path_list = glob.glob(dir_path + '/'+'*.txt')
             else:
-                self.ann_path_list = glob.glob(annotation_path + '/' + '*.txt')
+                self.ann_path_list = self.annot_path
 
             self.classes_set = set()
             self.calculate_classes()
+            self.img_path_list.sort()
+            self.ann_path_list.sort()
 
-
+        # get all the image file path
         elif self.data_format == 'coco':
             self.set_name = 'train'
-            self.img_path_list = glob.glob(image_path + '/images/' + self.set_name + '/'+'*.jpg')
+            self.img_path_list = glob.glob(
+                dir_path + '/images/' + self.set_name + '/'+'*.jpg')
 
             if self.annot_path is None:
-                self.coco = COCO(os.path.join(self.img_path, 'annotations', 'instances_' + self.set_name + '.json'))
+                self.coco = COCO(os.path.join(
+                    self.dir_path, 'annotations', 'instances_' + self.set_name + '.json'))
             else:
-                self.coco = COCO(glob.glob(annotation_path + '/' + '*.json')[0])
+                self.coco = COCO(
+                    self.annot_path)
             self.image_ids = self.coco.getImgIds()
-
-
             self.load_classes()
-        self.img_path_list.sort()
-        self.ann_path_list.sort()
+            self.img_path_list.sort()
+            self.ann_path_list.sort()
+
+        elif self.data_format == 'csv':
+            if self.annot_path is None:
+                self.dir_path_list = glob.glob(self.dir_path + '/' + '*.csv')
+            else:
+                self.dir_path_list = self.annot_path
+            self.data = pd.read_csv(self.dir_path_list[0], header=None)
+            self.data.columns = ['0', '1']
+            self.load_all_pictures()
+
+        # read the txt file and separate to two culomn (filename & category)and save as dataFrame
+        elif self.data_format == 'txt':
+            column_zero = []
+            column_one = []
+            if self.annot_path is None:
+                self.dir_path_list = glob.glob(self.dir_path + '/' + '*.txt')
+            else:
+                self.dir_path_list = glob.glob(annotation_path)
+            with open(self.dir_path_list[0]) as f:
+                for line in f.readlines():
+                    line = line.strip('\n')
+                    split_list = line.split(" ")
+                    column_zero.append(split_list.pop(0))
+                    column_one += split_list
+
+            dict = {'0': column_zero, '1': column_one}
+            self.data = pd.DataFrame(dict)
+            self.load_all_pictures()
+
+    # from all folder ,get all the pictures
+    def load_all_pictures(self):
+        for index in range(len(self.data['0'])):
+
+            img_file = (glob.glob(self.dir_path + '/'+self.dataset+'/' + self.data['0'][index] + "/" + '*.jpg')
+                        + glob.glob(self.dir_path + '/'+self.dataset+'/' +
+                                    self.data['0'][index] + "/" + '*.jpeg')
+                        + glob.glob(self.dir_path + '/'+self.dataset+'/' + self.data['0'][index] + "/" + '*.png'))
+
+            for i in img_file:
+                self.img_file_list.append(i)
 
     def load_classes(self):
         # load class names (name -> label)
@@ -119,20 +165,39 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
 
-        filename = self.img_path_list[index].split("/")[-1]
+        if self.data_format == 'csv' or self.data_format == 'txt':
+            full_filename = self.img_file_list[index]
+            filename_split = full_filename.split("/")
+            filename = filename_split[-1]
+            category = filename_split[-2]
+
+            for i in range(len(self.data)):
+                if category == self.data['0'][i]:
+                    category = self.data['1'][i]
+                    break
+            # make the image array value between [0,1]
+            image = skimage.io.imread(full_filename)
+            image = image/255.0
+
+            image_data = ImageData(
+                flag=False, filename=filename, image=image, label=category)
+            return image_data
+
         mask_category = []
         scale = None
+        filename = self.img_path_list[index].split("/")[-1]
 
         if self.data_format == 'yolo':
             path = self.img_path_list[index]
-            self.img = self.load_image(index,path)
+            self.img = self.load_image(index, path)
             dh, dw, _ = self.img.shape
             self.annot = self.load_annotations_yolo(index, dh, dw)
             mask_category = None
 
         elif self.data_format == 'coco':
             image_info = self.coco.loadImgs(self.image_ids[index])[0]
-            path = os.path.join(self.img_path, 'images', self.set_name, image_info['file_name'])
+            path = os.path.join(self.dir_path, 'images',
+                                self.set_name, image_info['file_name'])
 
             self.img = self.load_image(index, path)
             self.annot = self.load_annotations(index)
@@ -144,17 +209,18 @@ class CustomDataset(Dataset):
                 if ann['segmentation'] is not None:
                     mask = self.coco.annToMask(ann)
                     category = ann['category_id']
-                    mask_category.append((mask, category))
+                    mask_category.append([mask, category])
 
-        image_data = ImageData(self.img, self.annot, filename, scale, masks_and_category=mask_category)
+        image_data = ImageData(filename=filename, image=self.img,
+                               annotation=self.annot,  scale=scale, masks_and_category=mask_category)
 
         if self.function_transforms is not None:
-            for tsfm in [self.function_transforms]:
-                image_data.image, image_data.annot,image_data.scale = tsfm(image_data)
+            for tsfm in self.function_transforms:
+                tsfm(image_data)
 
         elif self.built_in_transforms is not None:
             aug = Augmentation(self.built_in_transforms)
-            image_data.image, image_data.annot = aug(image_data)
+            aug(image_data)
 
         return image_data
 
@@ -163,28 +229,32 @@ class CustomDataset(Dataset):
             return len(self.img_path_list)
         elif self.data_format == 'coco':
             return len(self.image_ids)
+        elif self.data_format == 'csv' or self.data_format == 'txt':
+            return len(self.img_file_list)
 
+    def visualize(self, save_path):
 
+        if self.data_format == 'csv' or self.data_format == 'txt':
 
-    def add_built_in_aug(self, sample, tuple_list):
+            all_picture = []
+            for index, image in enumerate(self.img_file_list):
+                all_picture.append(self.__getitem__(index))
 
-        aug_name_list = []
-        pr_list = []
-        level_list =[]
+                filename_split = image.split("/")
+                filename = filename_split[-1]
 
-        for tuple in tuple_list:
-            aug_name_list.append(tuple[0])
-            pr_list.append((tuple[1]))
-            level_list.append((tuple[2]))
+                for pic in all_picture:
+                    img = pic.image
+                    label = pic.label
+                    # write category on the image
+                    cv2.putText(img, str("Label-"+label), (50, 50),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1)
 
+                os.makedirs(save_path, exist_ok=True)
+                save_img_path = os.path.join(save_path, filename)
 
-        for index in range(len(aug_name_list)):
-            aug_class= getattr(__import__(aug_name_list[index]), aug_name_list[index])
-            sample = aug_class()(sample)
+                skimage.io.imsave(save_img_path, img)
 
-
-
-    def visualize(self,save_path):
         if self.data_format == 'yolo':
             sample_list = []
             file = []
@@ -196,11 +266,12 @@ class CustomDataset(Dataset):
 
                     for sample in sample_list:
 
-                        img = sample['img']
-                        annot = sample['annot']
+                        img = sample.image
+                        annot = sample.annot
 
                         for bbox in annot:
-                            label = bbox[4]
+
+                            label = bbox[4].astype(str)
                             x1 = int(bbox[0])
                             y1 = int(bbox[1])
                             x2 = int(bbox[2])
@@ -208,7 +279,7 @@ class CustomDataset(Dataset):
                             bbox = [x1, y1, x2, y2]
                             draw_bbox(img, bbox, label)
 
-
+                    # save to the path
                     os.makedirs(save_path, exist_ok=True)
                     save_img_path = os.path.join(save_path, filename)
                     skimage.io.imsave(save_img_path, img)
@@ -241,7 +312,7 @@ class CustomDataset(Dataset):
                         bbox = [left, top, right, bottom]
                         draw_bbox(img, bbox, c)
 
-
+                    # save to the path
                     os.makedirs(save_path, exist_ok=True)
                     save_img_path = os.path.join(save_path, filename)
                     skimage.io.imsave(save_img_path, img)
@@ -256,11 +327,12 @@ class CustomDataset(Dataset):
                     file.append(filename)
 
                     for sample in sample_list:
-                        img = sample['img']
-                        annot = sample['annot']
+                        img = sample.image
+                        annot = sample.annot
 
                         for bbox in annot:
-                            label = bbox[4]
+
+                            label = bbox[4].astype(str)
                             draw_bbox(img, bbox[:4], label)
 
                     os.makedirs(save_path, exist_ok=True)
@@ -269,20 +341,20 @@ class CustomDataset(Dataset):
             else:
                 for idx in range(len(self.image_ids)):
                     image_info = self.coco.loadImgs(self.image_ids[idx])[0]
-                    path = os.path.join(self.img_path, 'images', self.set_name, image_info['file_name'])
-                    img = self.load_image(idx,path)
+                    path = os.path.join(
+                        self.img_path, 'images', self.set_name, image_info['file_name'])
+                    img = self.load_image(idx, path)
                     annot = self.load_annotations(idx)
                     for bbox in annot:
                         label = self.labels[bbox[4]]
                         draw_bbox(img, bbox[:4], label)
-                    filename = self.coco.loadImgs(self.image_ids[idx])[0]['file_name']
+                    filename = self.coco.loadImgs(self.image_ids[idx])[
+                        0]['file_name']
                     os.makedirs(save_path, exist_ok=True)
                     save_img_path = os.path.join(save_path, filename)
                     skimage.io.imsave(save_img_path, img)
 
-
-
-    def load_image(self,image_index,path):
+    def load_image(self, image_index, path):
 
         try:
             img = skimage.io.imread(path)
@@ -292,7 +364,6 @@ class CustomDataset(Dataset):
 
         except Exception as e:
             print(e)
-
 
     def load_annotations_yolo(self, index, dh, dw):
 
@@ -324,7 +395,8 @@ class CustomDataset(Dataset):
 
     def load_annotations(self, image_index):
         # get ground truth annotations in [x1, y1, x2, y2] format
-        annotations_ids = self.coco.getAnnIds(imgIds=self.image_ids[image_index], iscrowd=False)
+        annotations_ids = self.coco.getAnnIds(
+            imgIds=self.image_ids[image_index], iscrowd=False)
         annotations = np.zeros((0, 5))
 
         # some images appear to miss annotations (like image with id 257034)
@@ -366,51 +438,13 @@ class CustomDataset(Dataset):
             with open(ann_file) as f:
                 ann = f.readline().split(" ")
                 self.classes_set.add(ann[0])
-    @property
+
+    @ property
     def num_classes(self):
         if self.data_format == 'yolo':
             return len(self.classes_set)
         elif self.data_format == 'coco':
             return len(self.classes)
-
-class TrainFile():
-
-    def __init__(self, file_path , file_format):
-        self.file_path = file_path
-        self.file_format = file_format
-        self.data = self.load_file()
-
-    def __str__(self):
-        return "%s" % (self.data)
-
-    def load_file(self,):
-        if self.file_format =='csv':
-            self.file_path_list = glob.glob(self.file_path + '/' + '*.csv')
-            data = pd.read_csv(self.file_path_list[0],header=None)
-
-            return data
-
-
-        if self.file_format =='txt':
-            column_zero = []
-            column_one = []
-            self.file_path_list = glob.glob(self.file_path + '/' + '*.txt')
-            with open(self.file_path_list[0]) as f:
-                for line in f.readlines():
-                    line = line.strip('\n')
-                    split_list = line.split(" ")
-                    column_zero.append(split_list.pop(0))
-                    column_one.append(split_list)
-
-
-            dict = {'0':column_zero,'1':column_one}
-            data=pd.DataFrame(dict)
-
-
-
-
-            return data
-
 
 
 class PredDataset(Dataset):
@@ -431,9 +465,11 @@ class PredDataset(Dataset):
         if self.class_list_path is not None:
             try:
                 with self._open_for_csv(self.class_list_path) as file:
-                    self.classes = self.load_classes(csv.reader(file, delimiter=','))
+                    self.classes = self.load_classes(
+                        csv.reader(file, delimiter=','))
             except ValueError as e:
-                raise (ValueError('invalid CSV class file: {}: {}'.format(self.class_list_path, e)), None)
+                raise (ValueError('invalid CSV class file: {}: {}'.format(
+                    self.class_list_path, e)), None)
 
             self.labels = {}
             for key, value in self.classes.items():
@@ -487,10 +523,12 @@ class PredDataset(Dataset):
             except ValueError:
                 class_name = row[0]
                 class_id = line
-            class_id = self._parse(class_id, int, 'line {}: malformed class ID: {{}}'.format(line))
+            class_id = self._parse(
+                class_id, int, 'line {}: malformed class ID: {{}}'.format(line))
 
             if class_name in result:
-                raise ValueError('line {}: duplicate class name: \'{}\''.format(line, class_name))
+                raise ValueError(
+                    'line {}: duplicate class name: \'{}\''.format(line, class_name))
             result[class_name] = class_id
             line += 1
         return result
@@ -594,9 +632,11 @@ class CSVDataset(Dataset):
         # parse the provided class file
         try:
             with self._open_for_csv(self.class_list) as file:
-                self.classes = self.load_classes(csv.reader(file, delimiter=','))
+                self.classes = self.load_classes(
+                    csv.reader(file, delimiter=','))
         except ValueError as e:
-            raise (ValueError('invalid CSV class file: {}: {}'.format(self.class_list, e)), None)
+            raise (ValueError('invalid CSV class file: {}: {}'.format(
+                self.class_list, e)), None)
 
         self.labels = {}
         for key, value in self.classes.items():
@@ -605,9 +645,11 @@ class CSVDataset(Dataset):
         # csv with img_path, x1, y1, x2, y2, class_name
         try:
             with self._open_for_csv(self.train_file) as file:
-                self.image_data = self._read_annotations(csv.reader(file, delimiter=','), self.classes)
+                self.image_data = self._read_annotations(
+                    csv.reader(file, delimiter=','), self.classes)
         except ValueError as e:
-            raise (ValueError('invalid CSV annotations file: {}: {}'.format(self.train_file, e)), None)
+            raise (ValueError('invalid CSV annotations file: {}: {}'.format(
+                self.train_file, e)), None)
         self.image_names = list(self.image_data.keys())
         self.resize = resize
         self.transform_this = self.get_transform()
@@ -645,10 +687,12 @@ class CSVDataset(Dataset):
             except ValueError:
                 class_name = row[0]
                 class_id = line
-            class_id = self._parse(class_id, int, 'line {}: malformed class ID: {{}}'.format(line))
+            class_id = self._parse(
+                class_id, int, 'line {}: malformed class ID: {{}}'.format(line))
 
             if class_name in result:
-                raise ValueError('line {}: duplicate class name: \'{}\''.format(line, class_name))
+                raise ValueError(
+                    'line {}: duplicate class name: \'{}\''.format(line, class_name))
             result[class_name] = class_id
             line += 1
         return result
@@ -679,8 +723,6 @@ class CSVDataset(Dataset):
         return img.astype(np.float32) / 255.0
 
     def load_annotations(self, image_index):
-
-
 
         # get ground truth annotations
         annotation_list = self.image_data[self.image_names[image_index]]
@@ -723,7 +765,7 @@ class CSVDataset(Dataset):
             except ValueError:
                 raise (ValueError(
                     'line {}: format should be \'img_file,x1,y1,x2,y2,class_name\' or \'img_file,,,,,\''.format(line)),
-                       None)
+                    None)
 
             if img_file not in result:
                 result[img_file] = []
@@ -732,22 +774,30 @@ class CSVDataset(Dataset):
             if (x1, y1, x2, y2, class_name) == ('', '', '', '', ''):
                 continue
 
-            x1 = self._parse(x1, int, 'line {}: malformed x1: {{}}'.format(line))
-            y1 = self._parse(y1, int, 'line {}: malformed y1: {{}}'.format(line))
-            x2 = self._parse(x2, int, 'line {}: malformed x2: {{}}'.format(line))
-            y2 = self._parse(y2, int, 'line {}: malformed y2: {{}}'.format(line))
+            x1 = self._parse(
+                x1, int, 'line {}: malformed x1: {{}}'.format(line))
+            y1 = self._parse(
+                y1, int, 'line {}: malformed y1: {{}}'.format(line))
+            x2 = self._parse(
+                x2, int, 'line {}: malformed x2: {{}}'.format(line))
+            y2 = self._parse(
+                y2, int, 'line {}: malformed y2: {{}}'.format(line))
 
             # Check that the bounding box is valid.
             if x2 <= x1:
-                raise ValueError('line {}: x2 ({}) must be higher than x1 ({})'.format(line, x2, x1))
+                raise ValueError(
+                    'line {}: x2 ({}) must be higher than x1 ({})'.format(line, x2, x1))
             if y2 <= y1:
-                raise ValueError('line {}: y2 ({}) must be higher than y1 ({})'.format(line, y2, y1))
+                raise ValueError(
+                    'line {}: y2 ({}) must be higher than y1 ({})'.format(line, y2, y1))
 
             # check if the current class name is correctly present
             if class_name not in classes:
-                raise ValueError('line {}: unknown class name: \'{}\' (classes: {})'.format(line, class_name, classes))
+                raise ValueError('line {}: unknown class name: \'{}\' (classes: {})'.format(
+                    line, class_name, classes))
 
-            result[img_file].append({'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2, 'class': class_name})
+            result[img_file].append(
+                {'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2, 'class': class_name})
         return result
 
     def name_to_label(self, name):
@@ -802,6 +852,7 @@ def collater(data):
 
     return image_data
 
+
 def detection_augment_list():
     l = [
         (Translate_Y, -0.3, 0.3),
@@ -825,7 +876,10 @@ def detection_augment_list():
     ]
     return l
 
-detection_augment_dict = {fn.__name__: (fn, v1, v2) for fn, v1, v2 in detection_augment_list()}
+
+detection_augment_dict = {fn.__name__: (
+    fn, v1, v2) for fn, v1, v2 in detection_augment_list()}
+
 
 def get_augment(name, detection=False):
     if detection:
@@ -839,7 +893,7 @@ def apply_augment(sample, name, level, detection=False):
     random_add = random.random() * 0.05
     adjusted_level = (level + random_add) * (high - low) + low
     augment_inst = augment_obj(adjusted_level)
-    return augment_inst(copy.copy(sample))
+    return augment_inst(sample)
 
 
 class Augmentation(object):
@@ -867,8 +921,7 @@ class Resizer(object):
         self.max_side = max_side
 
     def __call__(self, sample):
-        image, annots = sample[0] ,sample[1]
-        
+        image, annots = sample[0], sample[1]
 
         rows, cols, cns = image.shape
 
@@ -885,20 +938,20 @@ class Resizer(object):
             scale = self.max_side / largest_side
 
         # resize the image with the computed scale
-        image = skimage.transform.resize(image, (int(round(rows * scale)), int(round((cols * scale)))))
+        image = skimage.transform.resize(
+            image, (int(round(rows * scale)), int(round((cols * scale)))))
         rows, cols, cns = image.shape
         # add padding for fpn
         pad_w = 32 - rows % 32
         pad_h = 32 - cols % 32
 
-        new_image = np.zeros((rows + pad_w, cols + pad_h, cns)).astype(np.float32)
+        new_image = np.zeros(
+            (rows + pad_w, cols + pad_h, cns)).astype(np.float32)
         new_image[:rows, :cols, :] = image.astype(np.float32)
 
         annots[:, :4] *= scale
 
-        return  torch.from_numpy(new_image), torch.from_numpy(annots), scale
-
-
+        return torch.from_numpy(new_image), torch.from_numpy(annots), scale
 
 
 class Augmenter(object):
@@ -907,7 +960,7 @@ class Augmenter(object):
     def __call__(self, sample, flip_x=0.5):
         img, annots = sample[0], sample[1]
         if np.random.rand() < flip_x:
-            
+
             img = img[:, ::-1, :]
 
             rows, cols, channels = img.shape
@@ -920,8 +973,6 @@ class Augmenter(object):
             annots[:, 0] = cols - x2
             annots[:, 2] = cols - x_tmp
 
-            
-
         return img, annots
 
 
@@ -933,9 +984,8 @@ class Normalizer(object):
 
     def __call__(self, sample):
         image, annots = sample.image, sample.annot
-         
 
-        return  ((image.astype(np.float32) - self.mean) / self.std),  annots
+        return ((image.astype(np.float32) - self.mean) / self.std),  annots
 
 
 class UnNormalizer(object):
@@ -988,11 +1038,3 @@ class AspectRatioBasedSampler(Sampler):
         # divide into groups, one group = one batch
         return [[order[x % len(order)] for x in range(i, i + self.batch_size)] for i in
                 range(0, len(order), self.batch_size)]
-
-
-
-
-
-
-
-
