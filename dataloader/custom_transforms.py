@@ -9,7 +9,6 @@ from imgaug import BoundingBox, BoundingBoxesOnImage
 import imgaug.augmenters as iaa
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from PIL import Image, ImageOps, ImageFilter
-import albumentations as A
 import cv2
 from .image import *
 from itertools import product

@@ -1,4 +1,5 @@
 
+
 from torch.utils.data import DataLoader
 from .dataloader import CustomDataset,collater
 from .utils import *
@@ -37,8 +38,6 @@ def dataGenerator(dir_path,annotation_format, framework='pytorch', batch_size=32
                 yield (image, annotation)
 
         count +=1
-
-
 
 
 
