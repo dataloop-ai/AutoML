@@ -24,7 +24,8 @@ from importlib import import_module
 from .image import ImageData
 from .custom_transforms import *
 import pandas as pd
-
+from keras.utils import to_categorical
+import tensorflow as tf
 
 np.set_printoptions(suppress=True)
 
@@ -50,7 +51,7 @@ augmentations = ['Translate_Y',
 
 
 class CustomDataset(Dataset):
-    def __init__(self, dir_path, annot_format, annotation_path=None, function_transforms=None, built_in_transforms=None, dataset="train"):
+    def __init__(self, dir_path, annot_format, do_task=None, framework_version=None, num_categories=None, annotation_path=None, function_transforms=None, built_in_transforms=None, dataset="train"):
         """
         Args:
             dir_path: the dataset path, if the annotation_path is None, then it will search all the files, if the annotation is not None, it will search the images.
@@ -64,6 +65,7 @@ class CustomDataset(Dataset):
         self.dir_path = dir_path
         self.annot_format = annot_format
         self.annot_path = annotation_path
+        self.num_categories = num_categories
         self.function_transforms = function_transforms
         self.built_in_transforms = built_in_transforms
         self.dataset = dataset
@@ -71,6 +73,16 @@ class CustomDataset(Dataset):
         self.img_file_list = []
         self.img = []
         self.annot = []
+
+        self.framework_version = framework_version
+        self.do_task = do_task
+        self.box = []
+        self.label = []
+        self.mask = []
+        self.image_id = []
+        self.area = []
+        self.iscrowd = []
+        self.target = {}
 
         self.ann_path_list = []
         if self.annot_format == 'yolo':
@@ -193,7 +205,7 @@ class CustomDataset(Dataset):
             image = image/255.0
 
             image_data = ImageData(
-                task=False, filename=filename, image=image, label=category)
+                filename=filename, image=image, label=category, num_classes=self.num_categories, task=self.do_task, framework=self.framework_version)
             if self.function_transforms is not None:
                 for tsfm in self.function_transforms:
                     tsfm(image_data)
@@ -215,6 +227,11 @@ class CustomDataset(Dataset):
             self.annot = self.load_annotations_yolo(index, dh, dw)
             mask_category = None
 
+            self.mask = None
+
+            self.iscrowd = None
+            self.target = None
+
         elif self.annot_format == 'coco':
             image_info = self.coco.loadImgs(self.image_ids[index])[0]
             path = os.path.join(self.dir_path, 'images',
@@ -231,9 +248,25 @@ class CustomDataset(Dataset):
                     mask = self.coco.annToMask(ann)
                     category = ann['category_id']
                     mask_category.append([mask, category])
+                    self.iscrowd = ann['iscrowd']
+                    self.mask.append(mask)
+
+                else:
+                    self.iscrowd = None
+
+            self.target["boxes"] = self.box
+            self.target["labels"] = self.label
+            self.target["masks"] = self.mask
+            self.target["image_id"] = self.image_id
+            self.target["area"] = self.area
+            self.target["iscrowd"] = self.iscrowd
+
+        self.image_id = [index]
+        self.area = (self.box[:, 3] - self.box[:, 1]) * \
+            (self.box[:, 2] - self.box[:, 0])
 
         image_data = ImageData(filename=filename, image=self.img,
-                               annotation=self.annot,  scale=scale, masks_and_category=mask_category)
+                               annotation=self.annot,  scale=scale, masks_and_category=mask_category, target=self.target, task=self.do_task, framework=self.framework_version)
 
         if self.function_transforms is not None:
             if isinstance(self.function_transforms, list):
@@ -245,9 +278,9 @@ class CustomDataset(Dataset):
         elif self.built_in_transforms is not None:
             if isinstance(self.built_in_transforms, list):
                 aug = Augmentation(self.built_in_transforms)
-                
+
             else:
-               aug = Augmentation([self.built_in_transforms]) 
+                aug = Augmentation([self.built_in_transforms])
             aug(image_data)
         return image_data
 
@@ -258,8 +291,6 @@ class CustomDataset(Dataset):
             return len(self.image_ids)
         elif self.annot_format == 'csv' or self.annot_format == 'txt':
             return len(self.img_file_list)
-
- 
 
     def visualize(self, save_path):
 
@@ -397,6 +428,8 @@ class CustomDataset(Dataset):
     def load_annotations_yolo(self, index, dh, dw):
 
         ann = []
+        box = []
+        label = []
         fl = open(self.ann_path_list[index], 'r')
         for dt in fl.readlines():
             dt = dt.strip()
@@ -416,10 +449,15 @@ class CustomDataset(Dataset):
                 bottom = dh - 1
 
             temp_ann = [left, top, right, bottom, c]
+            temp_box = [left, top, right, bottom]
 
             ann.append(temp_ann)
+            box.append(temp_box)
+            label.append(c)
 
         fl.close()
+        self.box = np.array(box)
+        self.label = c
         return np.array(ann)
 
     def load_annotations(self, image_index):
@@ -449,6 +487,9 @@ class CustomDataset(Dataset):
         annotations[:, 2] = annotations[:, 0] + annotations[:, 2]
         annotations[:, 3] = annotations[:, 1] + annotations[:, 3]
 
+        self.box = annotations[:, :4]
+        self.label = annotations[:, 4]
+
         return annotations
 
     # These two functions are so the network has every label from 0 - 80 consistently
@@ -474,46 +515,69 @@ class CustomDataset(Dataset):
             return len(self.classes_set)
         elif self.annot_format == 'coco':
             return len(self.classes)
-        elif self.annot_format == 'csv' or self.annot_format =='txt':
+        elif self.annot_format == 'csv' or self.annot_format == 'txt':
             return len(self.data['0'])
 
 
 def collater(data):
-    
-    tasks=[s._task for s in data]
-    task=0  # 0 for object detection, 1 for image classification
-    for s in data:
-        if s._task==True:
-            break;
+
+    task = 'detection'
+    for image_data in data:
+        if image_data._task == 'detection':
+            break
+        elif image_data._task == 'segmentation':
+            task = 'segmentation'
+            break
         else:
-            task=1
+            task = 'classification'
             break
 
-    imgs = [s.image for s in data]  
-    widths = [int(s.shape[0]) for s in imgs]
-    heights = [int(s.shape[1]) for s in imgs]
+    framework = 'pytorch'
+    for image_data in data:
+        if image_data.framework == 'keras':
+            framework = 'keras'
+            break
+
+    imgs = [image_data.image for image_data in data]
+    widths = [int(image_data.shape[0]) for image_data in imgs]
+    heights = [int(image_data.shape[1]) for image_data in imgs]
     batch_size = len(imgs)
 
     max_width = np.array(widths).max()
     max_height = np.array(heights).max()
 
-    padded_imgs = torch.zeros(batch_size, max_width, max_height, 3)   
+    padded_imgs = torch.zeros(batch_size, max_width, max_height, 3)
+
     for i in range(batch_size):
         img = imgs[i]
-        padded_imgs[i, :int(img.shape[0]), :int(img.shape[1]), :] = torch.tensor(img) 
-          
-    padded_imgs = padded_imgs.permute(0, 3, 1, 2)    
-    if task==0:
-        annots = [s.annotation for s in data]
-        scales = [s.scale for s in data]
+        padded_imgs[i, :int(img.shape[0]), :int(
+            img.shape[1]), :] = torch.tensor(img)
+
+    if framework == 'keras':
+        padded_imgs = np.array(padded_imgs)
+    else:
+        padded_imgs = padded_imgs.permute(0, 3, 1, 2)
+
+    masks_and_category = [image_data.masks_and_category for image_data in data]
+    if masks_and_category[0] is not None:
+        for m_and_c in masks_and_category:
+            for t in m_and_c:
+                new_mask = torch.zeros((max_width, max_height))
+                mask = t[0]
+                new_mask[:int(mask.shape[0]), :int(
+                    mask.shape[1])] = torch.tensor(mask)
+                t[0] = new_mask
+
+    if task == 'detection':
+        annots = [image_data.annotation for image_data in data]
+        scales = [image_data.scale for image_data in data]
 
         # max_num_annots = max(annot.shape[0] for annot in annots)
-        max_num_annots=0
+        max_num_annots = 0
         for annot in annots:
             if annot is not None:
-                if annot.shape[0]> max_num_annots:
+                if annot.shape[0] > max_num_annots:
                     max_num_annots = annot.shape[0]
-
 
         if max_num_annots > 0:
 
@@ -523,19 +587,47 @@ def collater(data):
                 for idx, annot in enumerate(annots):
                     # print(annot.shape)
                     if annot.shape[0] > 0:
-                        annot_padded[idx, :annot.shape[0], :] = torch.tensor(annot)
+                        annot_padded[idx, :annot.shape[0],
+                                     :] = torch.tensor(annot)
         else:
             annot_padded = torch.ones((len(annots), 1, 5)) * -1
-        filenames = [s.filename for s in data] 
-        masks_and_category = [s.masks_and_category for s in data]
-        image_data = ImageData(image=padded_imgs, annotation=annot_padded,filename=filenames,masks_and_category=masks_and_category,scale=scales)
-    else:
-        labels = [s.label for s in data] 
-        filenames = [s.filename for s in data] 
-        image_data = ImageData(image=padded_imgs, filename=filenames,label=labels, task=False)
 
+        filenames = [image_data.filename for image_data in data]
 
-    return image_data
+        image_data = ImageData(image=padded_imgs, annotation=annot_padded,
+                               filename=filenames, masks_and_category=masks_and_category, scale=scales)
+        return image_data
+
+    elif task == 'segmentation':
+
+        targets = [image_data.target for image_data in data]
+        for target in targets:
+            masks = target['masks']
+            widths = [int(image_data.shape[0]) for image_data in masks]
+            heights = [int(image_data.shape[1]) for image_data in masks]
+            batch_size = len(masks)
+            max_width = np.array(widths).max()
+            max_height = np.array(heights).max()
+            padded_masks = torch.zeros(batch_size, max_width, max_height)
+            for i in range(batch_size):
+                mask = masks[i]
+            padded_masks[i, :int(mask.shape[0]), :int(
+                mask.shape[1])] = torch.tensor(mask)
+            target['masks'] = padded_masks
+
+        return padded_imgs, targets
+
+    elif task == 'classification':
+        labels = torch.LongTensor([to_categorical(
+            image_data.label, num_classes=image_data.num_classes) for image_data in data])
+
+        filenames = [image_data.filename for image_data in data]
+        image_data = ImageData(
+            image=padded_imgs, filename=filenames, label=labels, task=False)
+        if framework == 'pytorch':
+            return image_data
+        else:
+            return (padded_imgs, labels)
 
 
 def detection_augment_list():
