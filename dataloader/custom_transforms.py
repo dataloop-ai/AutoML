@@ -11,6 +11,7 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from PIL import Image, ImageOps, ImageFilter
 import cv2
 from .image import *
+from itertools import product
 
 
 class Normalize(object):
@@ -58,13 +59,11 @@ class ToTensor(object):
 
 class RandomHorizontalFlip(object):
     def __call__(self, sample):
-        img, mask = sample.image, sample.annotation
-        if random.random() < 0.5:
-            img = img.transpose(Image.FLIP_LEFT_RIGHT)
-            mask = mask.transpose(Image.FLIP_LEFT_RIGHT)
 
-        sample.image = img
-        sample.annotation = mask
+        p = random.random()
+
+        if p < 0.5:
+            HorizontalFlip(p=1)(sample)
 
 
 class Translate_Y(object):
@@ -73,22 +72,25 @@ class Translate_Y(object):
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
-
-        bbs = BoundingBoxesOnImage(
-            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
-                         label=str(int(ann[4]))) for ann in annot],
-            shape=img.shape)
         aug = iaa.geometric.TranslateY(percent=self.v)
-        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-        annot_aug = np.array(
-            [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        img_aug = aug(image=img)
+        annot_aug = []
+        if annot is not None:
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)
+
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         masks = []
         if sample.masks_and_category is not None:
             for index in sample.masks_and_category:
                 masks.append(index[0])
         segmap = []
 
-        if masks is not None:
+        if masks != []:
             for mask in masks:
                 segmap.append(SegmentationMapsOnImage(mask, shape=img.shape))
             mask_aug = aug(segmentation_maps=segmap)
@@ -160,22 +162,25 @@ class Translate_X(object):
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
-
-        bbs = BoundingBoxesOnImage(
-            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
-                         label=str(int(ann[4]))) for ann in annot],
-            shape=img.shape)
         aug = iaa.geometric.TranslateX(percent=self.v)
-        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-        annot_aug = np.array(
-            [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        img_aug = aug(image=img)
+        annot_aug = []
+        if annot is not None:
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)
+
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         masks = []
         if sample.masks_and_category is not None:
             for index in sample.masks_and_category:
                 masks.append(index[0])
         segmap = []
 
-        if masks is not None:
+        if masks != []:
             for mask in masks:
                 segmap.append(SegmentationMapsOnImage(mask, shape=img.shape))
             mask_aug = aug(segmentation_maps=segmap)
@@ -294,15 +299,18 @@ class Rotate(object):
         # , sample['mask_category']
         img, annot = sample.image, sample.annotation
 
-        bbs = BoundingBoxesOnImage(
-            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
-                         label=str(int(ann[4]))) for ann in annot],
-            shape=img.shape)
+        annot_aug = []
         aug = iaa.Rotate(rotate=self.v)
-        img_aug, bbs_aug, = aug(
-            image=img, bounding_boxes=bbs)
-        annot_aug = np.array(
-            [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        if annot is not None:
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+
+        img_aug = aug(image=img)
 
         masks = []
         if sample.masks_and_category is not None:
@@ -310,22 +318,50 @@ class Rotate(object):
                 masks.append(index[0])
         segmap = []
 
-        if masks is not None:
+        if masks != []:
             for mask in masks:
                 segmap.append(SegmentationMapsOnImage(mask, shape=img.shape))
             mask_aug = aug(segmentation_maps=segmap)
             # reshape back to 2D
             for mask in mask_aug:
                 mask.arr = mask.arr[:, :, 0]
+
+            new_bbox=[]
+            
             for i, index in enumerate(sample.masks_and_category):
                 index[0] = mask_aug[i].arr
+                
 
+                binary_mask = np.array(index[0], np.uint8)
+                
+                contours,hierarchy = cv2.findContours(
+                    binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    
+                if contours ==[]:
+                    continue
+                areas = []
+                for cnt in contours:
+                    area = cv2.contourArea(cnt)
+                    areas.append(area)
+                    
+                idx = areas.index(np.max(areas))
+                x, y, w, h = cv2.boundingRect(contours[idx])
+                bounding_box = [x, y, x+w, y+h]
+
+            
+
+                temp=[x,y,x+w,y+h,np.float32(index[1])]
+                new_bbox.append(temp)
+            
+                
     # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0, 5))
 
         sample.image = img_aug
         sample.annotation = annot_aug
+        if masks != []:
+            sample.annotation = np.array(new_bbox)
 
 
 # TODO: Figure out how to make rotate just bboxes work correctly
@@ -357,22 +393,25 @@ class ShearX(object):
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
-
-        bbs = BoundingBoxesOnImage(
-            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
-                         label=str(int(ann[4]))) for ann in annot],
-            shape=img.shape)
         aug = iaa.ShearX(self.v)
-        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-        annot_aug = np.array(
-            [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        img_aug = aug(image=img)
+        annot_aug = []
+        if annot is not None:
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)
+
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         masks = []
         if sample.masks_and_category is not None:
             for index in sample.masks_and_category:
                 masks.append(index[0])
 
         mask_aug = []
-        if masks is not None:
+        if masks != []:
             for mask in masks:
                 mask = SegmentationMapsOnImage(
                     mask, shape=img.shape).arr
@@ -400,6 +439,7 @@ class ShearX_BBoxes(object):
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
+
         unique_labels = np.unique(
             annot[:, 4].astype('int').astype('str')).tolist()
 
@@ -446,22 +486,25 @@ class ShearY(object):
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
-
-        bbs = BoundingBoxesOnImage(
-            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
-                         label=str(int(ann[4]))) for ann in annot],
-            shape=img.shape)
         aug = iaa.ShearY(self.v)
-        img_aug, bbs_aug = aug(image=img, bounding_boxes=bbs)
-        annot_aug = np.array(
-            [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        img_aug = aug(image=img)
+        annot_aug = []
+        if annot is not None:
+
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         masks = []
         if sample.masks_and_category is not None:
             for index in sample.masks_and_category:
                 masks.append(index[0])
 
         mask_aug = []
-        if masks is not None:
+        if masks != []:
             for mask in masks:
                 mask = SegmentationMapsOnImage(
                     mask, shape=img.shape).arr
@@ -731,17 +774,13 @@ class FlipLR(object):
 
 # TODO: fix this later
 class RandomGaussianBlur(object):
-    def __init__(self, _):
-        pass
+    def __init__(self, v):
+        self.v = v  # 0.0 - 3.0
 
     def __call__(self, sample):
-        img, mask = sample.image, sample.annotation
-        if random.random() < 0.5:
-            img = img.filter(ImageFilter.GaussianBlur(
-                radius=random.random()))
 
-        sample.image = img
-        sample.annotation = mask
+        if random.random() < 0.5:
+            GaussianBlur(self.v)(sample)
 
 
 class RandomScaleCrop(object):
@@ -831,21 +870,53 @@ class FixedResize(object):
         sample.image = img
         sample.annotation = mask
 
-
+# TODO fix bounding box
 # random crop 321*321
+
+
 class RandomCrop(object):
     def __init__(self, crop_size=320):
         self.crop_size = crop_size
 
     def __call__(self, sample):
-        img, mask = sample.image, sample.annotation
-        w, h = img.size
-        x1 = random.randint(0, w - self.crop_size)
-        y1 = random.randint(0, h - self.crop_size)
-        img = img.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
-        mask = mask.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
-        sample.image = img
-        sample.annotation = mask
+        # img, mask = sample.image, sample.annotation
+        # w, h, _ = img.shape
+        # x1 = random.randint(0, w - self.crop_size)
+        # y1 = random.randint(0, h - self.crop_size)
+        # img = img.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
+        # mask = mask.crop((x1, y1, x1 + self.crop_size, y1 + self.crop_size))
+        # sample.image = img
+        # sample.annotation = mask
+        img, annot = sample.image, sample.annotation
+
+        aug = A.RandomCrop(self.crop_size, self.crop_size)
+
+        masks = []
+        if sample.masks_and_category is not None:
+            for index in sample.masks_and_category:
+                masks.append(index[0])
+
+        image_crop = []
+        bbox_crop = []
+        if masks is not None:
+            augmented = aug(image=img, bboxes=annot, masks=masks)
+            mask_crop = augmented['masks']
+            image_crop = augmented['image']
+            bbox_crop = augmented['bboxes']
+
+            for i, index in enumerate(sample.masks_and_category):
+                index[0] = mask_crop[i]
+        else:
+            augmented = aug(image=img, bboxes=annot)
+            image_crop = augmented['image']
+            bbox_crop = augmented['bboxes']
+
+        # the shape has to be at least (0,5)
+        if len(bbox_crop) == 0:
+            bbox_crop = np.zeros((0, 5))
+
+        sample.image = image_crop
+        sample.annotation = bbox_crop
 
 
 class RandomScale(object):
@@ -866,9 +937,13 @@ class RandomScale(object):
 
         aug = A.RandomScale(scale_limit=self.scales)
 
-        augmented = aug(image=img, bboxes=annot)
+        bbox_aug = []
+        if annot is not None:
+            augmented = aug(image=img, bboxes=annot)
+            bbox_aug = augmented['bboxes']
+        else:
+            augmented = aug(image=img)
         image_aug = augmented['image']
-        bbox_aug = augmented['bboxes']
 
         # the shape has to be at least (0,5)
         if len(bbox_aug) == 0:
@@ -879,7 +954,7 @@ class RandomScale(object):
             for index in sample.masks_and_category:
                 masks.append(index[0])
 
-        if masks is not None:
+        if masks != []:
             w, h, _ = image_aug.shape
 
             mask_aug = []
@@ -940,10 +1015,12 @@ class HorizontalFlip(object):
         img, annot = sample.image, sample.annotation
 
         aug = A.HorizontalFlip(p=self.p)
-
-        augmented = aug(image=img, bboxes=annot)
+        augmented = aug(image=img)
         image_h_flipped = augmented['image']
-        bbox_h_flipped = augmented['bboxes']
+        bbox_h_flipped = []
+        if annot is not None:
+            augmented = aug(image=img, bboxes=annot)
+            bbox_h_flipped = augmented['bboxes']
 
         # the shape has to be at least (0,5)
         if len(bbox_h_flipped) == 0:
@@ -954,12 +1031,12 @@ class HorizontalFlip(object):
             for index in sample.masks_and_category:
                 masks.append(index[0])
 
-        if masks is not None:
+        if masks != []:
             augmented_mask = aug(image=img, masks=masks)
             mask_h_flipped = augmented_mask['masks']
 
-        for i, index in enumerate(sample.masks_and_category):
-            index[0] = mask_h_flipped[i]
+            for i, index in enumerate(sample.masks_and_category):
+                index[0] = mask_h_flipped[i]
 
         sample.image = image_h_flipped
         sample.annotation = bbox_h_flipped
@@ -974,9 +1051,12 @@ class VerticalFlip(object):
 
         aug = A.VerticalFlip(p=self.p)
 
-        augmented = aug(image=img, bboxes=annot)
+        augmented = aug(image=img)
         image_v_flipped = augmented['image']
-        bbox_v_flipped = augmented['bboxes']
+        bbox_v_flipped = []
+        if annot is not None:
+            augmented = aug(image=img, bboxes=annot)
+            bbox_v_flipped = augmented['bboxes']
 
         # the shape has to be at least (0,5)
         if len(bbox_v_flipped) == 0:
@@ -987,12 +1067,12 @@ class VerticalFlip(object):
             for index in sample.masks_and_category:
                 masks.append(index[0])
 
-        if masks is not None:
+        if masks != []:
             augmented_mask = aug(image=img, masks=masks)
             mask_v_flipped = augmented_mask['masks']
 
-        for i, index in enumerate(sample.masks_and_category):
-            index[0] = mask_v_flipped[i]
+            for i, index in enumerate(sample.masks_and_category):
+                index[0] = mask_v_flipped[i]
 
         sample.image = image_v_flipped
         sample.annotation = bbox_v_flipped
@@ -1004,17 +1084,17 @@ class GaussianBlur(object):
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
-
-        bbs = BoundingBoxesOnImage(
-            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
-                         label=str(int(ann[4]))) for ann in annot],
-            shape=img.shape)
         aug = iaa.GaussianBlur(sigma=self.v)
-        img_aug, bbs_aug = aug(
-            image=img, bounding_boxes=bbs)
-
-        annot_aug = np.array(
-            [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        img_aug = aug(image=img)
+        annot_aug = []
+        if annot is not None:
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         # the shape has to be at least (0,5)
 
         if len(annot_aug) == 0:
@@ -1029,20 +1109,82 @@ class MotionBlur(object):
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
-
-        bbs = BoundingBoxesOnImage(
-            [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
-                         label=str(int(ann[4]))) for ann in annot],
-            shape=img.shape)
         aug = iaa.MotionBlur(k=self.k)
-        img_aug, bbs_aug = aug(
-            image=img, bounding_boxes=bbs)
+        img_aug = aug(image=img)
+        annot_aug = []
+        if annot is not None:
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)
 
-        annot_aug = np.array(
-            [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         # the shape has to be at least (0,5)
-
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0, 5))
         sample.image = img_aug
         sample.annotation = annot_aug
+
+class ElasticTransformation(object):
+    def __init__(self, alpha):
+        self.alpha = alpha     # 10,20,30,...,100
+        self.sigma = self.alpha/10
+    def __call__(self, sample):
+        img, annot = sample.image, sample.annotation
+        aug = iaa.ElasticTransformation(alpha=self.alpha,sigma=self.sigma)
+        img_aug = aug(image=img)
+        annot_aug = []
+        if annot is not None:
+            bbs = BoundingBoxesOnImage(
+                [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
+                             label=str(int(ann[4]))) for ann in annot],
+                shape=img.shape)
+            bbs_aug = aug(bounding_boxes=bbs)    
+            annot_aug = np.array(
+                [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
+        # the shape has to be at least (0,5)
+        if len(annot_aug) == 0:
+            annot_aug = np.zeros((0, 5))
+        sample.image = img_aug
+        sample.annotation = annot_aug
+
+class CenterCrop(object):
+    def __init__(self, square):
+        self.square=square
+
+    def __call__(self, sample):
+        img, annot = sample.image, sample.annotation
+
+        aug = A.CenterCrop(height=self.square,width=self.square)
+
+        augmented = aug(image=img)
+        image_c_crop = augmented['image']
+        bbox_c_crop = []
+        if annot is not None:
+            augmented = aug(image=img, bboxes=annot)
+            bbox_c_crop = augmented['bboxes']
+
+        # the shape has to be at least (0,5)
+        if len(bbox_c_crop) == 0:
+            bbox_c_crop = np.zeros((0, 5))
+
+        masks = []
+        if sample.masks_and_category is not None:
+            for index in sample.masks_and_category:
+                masks.append(index[0])
+
+        if masks != []:
+            augmented_mask = aug(image=img, masks=masks)
+            mask_c_crop = augmented_mask['masks']
+
+            for i, index in enumerate(sample.masks_and_category):
+                index[0] = mask_c_crop[i]
+
+        sample.image = image_c_crop
+        sample.annotation = bbox_c_crop
+
+
+
+    
