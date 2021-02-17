@@ -10,6 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
+            "cwd": "/home/noam/AutoML",
             "args": ["--search"]
         }
     ]

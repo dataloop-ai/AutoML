@@ -58,37 +58,10 @@ class ModelTrainer:
             transform_train.transforms.insert(0, Augmentation(augment_policy, detection=True))
 
         if self.dataset == 'coco':
-            self.dataset_train = CustomDataset(self.data_path, data_format="coco",
+            self.dataloader_train = DataGenerator(self.data_path, annotation_format="coco",
                                              function_transforms=transform_train)
-            self.dataset_val = CustomDataset(self.data_path, data_format="coco",
+            self.dataset_val = DataGenerator(self.data_path, annotation_format="coco",
                                            function_transforms=transform_val)
-
-        elif self.dataset == 'csv':
-            if csv_train is None:
-                raise ValueError('Must provide --csv_train when training on COCO,')
-            if csv_classes is None:
-                raise ValueError('Must provide --csv_classes when training on COCO,')
-            self.dataset_train = CSVDataset(train_file=csv_train, class_list=csv_classes,
-                                            transform=transforms.Compose(
-                                                [Normalizer(), Augmenter(), Resizer(min_side=resize)])
-                                            )
-
-            if csv_val is None:
-                self.dataset_val = None
-                print('No validation annotations provided.')
-            else:
-                self.dataset_val = CSVDataset(train_file=csv_val, class_list=csv_classes,
-                                              transform=transforms.Compose([Normalizer(), Resizer(min_side=resize)]))
-        else:
-            raise ValueError('Dataset type not understood (must be csv or coco), exiting.')
-
-        sampler = AspectRatioBasedSampler(self.dataset_train, batch_size=batch, drop_last=False)
-        self.dataloader_train = DataLoader(self.dataset_train, num_workers=0, collate_fn=collater,
-                                           batch_sampler=sampler)
-        if self.dataset_val is not None:
-            sampler_val = AspectRatioBasedSampler(self.dataset_val, batch_size=1, drop_last=False)
-            self.dataloader_val = DataLoader(self.dataset_val, num_workers=3, collate_fn=collater,
-                                             batch_sampler=sampler_val)
 
         print('Num training images: {}'.format(len(self.dataset_train)))
         if len(self.dataset_val) == 0:
