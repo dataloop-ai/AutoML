@@ -8,6 +8,22 @@ import tensorflow as tf
 
 
 class DataGenerator(object):
+    """
+    dir_path: the path of the dataset directory
+    annotation_format: the annotataion file format can be 'yolo' or coco'
+    task: input 'classification' or 'detection' or 'segmentation'
+    number_classes: the number of the categories
+    framework: use 'pytorch' or 'keras' version 
+    batch_size: a number that a batch can contain the data each time
+    dataset: mark as train data or test data
+    shuffle: suffle the data or not
+    num_workers: how many workers for multiprocessing
+    annotation_path: point to the path of annotation file directly
+    function_transforms: a string/list of transform function(s)
+    built_in_transforms: a string/list of built in trainsform(s)
+
+    
+    """
     def __init__(self, dir_path, annotation_format, task, number_classes=None, framework='pytorch', batch_size=32, dataset='train', shuffle=True, num_workers=4, annotation_path=None, function_transforms=None, built_in_transforms=None):
         self._dir_path = dir_path
         self._annotation_format = annotation_format
@@ -21,6 +37,7 @@ class DataGenerator(object):
         self._function_transforms = function_transforms
         self._built_in_transforms = built_in_transforms
         self._task = task
+        self.loader = []
 
         self.dataset = CustomDataset(dir_path=self._dir_path, annot_format=self._annotation_format, num_categories=self.number_classes, dataset=self._dataset,
                                      annotation_path=self._annotation_path, do_task=self._task, framework_version=self._framework, function_transforms=self._function_transforms, built_in_transforms=self._built_in_transforms)
@@ -44,40 +61,37 @@ class DataGenerator(object):
         if self.count < self.num_batchs:
             data = next(self.iterator)
             if self._framework == 'pytorch':
-
-                if data.task == 'classification':
-                    image = data.image.permute(0, 3, 2, 1)
-                    image = np.array(image)
+                image = data.image.permute(0, 3, 2, 1)
+                image = np.array(image)
+                if self._task == 'classification':
                     label = to_categorical(
                         data.label, num_classes=self.dataset.num_classes)
                     label = np.array(label)
                     return [image, label]
-                elif data.task == 'segmentation':
-                    image = data.image.permute(0, 3, 2, 1)
-                    image = np.array(image)
+                elif self._task == 'segmentation':
                     annotation = np.array(data.annotation)
                     mask = np.array(list(data.masks_and_category))
                     return (image, annotation, mask)
-                else:
-                    image = data[0]
-                    target = data[1]
-                    return (image, target)
+                elif self._task == 'detection':
+                    annotation = np.array(data.annotation)
+                    return (image, annotation)
 
             elif self._framework == 'keras':
 
-                image = data[0]
-
-                if self._annotation_format == 'csv' or self._annotation_format == 'txt':
+                if self._task == 'classification':
+                    image = data[0]
                     label = data[1]
                     label = np.array(label)
 
                     return image, label
-                elif data._object_detection:
+                elif self._task == 'segmentation':
+                    image = data.image
                     annotation = np.array(data.annotation)
                     mask = np.array(list(data.masks_and_category))
                     return (image, annotation, mask)
-                else:
-                    annotation = np.array(data.annotation)
-                    return (image, annotation)
+                elif self._task == 'detection':
+                    image = data[0]
+                    target = data[1]
+                    return (image, target)
 
             self.count += 1
