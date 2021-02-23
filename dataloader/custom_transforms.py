@@ -9,6 +9,7 @@ from imgaug import BoundingBox, BoundingBoxesOnImage
 import imgaug.augmenters as iaa
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from PIL import Image, ImageOps, ImageFilter
+import albumentations as A
 import cv2
 from .image import *
 from itertools import product
@@ -323,37 +324,34 @@ class Rotate(object):
                 segmap.append(SegmentationMapsOnImage(mask, shape=img.shape))
             mask_aug = aug(segmentation_maps=segmap)
             # reshape back to 2D
+
             for mask in mask_aug:
                 mask.arr = mask.arr[:, :, 0]
 
-            new_bbox=[]
-            
+            new_bbox = []
+
             for i, index in enumerate(sample.masks_and_category):
                 index[0] = mask_aug[i].arr
-                
 
                 binary_mask = np.array(index[0], np.uint8)
-                
-                contours,hierarchy = cv2.findContours(
+
+                contours, hierarchy = cv2.findContours(
                     binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    
-                if contours ==[]:
+
+                if contours == []:
                     continue
                 areas = []
                 for cnt in contours:
                     area = cv2.contourArea(cnt)
                     areas.append(area)
-                    
+
                 idx = areas.index(np.max(areas))
                 x, y, w, h = cv2.boundingRect(contours[idx])
                 bounding_box = [x, y, x+w, y+h]
 
-            
-
-                temp=[x,y,x+w,y+h,np.float32(index[1])]
+                temp = [x, y, x+w, y+h, np.float32(index[1])]
                 new_bbox.append(temp)
-            
-                
+
     # the shape has to be at least (0,5)
         if len(annot_aug) == 0:
             annot_aug = np.zeros((0, 5))
@@ -1127,13 +1125,15 @@ class MotionBlur(object):
         sample.image = img_aug
         sample.annotation = annot_aug
 
+
 class ElasticTransformation(object):
     def __init__(self, alpha):
         self.alpha = alpha     # 10,20,30,...,100
         self.sigma = self.alpha/10
+
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
-        aug = iaa.ElasticTransformation(alpha=self.alpha,sigma=self.sigma)
+        aug = iaa.ElasticTransformation(alpha=self.alpha, sigma=self.sigma)
         img_aug = aug(image=img)
         annot_aug = []
         if annot is not None:
@@ -1141,7 +1141,7 @@ class ElasticTransformation(object):
                 [BoundingBox(x1=ann[0], y1=ann[1], x2=ann[2], y2=ann[3],
                              label=str(int(ann[4]))) for ann in annot],
                 shape=img.shape)
-            bbs_aug = aug(bounding_boxes=bbs)    
+            bbs_aug = aug(bounding_boxes=bbs)
             annot_aug = np.array(
                 [[bb.x1, bb.y1, bb.x2, bb.y2, np.float32(bb.label)] for bb in bbs_aug])
         # the shape has to be at least (0,5)
@@ -1150,14 +1150,15 @@ class ElasticTransformation(object):
         sample.image = img_aug
         sample.annotation = annot_aug
 
+
 class CenterCrop(object):
     def __init__(self, square):
-        self.square=square
+        self.square = square
 
     def __call__(self, sample):
         img, annot = sample.image, sample.annotation
 
-        aug = A.CenterCrop(height=self.square,width=self.square)
+        aug = A.CenterCrop(height=self.square, width=self.square)
 
         augmented = aug(image=img)
         image_c_crop = augmented['image']
@@ -1184,7 +1185,3 @@ class CenterCrop(object):
 
         sample.image = image_c_crop
         sample.annotation = bbox_c_crop
-
-
-
-    

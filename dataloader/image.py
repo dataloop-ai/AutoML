@@ -15,7 +15,7 @@ import torch
 
 class ImageData(object):
 
-    def __init__(self, num_classes=None, filename=None, task=None, image=None, annotation=None, scale=None, label=None, masks_and_category=None, target=None, framework=None):
+    def __init__(self, num_classes=None, filename=None, task=None, image=None, annotation=None, scale=None, label=None, masks_and_category=None, target=None, framework=None, bbox=None, bbox_label=None, mask=None):
         ''' filename is for saving file
             _task is for knowing the task is object detection  or image classification or instance segmentation
             image is the array of the image #TODO: CHANGE TO IMAGES
@@ -40,19 +40,17 @@ class ImageData(object):
         self._task = task
         self.framework = framework
 
-        self.target = target
-        if self.target is not None:
-            self.target["boxes"] = torch.as_tensor(
-                self.target["boxes"], dtype=torch.float32)
-            self.target["labels"] = torch.tensor(
-                self.target["labels"], dtype=torch.int64)
+        self.bbox = bbox
+        self.bbox_label = bbox_label
+        self.mask = mask
 
-            self.target["image_id"] = torch.tensor(
-                self.target["image_id"])
-            self.target['area'] = torch.tensor(
-                self.target['area'])
-            self.target["iscrowd"] = torch.tensor(
-                self.target["iscrowd"], dtype=torch.int64)
+        self.target = target
+
+        self.annotation_dict = {}
+        if self.bbox is not None:
+            self.annotation_dict['bboxes'] = self.bbox
+        if self.bbox_label is not None:
+            self.annotation_dict['labels'] = self.bbox_label
 
     def __str__(self):
         '''if print out the object, will call this method'''
