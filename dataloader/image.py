@@ -30,8 +30,6 @@ class ImageData(object):
         self.filename = filename
         self.label = label
 
-        # TODO: CHANGE THIS to self._task #Underscore everything thats internal
-
         self.scale = scale
         self.masks_and_category = masks_and_category
         self.masks = []

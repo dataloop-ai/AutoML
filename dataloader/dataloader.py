@@ -531,22 +531,8 @@ class CustomDataset(Dataset):
 
 def collater(data):
 
-    task = 'detection'
-    for image_data in data:
-        if image_data._task == 'detection':
-            break
-        elif image_data._task == 'segmentation':
-            task = 'segmentation'
-            break
-        else:
-            task = 'classification'
-            break
-
-    framework = 'pytorch'
-    for image_data in data:
-        if image_data.framework == 'keras':
-            framework = 'keras'
-            break
+    task = data[0]._task
+    framework = data[0].framework
 
     imgs = [image_data.image for image_data in data]
     widths = [int(image_data.shape[0]) for image_data in imgs]
@@ -563,10 +549,15 @@ def collater(data):
         padded_imgs[i, :int(img.shape[0]), :int(
             img.shape[1]), :] = torch.tensor(img)
 
-    if framework == 'keras':
-        padded_imgs = np.array(padded_imgs)
-    else:
-        padded_imgs = padded_imgs.permute(0, 3, 1, 2)
+    padded_imgs = padded_imgs.permute(0, 3, 1, 2)
+
+    temp_padded_imgs = torch.zeros(max_width, max_height, 3)
+    imgs_dic = []
+    for i in range(batch_size):
+        img = imgs[i]
+        img = torch.tensor(img)
+        img = img.permute(2, 0, 1)
+        imgs_dic.append(img)
 
     masks_and_category = [image_data.masks_and_category for image_data in data]
     if masks_and_category[0] is not None:
@@ -583,31 +574,26 @@ def collater(data):
         annots = [image_data.annotation for image_data in data]
         scales = [image_data.scale for image_data in data]
         if framework == 'pytorch':
-            # max_num_annots = max(annot.shape[0] for annot in annots)
-            max_num_annots = 0
-            for annot in annots:
-                if annot is not None:
-                    if annot.shape[0] > max_num_annots:
-                        max_num_annots = annot.shape[0]
-
-            if max_num_annots > 0:
-
-                annot_padded = torch.ones(
-                    (len(annots), max_num_annots, 5)) * -1
-
-                if max_num_annots > 0:
-                    for idx, annot in enumerate(annots):
-                        # print(annot.shape)
-                        if annot.shape[0] > 0:
-                            annot_padded[idx, :annot.shape[0],
-                                         :] = torch.tensor(annot)
-            else:
-                annot_padded = torch.ones((len(annots), 1, 5)) * -1
-
+            images = [torch.from_numpy(image_data.image)
+                      for image_data in data]
             filenames = [image_data.filename for image_data in data]
+            bboxes = [torch.tensor(image_data.bbox) for image_data in data]
+            bbox_labels = [torch.tensor(image_data.bbox_label)
+                           for image_data in data]
 
-            image_data = ImageData(image=padded_imgs, annotation=annot_padded,
-                                   filename=filenames, masks_and_category=masks_and_category, scale=scales)
+            # target = [image_data.target for image_data in data]
+            
+            target=[]
+            for image_data in data:
+                temp_dic = {}
+                temp_dic['boxes']=torch.as_tensor(
+                image_data.bbox, dtype=torch.float32)
+                temp_dic['labels']=torch.tensor(
+                image_data.bbox_label, dtype=torch.int64)
+                target.append(temp_dic)
+
+            image_data = ImageData(image=imgs_dic,
+                                   filename=filenames, masks_and_category=masks_and_category, scale=scales, target=target, bbox=bboxes, bbox_label=bbox_labels)
 
             return image_data
         else:
