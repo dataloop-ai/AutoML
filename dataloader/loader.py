@@ -20,10 +20,11 @@ class DataGenerator(object):
     num_workers: how many workers for multiprocessing
     annotation_path: point to the path of annotation file directly
     function_transforms: a string/list of transform function(s)
-    built_in_transforms: a string/list of built in trainsform(s)
+    built_in_transforms: a string/list of built intrain
 
-    
+
     """
+
     def __init__(self, dir_path, annotation_format, task, number_classes=None, framework='pytorch', batch_size=32, dataset='train', shuffle=True, num_workers=4, annotation_path=None, function_transforms=None, built_in_transforms=None):
         self._dir_path = dir_path
         self._annotation_format = annotation_format
@@ -54,27 +55,38 @@ class DataGenerator(object):
         return len(self.dataset)
 
     def __iter__(self):
-        return self.iterator
+        return dataGeneratorIterator(self)
+
+
+class dataGeneratorIterator():
+    def __init__(self, dataGenerator):
+        self.count = dataGenerator.count
+        self.num_batchs = dataGenerator.num_batchs
+        self._framework = dataGenerator._framework
+        self._task = dataGenerator._task
+        self.dataset = dataGenerator.dataset
+        self.iterator = dataGenerator.iterator
 
     def __next__(self):
 
         if self.count < self.num_batchs:
             data = next(self.iterator)
             if self._framework == 'pytorch':
-                image = data.image.permute(0, 3, 2, 1)
-                image = np.array(image)
+                # image = data.image.permute(0, 3, 2, 1)
+                # image = np.array(image)
+                image = data.image
                 if self._task == 'classification':
-                    label = to_categorical(
-                        data.label, num_classes=self.dataset.num_classes)
-                    label = np.array(label)
-                    return [image, label]
+
+                    label = data.label
+
+                    return image, label
                 elif self._task == 'segmentation':
                     annotation = np.array(data.annotation)
                     mask = np.array(list(data.masks_and_category))
-                    return (image, annotation, mask)
+                    return image, annotation, mask
                 elif self._task == 'detection':
-                    annotation = np.array(data.annotation)
-                    return (image, annotation)
+                    target = data.target
+                    return image, target
 
             elif self._framework == 'keras':
 
