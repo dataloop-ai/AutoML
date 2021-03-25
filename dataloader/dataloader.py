@@ -131,6 +131,7 @@ class CustomDataset(Dataset):
             self.data = pd.read_csv(self.dir_path_list[0], header=None)
             self.data.columns = ['0', '1']
             self.load_all_pictures()
+            self.load_all_classes()
 
         # read the txt file and separate to two culomn (filename & category)and save as dataFrame
         elif self.annot_format == 'txt':
@@ -150,8 +151,14 @@ class CustomDataset(Dataset):
             dict = {'0': column_zero, '1': column_one}
             self.data = pd.DataFrame(dict)
             self.load_all_pictures()
+            self.load_all_classes()
+    # list all the category name
 
+    def load_all_classes(self):
+        category = set(self.data['1'].to_list())
+        self.labels = list(category)
     # from all folder ,get all the pictures
+
     def load_all_pictures(self):
         if self.dataset == 'train':
 
@@ -582,14 +589,14 @@ def collater(data):
                            for image_data in data]
 
             # target = [image_data.target for image_data in data]
-            
-            target=[]
+
+            target = []
             for image_data in data:
                 temp_dic = {}
-                temp_dic['boxes']=torch.as_tensor(
-                image_data.bbox, dtype=torch.float32)
-                temp_dic['labels']=torch.tensor(
-                image_data.bbox_label, dtype=torch.int64)
+                temp_dic['boxes'] = torch.as_tensor(
+                    image_data.bbox, dtype=torch.float32)
+                temp_dic['labels'] = torch.tensor(
+                    image_data.bbox_label, dtype=torch.int64)
                 target.append(temp_dic)
 
             image_data = ImageData(image=imgs_dic,
