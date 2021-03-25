@@ -12,7 +12,6 @@ class DataGenerator(object):
     dir_path: the path of the dataset directory
     annotation_format: the annotataion file format can be 'yolo' or coco'
     task: input 'classification' or 'detection' or 'segmentation'
-    number_classes: the number of the categories
     framework: use 'pytorch' or 'keras' version 
     batch_size: a number that a batch can contain the data each time
     dataset: mark as train data or test data
@@ -21,6 +20,8 @@ class DataGenerator(object):
     annotation_path: point to the path of annotation file directly
     function_transforms: a string/list of transform function(s)
     built_in_transforms: a string/list of built intrain
+    num_classes: number of categories
+    labels: list all the classes name 
 
 
     """
@@ -45,6 +46,13 @@ class DataGenerator(object):
 
         self.loader = DataLoader(dataset=self.dataset, batch_size=self._batch_size,
                                  shuffle=self._shuffle, num_workers=self._num_workers, collate_fn=collater)
+
+        self.num_classes = self.dataset.num_classes
+
+        if self._annotation_format == 'coco':
+            self.labels = self.dataset.labels.values()
+        else:
+            self.labels = self.dataset.labels
 
         self.iterator = iter(self.loader)
         num_data = len(self.dataset)

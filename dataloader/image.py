@@ -29,12 +29,11 @@ class ImageData(object):
         self.annotation = annotation
         self.filename = filename
         self.label = label
-
+        self.num_classes = num_classes
         self.scale = scale
         self.masks_and_category = masks_and_category
         self.masks = []
         self.categories = []
-        self.num_classes = num_classes
         self._task = task
         self.framework = framework
 
