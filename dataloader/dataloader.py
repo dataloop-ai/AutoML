@@ -57,7 +57,7 @@ augmentations = ['Translate_Y',
 
 
 class CustomDataset(Dataset):
-    def __init__(self, dir_path, annot_format, do_task=None, framework_version=None, num_categories=None, annotation_path=None, function_transforms=None, built_in_transforms=None, dataset="train"):
+    def __init__(self, dir_path, annot_format, do_task=None, framework_version=None, annotation_path=None, function_transforms=None, built_in_transforms=None, dataset="train"):
         """
         Args:
             dir_path: the dataset path, if the annotation_path is None, then it will search all the files, if the annotation is not None, it will search the images.
@@ -71,7 +71,6 @@ class CustomDataset(Dataset):
         self.dir_path = dir_path
         self.annot_format = annot_format
         self.annot_path = annotation_path
-        self.num_categories = num_categories
         self.function_transforms = function_transforms
         self.built_in_transforms = built_in_transforms
         self.dataset = dataset
@@ -218,7 +217,7 @@ class CustomDataset(Dataset):
             image = image/255.0
 
             image_data = ImageData(
-                filename=filename, image=image, label=category, num_classes=self.num_categories, task=self.do_task, framework=self.framework_version)
+                filename=filename, image=image, label=category, num_classes=self.num_classes, task=self.do_task, framework=self.framework_version)
             if self.function_transforms is not None:
                 for tsfm in self.function_transforms:
                     tsfm(image_data)
@@ -283,7 +282,7 @@ class CustomDataset(Dataset):
             (self.box[:, 2] - self.box[:, 0])
 
         image_data = ImageData(filename=filename, image=self.img,
-                               annotation=self.annot,  scale=scale, masks_and_category=mask_category, target=self.target, task=self.do_task, framework=self.framework_version, bbox=self.box, bbox_label=self.label, mask=self.mask, num_classes=self.num_categories)
+                               annotation=self.annot,  scale=scale, masks_and_category=mask_category, target=self.target, task=self.do_task, framework=self.framework_version, bbox=self.box, bbox_label=self.label, mask=self.mask, num_classes=self.num_classes)
 
         if self.function_transforms is not None:
             if isinstance(self.function_transforms, list):
