@@ -26,10 +26,9 @@ class DataGenerator(object):
 
     """
 
-    def __init__(self, dir_path, annotation_format, task, number_classes=None, framework='pytorch', batch_size=32, dataset='train', shuffle=True, num_workers=4, annotation_path=None, function_transforms=None, built_in_transforms=None):
+    def __init__(self, dir_path, annotation_format, task, framework='pytorch', batch_size=32, dataset='train', shuffle=True, num_workers=4, annotation_path=None, function_transforms=None, built_in_transforms=None):
         self._dir_path = dir_path
         self._annotation_format = annotation_format
-        self.number_classes = number_classes
         self._framework = framework
         self._batch_size = batch_size
         self._dataset = dataset
@@ -41,7 +40,7 @@ class DataGenerator(object):
         self._task = task
         self.loader = []
 
-        self.dataset = CustomDataset(dir_path=self._dir_path, annot_format=self._annotation_format, num_categories=self.number_classes, dataset=self._dataset,
+        self.dataset = CustomDataset(dir_path=self._dir_path, annot_format=self._annotation_format, dataset=self._dataset,
                                      annotation_path=self._annotation_path, do_task=self._task, framework_version=self._framework, function_transforms=self._function_transforms, built_in_transforms=self._built_in_transforms)
 
         self.loader = DataLoader(dataset=self.dataset, batch_size=self._batch_size,
